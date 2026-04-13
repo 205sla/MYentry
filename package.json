@@ -1,0 +1,11 @@
+{
+  "name": "my-entry-editor",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "@entrylabs/entry": "4.0.20"
+  },
+  "scripts": {
+    "start": "npx http-server . -p 8080 -c-1 --cors -o"
+  }
+}
