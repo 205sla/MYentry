@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>엔트리 알고리즘</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'NanumGothic', 'Malgun Gothic', sans-serif;
+            background: #f0f2f5;
+            min-height: 100vh;
+        }
+        header {
+            background: #2c313d;
+            color: #fff;
+            padding: 16px 24px;
+            font-size: 18px;
+            font-weight: 700;
+        }
+        .container {
+            max-width: 960px;
+            margin: 32px auto;
+            padding: 0 16px;
+        }
+        h2 { font-size: 20px; margin-bottom: 20px; color: #333; }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 16px;
+        }
+        .card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+            cursor: pointer;
+            border: 2px solid #e5e5e5;
+            transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+        .card:hover {
+            border-color: #4c7fec;
+            box-shadow: 0 4px 16px rgba(76,127,236,0.2);
+            transform: translateY(-2px);
+        }
+        .card-number {
+            font-size: 36px;
+            font-weight: 800;
+            color: #4c7fec;
+            margin-bottom: 8px;
+        }
+        .card-title {
+            font-size: 15px;
+            color: #555;
+            font-weight: 600;
+        }
+        .empty {
+            text-align: center;
+            color: #999;
+            padding: 60px;
+            font-size: 16px;
+        }
+        .free-link {
+            display: inline-block;
+            margin-top: 24px;
+            padding: 12px 28px;
+            background: #4caf50;
+            color: #fff;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 15px;
+        }
+        .free-link:hover { background: #43a047; }
+    </style>
+</head>
+<body>
+    <header>엔트리 알고리즘</header>
+    <div class="container">
+        <h2>문제 목록</h2>
+        <div class="grid" id="problem-list"></div>
+        <div style="text-align:center; margin-top:32px;">
+            <a href="/editor.html" class="free-link">자유 모드로 시작</a>
+        </div>
+    </div>
+    <script>
+        fetch('/api/problems')
+            .then(function(r) { return r.json(); })
+            .then(function(problems) {
+                var grid = document.getElementById('problem-list');
+                if (!problems.length) {
+                    grid.innerHTML = '<div class="empty">ENT/ 폴더에 문제 파일(.ent)이 없습니다.</div>';
+                    return;
+                }
+                problems.forEach(function(p) {
+                    var a = document.createElement('a');
+                    a.className = 'card';
+                    a.href = '/editor.html?problem=' + p.id;
+                    a.innerHTML = '<div class="card-number">' + p.id + '</div><div class="card-title">' + p.title + '</div>';
+                    grid.appendChild(a);
+                });
+            });
+    </script>
+</body>
+</html>

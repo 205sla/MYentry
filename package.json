@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "dependencies": {
-    "@entrylabs/entry": "4.0.20"
+    "express": "^4"
   },
   "scripts": {
-    "start": "npx http-server . -p 8080 -c-1 --cors -o"
+    "start": "node server.js"
   }
 }
