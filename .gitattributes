@@ -1,2 +1,5 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# Entry project files (tar.gz) — preserve bytes exactly
+*.ent binary

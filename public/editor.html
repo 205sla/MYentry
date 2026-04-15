@@ -31,13 +31,189 @@
                 padding: 6px 16px; margin-left: 8px;
                 font-size: 13px; cursor: pointer; font-weight: 600;
             }
-            #play-btn { background: #4caf50; color: #fff; }
-            #play-btn:hover { background: #43a047; }
-            #stop-btn { background: #f44336; color: #fff; }
-            #stop-btn:hover { background: #e53935; }
             .mode-btn { background: #555; color: #fff; }
             .mode-btn:hover { background: #666; }
-            #workspace { height: calc(100vh - 42px); }
+            #main { display: flex; height: calc(100vh - 42px); }
+            #problem-panel {
+                width: 360px;
+                min-width: 0;
+                background: #fff;
+                border-right: 1px solid #e5e5e5;
+                display: flex;
+                flex-direction: column;
+                font-family: 'NanumGothic', 'Malgun Gothic', sans-serif;
+                overflow: hidden;
+            }
+            #problem-panel.hidden { display: none; }
+            #problem-panel-header {
+                padding: 14px 16px;
+                border-bottom: 1px solid #eee;
+                background: #f8f9fa;
+            }
+            #problem-panel-title {
+                font-size: 15px;
+                font-weight: 700;
+                color: #333;
+                margin: 0;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            #problem-panel-body {
+                flex: 1;
+                overflow-y: auto;
+                padding: 20px;
+                font-size: 14px;
+                line-height: 1.7;
+                color: #333;
+            }
+            #problem-panel-body h1, #problem-panel-body h2, #problem-panel-body h3 {
+                color: #2c313d;
+                margin-top: 18px;
+                margin-bottom: 10px;
+                font-weight: 700;
+            }
+            #problem-panel-body h2 { font-size: 17px; }
+            #problem-panel-body h3 { font-size: 15px; }
+            #problem-panel-body h2:first-child, #problem-panel-body h3:first-child { margin-top: 0; }
+            #problem-panel-body p { margin-bottom: 10px; }
+            #problem-panel-body ul, #problem-panel-body ol { margin-left: 20px; margin-bottom: 10px; }
+            #problem-panel-body li { margin-bottom: 4px; }
+            #problem-panel-body code {
+                background: #f1f3f5;
+                padding: 2px 6px;
+                border-radius: 4px;
+                font-size: 13px;
+                color: #e03131;
+                font-family: 'Consolas', 'Monaco', monospace;
+            }
+            #problem-panel-body pre {
+                background: #f1f3f5;
+                padding: 12px;
+                border-radius: 6px;
+                overflow-x: auto;
+                margin: 10px 0;
+            }
+            #problem-panel-body pre code {
+                background: none;
+                color: #333;
+                padding: 0;
+            }
+            #splitter {
+                width: 9px;
+                cursor: col-resize;
+                background: #e5e5e5;
+                flex-shrink: 0;
+                position: relative;
+                transition: background 0.15s;
+            }
+            #splitter:hover, #splitter.dragging { background: #4c7fec; }
+            #splitter::after {
+                content: '';
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                width: 2px;
+                height: 40px;
+                background: #aaa;
+                border-radius: 1px;
+            }
+            #splitter.hidden { display: none; }
+            #test-btn {
+                background: #03a9f4;
+                color: #fff;
+            }
+            #test-btn:hover { background: #0288d1; }
+            #test-btn:disabled { background: #aaa; cursor: wait; }
+            #submit-btn {
+                background: #ff9800;
+                color: #fff;
+            }
+            #submit-btn:hover { background: #fb8c00; }
+            #submit-btn:disabled { background: #aaa; cursor: wait; }
+            /* Grading result modal */
+            #grade-overlay {
+                display: none;
+                position: fixed; top: 0; left: 0;
+                width: 100%; height: 100%;
+                background: rgba(0,0,0,0.5);
+                z-index: 10000;
+                justify-content: center;
+                align-items: center;
+                font-family: 'NanumGothic', 'Malgun Gothic', sans-serif;
+            }
+            #grade-overlay.active { display: flex; }
+            #grade-modal {
+                background: #fff;
+                border-radius: 12px;
+                width: 520px;
+                max-height: 80vh;
+                overflow: hidden;
+                box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+                display: flex;
+                flex-direction: column;
+            }
+            #grade-header {
+                padding: 16px 20px;
+                border-bottom: 1px solid #eee;
+                display: flex;
+                align-items: center;
+            }
+            #grade-title { flex: 1; font-size: 16px; font-weight: 700; }
+            #grade-close {
+                border: none; background: #e9ecef;
+                width: 28px; height: 28px; border-radius: 50%;
+                cursor: pointer; font-size: 14px;
+            }
+            #grade-body {
+                padding: 20px; overflow-y: auto; flex: 1;
+            }
+            .grade-summary {
+                padding: 16px; border-radius: 8px;
+                margin-bottom: 16px; text-align: center;
+                font-size: 18px; font-weight: 700;
+            }
+            .grade-summary.pass { background: #d4edda; color: #155724; border: 2px solid #28a745; }
+            .grade-summary.fail { background: #f8d7da; color: #721c24; border: 2px solid #dc3545; }
+            .grade-summary.running { background: #fff3cd; color: #856404; border: 2px solid #ffc107; }
+            .test-case {
+                border: 1px solid #e5e5e5;
+                border-radius: 6px;
+                padding: 12px;
+                margin-bottom: 8px;
+                display: flex;
+                align-items: flex-start;
+            }
+            .test-case.pass { border-color: #28a745; background: #f5fdf7; }
+            .test-case.fail { border-color: #dc3545; background: #fef5f5; }
+            .test-case.running { border-color: #ffc107; background: #fffdf5; }
+            .test-case.error { border-color: #6c757d; background: #f8f9fa; }
+            .test-status {
+                font-weight: 700; font-size: 14px; margin-right: 10px;
+                min-width: 50px;
+            }
+            .test-case.pass .test-status { color: #28a745; }
+            .test-case.fail .test-status { color: #dc3545; }
+            .test-case.running .test-status { color: #ff9800; }
+            .test-case.error .test-status { color: #6c757d; }
+            .test-detail { flex: 1; font-size: 13px; }
+            .test-name { font-weight: 600; margin-bottom: 4px; }
+            .test-diff {
+                background: #f8f9fa;
+                padding: 8px; border-radius: 4px;
+                font-family: 'Consolas', monospace; font-size: 12px;
+                margin-top: 6px; line-height: 1.6;
+            }
+            .test-diff .expected { color: #28a745; }
+            .test-diff .actual { color: #dc3545; }
+            #workspace-wrapper {
+                flex: 1;
+                min-width: 0;
+                position: relative;
+                overflow: hidden;
+            }
+            #workspace { height: 100%; }
             #popup-container {
                 position: fixed; top: 0; left: 0;
                 width: 100%; height: 100%;
@@ -51,10 +227,30 @@
             <h1>엔트리 만들기</h1>
             <button class="mode-btn" onclick="changeWorkspaceMode('block')">블록</button>
             <button class="mode-btn" onclick="changeWorkspaceMode('python')">파이썬</button>
-            <button id="play-btn">&#9654; 시작하기</button>
-            <button id="stop-btn">&#9632; 정지하기</button>
+            <button id="test-btn" style="display:none;" title="공개 테스트 케이스로 확인">&#128269; 테스트하기</button>
+            <button id="submit-btn" style="display:none;">&#10004; 제출하기</button>
         </div>
-        <div id="workspace"></div>
+        <div id="grade-overlay">
+            <div id="grade-modal">
+                <div id="grade-header">
+                    <div id="grade-title">채점 결과</div>
+                    <button id="grade-close">&#x2715;</button>
+                </div>
+                <div id="grade-body"></div>
+            </div>
+        </div>
+        <div id="main">
+            <div id="problem-panel">
+                <div id="problem-panel-header">
+                    <h2 id="problem-panel-title">문제</h2>
+                </div>
+                <div id="problem-panel-body">문제를 불러오는 중...</div>
+            </div>
+            <div id="splitter"></div>
+            <div id="workspace-wrapper">
+                <div id="workspace"></div>
+            </div>
+        </div>
         <div id="popup-container"></div>
 
         <!-- Language -->
@@ -129,17 +325,6 @@
                     workspace.setMode(option);
                 }
             }
-
-            document.getElementById('play-btn').addEventListener('click', function () {
-                if (typeof Entry !== 'undefined' && Entry.engine) {
-                    Entry.engine.toggleRun();
-                }
-            });
-            document.getElementById('stop-btn').addEventListener('click', function () {
-                if (typeof Entry !== 'undefined' && Entry.engine) {
-                    Entry.engine.toggleStop();
-                }
-            });
         </script>
 
         <!-- Initialize Entry -->
@@ -152,20 +337,451 @@
                     entryDir: '',
                     type: 'workspace',
                     textCodingEnable: true,
+                    // Disable unused categories for algorithm platform
+                    hardwareEnable: false,       // 하드웨어
+                    aiLearningEnable: false,     // 인공지능 (learning)
+                    aiUtilizeDisable: true,      // 인공지능 (utilize)
+                    expansionDisable: true,      // 확장
                 };
                 Entry.creationChangedEvent = new Entry.Event(window);
                 Entry.init(document.getElementById('workspace'), initOption);
+
+                // Hide unused block categories: 데이터분석, 인공지능, 확장, 하드웨어
+                var banUnusedCategories = function () {
+                    var ws = Entry.getMainWS();
+                    if (ws && ws.blockMenu) {
+                        ['analysis', 'ai_utilize', 'expansion', 'arduino'].forEach(function (cat) {
+                            ws.blockMenu.banCategory(cat);
+                        });
+                    }
+                };
 
                 if (problemId) {
                     fetch('/api/problems/' + problemId)
                         .then(function (r) { if (r.ok) return r.json(); throw r; })
                         .then(function (project) { Entry.loadProject(project); })
-                        .catch(function () { Entry.loadProject(); });
+                        .catch(function () { Entry.loadProject(); })
+                        .finally(banUnusedCategories);
+                    loadProblemMeta(problemId);
+                    loadProblemTests(problemId);
                 } else {
                     Entry.loadProject();
+                    banUnusedCategories();
+                    hideProblemPanel();
                 }
                 initEntryPopup();
+                initResizableSplitter();
+                initGrading();
+                // Notify Entry of resize after panel layout is set
+                setTimeout(function () { $(window).trigger('resize'); }, 100);
             });
+
+            var __problemId = null;
+
+            function loadProblemTests(problemId) {
+                fetch('/api/problems/' + problemId + '/has-tests')
+                    .then(function (r) { return r.json(); })
+                    .then(function (info) {
+                        if (info.hasTests) {
+                            __problemId = problemId;
+                            document.getElementById('test-btn').style.display = '';
+                            document.getElementById('submit-btn').style.display = '';
+                        }
+                    });
+            }
+
+            function fetchTestCases(mode) {
+                return fetch('/api/problems/' + __problemId + '/tests?mode=' + mode)
+                    .then(function (r) { if (r.ok) return r.json(); throw r; })
+                    .then(function (data) { return data.cases || []; });
+            }
+
+            // Minimal Markdown renderer (bold, headings, code, lists, links)
+            function renderMarkdown(md) {
+                if (!md) return '';
+                var escape = function (s) {
+                    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                };
+                var lines = md.split('\n');
+                var html = '', inCode = false, inList = false, listType = '';
+                for (var i = 0; i < lines.length; i++) {
+                    var line = lines[i];
+                    // Code block
+                    var codeMatch = line.match(/^```(\w*)/);
+                    if (codeMatch) {
+                        if (inCode) { html += '</code></pre>'; inCode = false; }
+                        else { html += '<pre><code>'; inCode = true; }
+                        continue;
+                    }
+                    if (inCode) { html += escape(line) + '\n'; continue; }
+                    // Headings
+                    var h = line.match(/^(#{1,3})\s+(.+)/);
+                    if (h) {
+                        if (inList) { html += '</' + listType + '>'; inList = false; }
+                        html += '<h' + h[1].length + '>' + escape(h[2]) + '</h' + h[1].length + '>';
+                        continue;
+                    }
+                    // Lists
+                    var ul = line.match(/^[\-\*]\s+(.+)/);
+                    var ol = line.match(/^\d+\.\s+(.+)/);
+                    if (ul || ol) {
+                        var curType = ul ? 'ul' : 'ol';
+                        if (!inList) { html += '<' + curType + '>'; inList = true; listType = curType; }
+                        else if (listType !== curType) {
+                            html += '</' + listType + '><' + curType + '>'; listType = curType;
+                        }
+                        html += '<li>' + inlineMd((ul || ol)[1]) + '</li>';
+                        continue;
+                    }
+                    if (inList) { html += '</' + listType + '>'; inList = false; }
+                    // Empty line
+                    if (!line.trim()) continue;
+                    // Paragraph
+                    html += '<p>' + inlineMd(line) + '</p>';
+                }
+                if (inList) html += '</' + listType + '>';
+                if (inCode) html += '</code></pre>';
+                return html;
+
+                function inlineMd(s) {
+                    return escape(s)
+                        .replace(/`([^`]+)`/g, '<code>$1</code>')
+                        .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+                        .replace(/\*([^*]+)\*/g, '<em>$1</em>');
+                }
+            }
+
+            function loadProblemMeta(problemId) {
+                fetch('/api/problems/' + problemId + '/meta')
+                    .then(function (r) { if (r.ok) return r.json(); throw r; })
+                    .then(function (meta) {
+                        document.getElementById('problem-panel-title').textContent = meta.title || ('문제 ' + problemId);
+                        document.getElementById('problem-panel-body').innerHTML = renderMarkdown(meta.description);
+                    })
+                    .catch(function () {
+                        document.getElementById('problem-panel-title').textContent = '문제 ' + problemId;
+                        document.getElementById('problem-panel-body').innerHTML = '<p style="color:#999;">문제 설명이 없습니다.</p>';
+                    });
+            }
+
+            function hideProblemPanel() {
+                document.getElementById('problem-panel').classList.add('hidden');
+                document.getElementById('splitter').classList.add('hidden');
+                setTimeout(function () { $(window).trigger('resize'); }, 50);
+            }
+
+            function initResizableSplitter() {
+                var panel = document.getElementById('problem-panel');
+                var splitter = document.getElementById('splitter');
+
+                // Drag to resize (min 40px so the splitter handle stays grabbable)
+                var dragging = false;
+                splitter.addEventListener('mousedown', function (e) {
+                    dragging = true;
+                    splitter.classList.add('dragging');
+                    document.body.style.cursor = 'col-resize';
+                    document.body.style.userSelect = 'none';
+                    e.preventDefault();
+                });
+                document.addEventListener('mousemove', function (e) {
+                    if (!dragging) return;
+                    var w = Math.max(40, Math.min(800, e.clientX));
+                    panel.style.width = w + 'px';
+                });
+                document.addEventListener('mouseup', function () {
+                    if (!dragging) return;
+                    dragging = false;
+                    splitter.classList.remove('dragging');
+                    document.body.style.cursor = '';
+                    document.body.style.userSelect = '';
+                    $(window).trigger('resize');
+                });
+            }
+
+            // ========== Grading ==========
+            function initGrading() {
+                document.getElementById('test-btn').addEventListener('click', function () {
+                    if (!__problemId) return;
+                    fetchTestCases('test').then(function (cases) {
+                        if (!cases.length) { alert('테스트 케이스가 없습니다.'); return; }
+                        runAllTests(cases, '테스트 결과', 'test');
+                    });
+                });
+                document.getElementById('submit-btn').addEventListener('click', function () {
+                    if (!__problemId) return;
+                    fetchTestCases('submit').then(function (cases) {
+                        if (!cases.length) { alert('제출용 테스트 케이스가 없습니다.'); return; }
+                        runAllTests(cases, '제출 결과', 'submit');
+                    });
+                });
+                document.getElementById('grade-close').addEventListener('click', function () {
+                    document.getElementById('grade-overlay').classList.remove('active');
+                });
+            }
+
+            function showGradeModal() {
+                document.getElementById('grade-overlay').classList.add('active');
+            }
+
+            function renderGradeResults(results, running, mode) {
+                var body = document.getElementById('grade-body');
+                var passCount = results.filter(function (r) { return r.pass; }).length;
+                var errorCount = results.filter(function (r) { return r.error; }).length;
+                var total = results.length;
+                var allDone = !running;
+                var summaryClass = running ? 'running' : (passCount === total ? 'pass' : 'fail');
+                var summaryText;
+                if (running) {
+                    summaryText = '채점 중... (' + (results.filter(function (r) { return r.done; }).length) + '/' + total + ')';
+                } else if (passCount === total) {
+                    summaryText = '✅ 전체 통과 (' + passCount + '/' + total + ')';
+                } else {
+                    summaryText = '❌ ' + passCount + '/' + total + ' 통과';
+                    if (errorCount > 0) summaryText += ' (오류 ' + errorCount + '개)';
+                }
+
+                var html = '<div class="grade-summary ' + summaryClass + '">' + summaryText + '</div>';
+                results.forEach(function (r, idx) {
+                    var cls, status;
+                    if (!r.done) { cls = 'running'; status = '실행중'; }
+                    else if (r.error) { cls = 'error'; status = '오류'; }
+                    else if (r.pass) { cls = 'pass'; status = '통과'; }
+                    else { cls = 'fail'; status = '실패'; }
+
+                    // Submit mode: hide case names — show "테스트 N" instead
+                    var displayName = (mode === 'submit') ? ('테스트 ' + (idx + 1)) : (r.name || '테스트');
+
+                    html += '<div class="test-case ' + cls + '">';
+                    html += '<div class="test-status">' + status + '</div>';
+                    html += '<div class="test-detail"><div class="test-name">' + escapeHtml(displayName) + '</div>';
+                    if (r.done && r.error && r.errorMessage) {
+                        html += '<div class="test-diff">' + escapeHtml(r.errorMessage) + '</div>';
+                    } else if (r.done && !r.pass && r.diff && mode !== 'submit') {
+                        html += '<div class="test-diff">' + r.diff + '</div>';
+                    }
+                    html += '</div></div>';
+                });
+                body.innerHTML = html;
+            }
+
+            function escapeHtml(s) {
+                return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            }
+
+            function runAllTests(cases, title, mode) {
+                showGradeModal();
+                document.getElementById('grade-title').textContent = title || '채점 결과';
+                var results = cases.map(function (c) {
+                    return { name: c.name || '테스트', done: false, pass: false };
+                });
+                renderGradeResults(results, true, mode);
+
+                var chain = Promise.resolve();
+                cases.forEach(function (testCase, idx) {
+                    chain = chain.then(function () {
+                        return runSingleTest(testCase).then(function (result) {
+                            results[idx].done = true;
+                            results[idx].pass = result.pass;
+                            results[idx].diff = result.diff;
+                            results[idx].error = result.error;
+                            results[idx].errorMessage = result.errorMessage;
+                            renderGradeResults(results, idx < cases.length - 1, mode);
+                        });
+                    });
+                });
+                chain.then(function () {
+                    renderGradeResults(results, false, mode);
+                });
+            }
+
+            function runSingleTest(testCase) {
+                return new Promise(function (resolve) {
+                    // 1. Stop any running engine
+                    if (Entry.engine.state === 'run') {
+                        Entry.engine.toggleStop();
+                    }
+
+                    // 2. Hook Entry.Dialog to capture say/think/yell output
+                    var sayLog = [];
+                    var OrigDialog = Entry.Dialog;
+                    Entry.Dialog = function (entity, message, mode, isStamp) {
+                        sayLog.push({ message: String(message), mode: mode });
+                        return new OrigDialog(entity, message, mode, isStamp);
+                    };
+                    Entry.Dialog.prototype = OrigDialog.prototype;
+
+                    // 3. Hook Entry.toast to capture warnings/alerts
+                    var warning = null;
+                    var OrigWarning = Entry.toast && Entry.toast.warning ? Entry.toast.warning.bind(Entry.toast) : null;
+                    var OrigAlert = Entry.toast && Entry.toast.alert ? Entry.toast.alert.bind(Entry.toast) : null;
+                    if (Entry.toast) {
+                        Entry.toast.warning = function (title, message) {
+                            if (!warning) warning = { type: '경고', title: String(title || ''), message: String(message || '') };
+                            return OrigWarning && OrigWarning(title, message);
+                        };
+                        Entry.toast.alert = function (title, message) {
+                            if (!warning) warning = { type: '오류', title: String(title || ''), message: String(message || '') };
+                            return OrigAlert && OrigAlert(title, message);
+                        };
+                    }
+
+                    var restoreHooks = function () {
+                        Entry.Dialog = OrigDialog;
+                        if (Entry.toast) {
+                            if (OrigWarning) Entry.toast.warning = OrigWarning;
+                            if (OrigAlert) Entry.toast.alert = OrigAlert;
+                        }
+                    };
+
+                    // 4. Apply test setup (variables, lists, inputs)
+                    var setup = testCase.setup || {};
+                    if (setup.variables) {
+                        Object.keys(setup.variables).forEach(function (vName) {
+                            var v = Entry.variableContainer.getVariableByName(vName);
+                            if (v) v.setValue(setup.variables[vName]);
+                        });
+                    }
+                    if (setup.lists) {
+                        Object.keys(setup.lists).forEach(function (lName) {
+                            var list = Entry.variableContainer.getListByName(lName);
+                            if (list) {
+                                list.array_ = setup.lists[lName].map(function (v) { return { data: v }; });
+                                list.updateView && list.updateView();
+                            }
+                        });
+                    }
+
+                    // 5. Run engine
+                    Entry.engine.toggleRun();
+
+                    // 6. Wait for completion or timeout
+                    var timeoutMs = testCase.timeout || 5000;
+                    var startTime = Date.now();
+                    var pollInterval = setInterval(function () {
+                        var elapsed = Date.now() - startTime;
+                        var noMoreWork = Entry.container.objects_.every(function (obj) {
+                            return !obj.script || !obj.script.executors || obj.script.executors.length === 0;
+                        });
+                        if (noMoreWork || elapsed >= timeoutMs || warning) {
+                            clearInterval(pollInterval);
+
+                            // 7. Wait 300ms after code stops, then capture state and evaluate
+                            setTimeout(function () {
+                                if (warning) {
+                                    if (Entry.engine.state === 'run') Entry.engine.toggleStop();
+                                    restoreHooks();
+                                    resolve({
+                                        error: true,
+                                        errorMessage: '[' + warning.type + '] ' + warning.title + (warning.message ? ' - ' + warning.message : '')
+                                    });
+                                    return;
+                                }
+
+                                // Capture state BEFORE stop (stop restores snapshot)
+                                var finalState = { variables: {}, lists: {} };
+                                Entry.variableContainer.variables_.forEach(function (v) {
+                                    finalState.variables[v.name_] = v.getValue();
+                                });
+                                Entry.variableContainer.lists_.forEach(function (l) {
+                                    finalState.lists[l.name_] = (l.array_ || []).map(function (item) {
+                                        return item.data;
+                                    });
+                                });
+
+                                if (Entry.engine.state === 'run') Entry.engine.toggleStop();
+                                restoreHooks();
+
+                                setTimeout(function () {
+                                    resolve(evaluateTest(testCase, sayLog, finalState));
+                                }, 50);
+                            }, 300);
+                        }
+                    }, 100);
+                });
+            }
+
+            function evaluateTest(testCase, sayLog, finalState) {
+                var expected = testCase.expected || {};
+                var failures = [];
+                finalState = finalState || { variables: {}, lists: {} };
+
+                // Check say outputs
+                if (expected.say) {
+                    var actualSays = sayLog.map(function (s) { return s.message; });
+                    expected.say.forEach(function (expectedMsg) {
+                        var found = actualSays.some(function (actual) {
+                            return actual === expectedMsg || actual.indexOf(expectedMsg) !== -1;
+                        });
+                        if (!found) {
+                            failures.push({
+                                type: 'say',
+                                expected: expectedMsg,
+                                actual: actualSays.length ? actualSays.join(', ') : '(말하기 없음)'
+                            });
+                        }
+                    });
+                }
+
+                // Check variable values (captured before stop)
+                if (expected.variables) {
+                    Object.keys(expected.variables).forEach(function (vName) {
+                        var actualRaw = finalState.variables.hasOwnProperty(vName) ? finalState.variables[vName] : null;
+                        var actual = actualRaw === null ? '(없음)' : String(actualRaw);
+                        var exp = String(expected.variables[vName]);
+                        if (actual !== exp) {
+                            failures.push({ type: 'variable', name: vName, expected: exp, actual: actual });
+                        }
+                    });
+                }
+
+                // Check list values (captured before stop)
+                if (expected.lists) {
+                    Object.keys(expected.lists).forEach(function (lName) {
+                        var actualArr = finalState.lists[lName];
+                        var expArr = expected.lists[lName];
+                        if (!actualArr) {
+                            failures.push({ type: 'list', name: lName, expected: JSON.stringify(expArr), actual: '(리스트 없음)' });
+                        } else if (!listsEqual(actualArr, expArr)) {
+                            failures.push({
+                                type: 'list',
+                                name: lName,
+                                expected: JSON.stringify(expArr),
+                                actual: JSON.stringify(actualArr.map(function(v){ return normalizeValue(v); }))
+                            });
+                        }
+                    });
+                }
+
+                if (failures.length === 0) {
+                    return { pass: true };
+                }
+
+                var diffHtml = failures.map(function (f) {
+                    if (f.type === 'say') {
+                        return '말하기: <span class="expected">기대: "' + escapeHtml(f.expected) + '"</span> / <span class="actual">실제: ' + escapeHtml(f.actual) + '</span>';
+                    } else if (f.type === 'list') {
+                        return '리스트 "' + escapeHtml(f.name) + '": <span class="expected">기대: ' + escapeHtml(f.expected) + '</span> / <span class="actual">실제: ' + escapeHtml(f.actual) + '</span>';
+                    } else {
+                        return '변수 "' + escapeHtml(f.name) + '": <span class="expected">기대: ' + escapeHtml(f.expected) + '</span> / <span class="actual">실제: ' + escapeHtml(f.actual) + '</span>';
+                    }
+                }).join('<br>');
+                return { pass: false, diff: diffHtml };
+            }
+
+            // Normalize list values: numbers as numbers, strings as strings
+            function normalizeValue(v) {
+                if (typeof v === 'number') return v;
+                if (typeof v === 'string' && v !== '' && !isNaN(Number(v))) return Number(v);
+                return v;
+            }
+
+            function listsEqual(a, b) {
+                if (a.length !== b.length) return false;
+                for (var i = 0; i < a.length; i++) {
+                    if (normalizeValue(a[i]) !== normalizeValue(b[i])) return false;
+                }
+                return true;
+            }
 
             function initEntryPopup() {
                 var container = document.getElementById('popup-container');

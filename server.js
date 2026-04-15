@@ -5,9 +5,44 @@ const zlib = require('zlib');
 
 const app = express();
 const PORT = 3000;
-const ENT_DIR = path.join(__dirname, 'ENT');
+const PROBLEMS_DIR = path.join(__dirname, 'problems');
 
 app.use(express.static(path.join(__dirname, 'public')));
+
+// ========== Helpers ==========
+
+function padId(id) {
+    return String(parseInt(id, 10)).padStart(3, '0');
+}
+
+function problemDir(id) {
+    return path.join(PROBLEMS_DIR, padId(id));
+}
+
+function isValidId(raw) {
+    return /^\d+$/.test(String(raw));
+}
+
+function tryRead(fn, fallback) {
+    try { return fn(); } catch (e) { return fallback; }
+}
+
+function readMeta(id) {
+    return tryRead(() => JSON.parse(fs.readFileSync(path.join(problemDir(id), 'meta.json'), 'utf8')), null);
+}
+
+function readDescription(id) {
+    return tryRead(() => fs.readFileSync(path.join(problemDir(id), 'description.md'), 'utf8'), '');
+}
+
+function readTests(id) {
+    return tryRead(() => JSON.parse(fs.readFileSync(path.join(problemDir(id), 'tests.json'), 'utf8')), null);
+}
+
+function readProjectEnt(id) {
+    const p = path.join(problemDir(id), 'project.ent');
+    return fs.existsSync(p) ? fs.readFileSync(p) : null;
+}
 
 // Parse tar to extract temp/project.json
 function extractProjectJson(buffer) {
@@ -26,39 +61,75 @@ function extractProjectJson(buffer) {
     return null;
 }
 
-// GET /api/problems - list available problems
+// ========== Endpoints ==========
+
+// GET /api/problems - list all problems (directories with meta.json)
 app.get('/api/problems', (req, res) => {
+    const results = [];
     try {
-        const files = fs.readdirSync(ENT_DIR).filter(f => f.endsWith('.ent'));
-        const problems = files.map(f => {
-            const id = parseInt(path.basename(f, '.ent'));
-            return { id, title: '문제 ' + id };
-        }).sort((a, b) => a.id - b.id);
-        res.json(problems);
-    } catch (e) {
-        res.json([]);
-    }
+        const entries = fs.readdirSync(PROBLEMS_DIR, { withFileTypes: true });
+        entries.forEach(entry => {
+            if (!entry.isDirectory()) return;
+            if (!/^\d+$/.test(entry.name)) return;
+            const id = parseInt(entry.name, 10);
+            const meta = readMeta(id);
+            if (!meta) return;
+            results.push({ id, title: meta.title || ('문제 ' + id) });
+        });
+    } catch (e) {}
+    results.sort((a, b) => a.id - b.id);
+    res.json(results);
 });
 
-// GET /api/problems/:id - get project data from .ent file
-app.get('/api/problems/:id', (req, res) => {
-    const entPath = path.join(ENT_DIR, req.params.id + '.ent');
-    if (!fs.existsSync(entPath)) {
-        return res.status(404).json({ error: 'not found' });
+// GET /api/problems/:id/meta - title + description
+app.get('/api/problems/:id/meta', (req, res) => {
+    if (!isValidId(req.params.id)) return res.status(400).json({ error: 'invalid id' });
+    const meta = readMeta(req.params.id);
+    if (!meta) return res.status(404).json({ error: 'not found' });
+    res.json({
+        id: parseInt(req.params.id, 10),
+        title: meta.title,
+        description: readDescription(req.params.id)
+    });
+});
+
+// GET /api/problems/:id/tests?mode=test|submit
+app.get('/api/problems/:id/tests', (req, res) => {
+    if (!isValidId(req.params.id)) return res.status(400).json({ error: 'invalid id' });
+    const tests = readTests(req.params.id);
+    if (!tests) return res.status(404).json({ error: 'no tests' });
+
+    const mode = req.query.mode || 'test';
+    let cases = [];
+    if (Array.isArray(tests.cases)) {
+        cases = tests.cases; // legacy
+    } else if (tests[mode]) {
+        cases = tests[mode];
     }
+    res.json({ mode, cases });
+});
+
+// GET /api/problems/:id/has-tests
+app.get('/api/problems/:id/has-tests', (req, res) => {
+    if (!isValidId(req.params.id)) return res.json({ hasTests: false });
+    const tests = readTests(req.params.id);
+    const has = !!(tests && (tests.test || tests.submit || tests.cases));
+    res.json({ hasTests: has });
+});
+
+// GET /api/problems/:id - project data from .ent file
+app.get('/api/problems/:id', (req, res) => {
+    if (!isValidId(req.params.id)) return res.status(400).json({ error: 'invalid id' });
+    const gz = readProjectEnt(req.params.id);
+    if (!gz) return res.status(404).json({ error: 'not found' });
     try {
-        const gz = fs.readFileSync(entPath);
         const tarBuf = zlib.gunzipSync(gz);
         const jsonStr = extractProjectJson(tarBuf);
-        if (!jsonStr) {
-            return res.status(500).json({ error: 'project.json not found in .ent' });
-        }
-        // Replace old bower_components path with current lib path
+        if (!jsonStr) return res.status(500).json({ error: 'project.json not found in .ent' });
         const fixed = jsonStr
             .replace(/\.\/bower_components\/entry-js\//g, 'lib/entry-js/')
             .replace(/\.\/node_modules\/@entrylabs\/entry\//g, 'lib/entry-js/');
-        const project = JSON.parse(fixed);
-        res.json(project);
+        res.json(JSON.parse(fixed));
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
