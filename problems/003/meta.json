@@ -1,3 +1,4 @@
 {
-  "title": "정렬"
+  "title": "정렬",
+  "sprites": ["tp01", "tp02", "tp03"]
 }

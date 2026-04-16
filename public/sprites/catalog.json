@@ -1,0 +1,171 @@
+[
+  {
+    "id": "sp01",
+    "name": "빨간 원",
+    "fileurl": "/sprites/01.svg",
+    "thumbUrl": "/sprites/01.svg",
+    "filename": "red_circle",
+    "imageType": "svg",
+    "dimension": {
+      "width": 200,
+      "height": 200
+    },
+    "_id": "sp01"
+  },
+  {
+    "id": "sp02",
+    "name": "파란 사각형",
+    "fileurl": "/sprites/02.svg",
+    "thumbUrl": "/sprites/02.svg",
+    "filename": "blue_square",
+    "imageType": "svg",
+    "dimension": {
+      "width": 200,
+      "height": 200
+    },
+    "_id": "sp02"
+  },
+  {
+    "id": "sp03",
+    "name": "초록 삼각형",
+    "fileurl": "/sprites/03.svg",
+    "thumbUrl": "/sprites/03.svg",
+    "filename": "green_triangle",
+    "imageType": "svg",
+    "dimension": {
+      "width": 200,
+      "height": 200
+    },
+    "_id": "sp03"
+  },
+  {
+    "id": "sp04",
+    "name": "노란 별",
+    "fileurl": "/sprites/04.svg",
+    "thumbUrl": "/sprites/04.svg",
+    "filename": "yellow_star",
+    "imageType": "svg",
+    "dimension": {
+      "width": 200,
+      "height": 200
+    },
+    "_id": "sp04"
+  },
+  {
+    "id": "sp05",
+    "name": "보라 하트",
+    "fileurl": "/sprites/05.svg",
+    "thumbUrl": "/sprites/05.svg",
+    "filename": "purple_heart",
+    "imageType": "svg",
+    "dimension": {
+      "width": 200,
+      "height": 200
+    },
+    "_id": "sp05"
+  },
+  {
+    "id": "sp06",
+    "name": "주황 다이아몬드",
+    "fileurl": "/sprites/06.svg",
+    "thumbUrl": "/sprites/06.svg",
+    "filename": "orange_diamond",
+    "imageType": "svg",
+    "dimension": {
+      "width": 200,
+      "height": 200
+    },
+    "_id": "sp06"
+  },
+  {
+    "id": "sp07",
+    "name": "분홍 오각형",
+    "fileurl": "/sprites/07.svg",
+    "thumbUrl": "/sprites/07.svg",
+    "filename": "pink_pentagon",
+    "imageType": "svg",
+    "dimension": {
+      "width": 200,
+      "height": 200
+    },
+    "_id": "sp07"
+  },
+  {
+    "id": "sp08",
+    "name": "하늘 육각형",
+    "fileurl": "/sprites/08.svg",
+    "thumbUrl": "/sprites/08.svg",
+    "filename": "sky_hexagon",
+    "imageType": "svg",
+    "dimension": {
+      "width": 200,
+      "height": 200
+    },
+    "_id": "sp08"
+  },
+  {
+    "id": "sp09",
+    "name": "회색 타원",
+    "fileurl": "/sprites/09.svg",
+    "thumbUrl": "/sprites/09.svg",
+    "filename": "gray_oval",
+    "imageType": "svg",
+    "dimension": {
+      "width": 200,
+      "height": 200
+    },
+    "_id": "sp09"
+  },
+  {
+    "id": "sp10",
+    "name": "갈색 팔각형",
+    "fileurl": "/sprites/10.svg",
+    "thumbUrl": "/sprites/10.svg",
+    "filename": "brown_octagon",
+    "imageType": "svg",
+    "dimension": {
+      "width": 200,
+      "height": 200
+    },
+    "_id": "sp10"
+  },
+  {
+    "id": "tp01",
+    "name": "파란 체크무늬",
+    "fileurl": "/sprites/test01.png",
+    "thumbUrl": "/sprites/test01.png",
+    "filename": "blue_checkerboard",
+    "imageType": "png",
+    "dimension": {
+      "width": 200,
+      "height": 200
+    },
+    "_id": "tp01"
+  },
+  {
+    "id": "tp02",
+    "name": "빨간 줄무늬",
+    "fileurl": "/sprites/test02.png",
+    "thumbUrl": "/sprites/test02.png",
+    "filename": "red_stripes",
+    "imageType": "png",
+    "dimension": {
+      "width": 200,
+      "height": 200
+    },
+    "_id": "tp02"
+  },
+  {
+    "id": "tp03",
+    "name": "초록 그라디언트",
+    "fileurl": "/sprites/test03.png",
+    "thumbUrl": "/sprites/test03.png",
+    "filename": "green_gradient",
+    "imageType": "png",
+    "dimension": {
+      "width": 200,
+      "height": 200
+    },
+    "_id": "tp03"
+  }
+]

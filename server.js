@@ -6,6 +6,7 @@ const zlib = require('zlib');
 const app = express();
 const PORT = 3000;
 const PROBLEMS_DIR = path.join(__dirname, 'problems');
+const SPRITES_CATALOG = path.join(__dirname, 'public', 'sprites', 'catalog.json');
 
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -42,6 +43,22 @@ function readTests(id) {
 function readProjectEnt(id) {
     const p = path.join(problemDir(id), 'project.ent');
     return fs.existsSync(p) ? fs.readFileSync(p) : null;
+}
+
+function loadSpriteCatalog() {
+    return tryRead(() => JSON.parse(fs.readFileSync(SPRITES_CATALOG, 'utf8')), []);
+}
+
+// Filter catalog by problem's meta.json `sprites` array (list of id values).
+// Uses `id` as the unique key for lookup.
+// - meta.sprites missing or not an array → return full catalog (default)
+// - meta.sprites = [] → return empty (explicit block)
+// - meta.sprites = ["sp01","sp03"] → return matching items in declared order
+function filterSpritesByMeta(all, meta) {
+    if (!meta || !Array.isArray(meta.sprites)) return all;
+    const byId = {};
+    all.forEach(function (s) { byId[s.id] = s; });
+    return meta.sprites.map(function (id) { return byId[id]; }).filter(Boolean);
 }
 
 // Parse tar to extract temp/project.json
@@ -115,6 +132,18 @@ app.get('/api/problems/:id/has-tests', (req, res) => {
     const tests = readTests(req.params.id);
     const has = !!(tests && (tests.test || tests.submit || tests.cases));
     res.json({ hasTests: has });
+});
+
+// GET /api/sprites            - all sprites (free mode)
+// GET /api/sprites?problem=N  - sprites filtered by problem's meta.json
+app.get('/api/sprites', (req, res) => {
+    const all = loadSpriteCatalog();
+    const pid = req.query.problem;
+    if (!pid) return res.json({ sprites: all });
+    if (!isValidId(pid)) return res.status(400).json({ error: 'invalid id' });
+    const meta = readMeta(pid);
+    if (!meta) return res.json({ sprites: all }); // unknown problem → safe fallback
+    res.json({ sprites: filterSpritesByMeta(all, meta) });
 });
 
 // GET /api/problems/:id - project data from .ent file

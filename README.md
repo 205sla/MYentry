@@ -30,6 +30,7 @@ MYentry/
     ├── index.html            # 메인 화면 (문제 선택)
     ├── editor.html           # Entry 블록 코딩 에디터
     ├── media/                # 커서 파일
+    ├── sprites/              # 로컬 번들 스프라이트 (10종) + catalog.json
     └── lib/                  # Entry 전용 라이브러리 (로컬 번들)
         ├── entry-js/         # 엔트리 코어 엔진
         ├── entry-tool/       # 팝업 UI
@@ -69,6 +70,24 @@ MYentry/
 ```json
 { "title": "문제 제목" }
 ```
+
+선택 필드 `sprites` — 오브젝트/모양 추가 팝업에 노출할 스프라이트 ID 목록 (배열 순서 유지). 미지정 시 전체 10종 노출.
+
+```json
+{
+  "title": "문제 제목",
+  "sprites": ["sp01", "sp03", "sp07"]
+}
+```
+
+| `sprites` 값 | 팝업 동작 |
+|--------------|----------|
+| 필드 없음 | 전체 10종 (기본) |
+| `[]` | 아무것도 안 보임 (명시적 차단) |
+| `["sp01","sp03"]` | 지정된 ID만, 배열 순서대로 |
+| 존재하지 않는 ID 포함 | 무효 ID 자동 스킵 |
+
+사용 가능한 ID: `sp01`~`sp10` — 자세한 내용은 `public/sprites/catalog.json` 참조.
 
 ### `description.md` (선택)
 Markdown 형식의 문제 설명. 지원 문법:
