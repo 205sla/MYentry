@@ -3,9 +3,9 @@
   "configurations": [
     {
       "name": "entry-editor",
-      "runtimeExecutable": "npx",
-      "runtimeArgs": ["http-server", ".", "-c-1", "--cors"],
-      "port": 8080
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["server.js"],
+      "port": 3000
     }
   ]
 }

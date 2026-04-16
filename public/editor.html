@@ -849,6 +849,26 @@
                     // 5. Run engine (internal helper bypasses the user-stop guard)
                     engineInternalRun();
 
+                    // 5.5 Re-apply setup — Python mode converts code→blocks synchronously
+                    // during toggleRun(), overwriting variables/lists with hardcoded values.
+                    // Re-applying after toggleRun() restores the test values before
+                    // the first block actually executes. Harmless in block mode (idempotent).
+                    if (setup.variables) {
+                        Object.keys(setup.variables).forEach(function (vName) {
+                            var v = Entry.variableContainer.getVariableByName(vName);
+                            if (v) v.setValue(setup.variables[vName]);
+                        });
+                    }
+                    if (setup.lists) {
+                        Object.keys(setup.lists).forEach(function (lName) {
+                            var list = Entry.variableContainer.getListByName(lName);
+                            if (list) {
+                                list.array_ = setup.lists[lName].map(function (v) { return { data: v }; });
+                                list.updateView && list.updateView();
+                            }
+                        });
+                    }
+
                     // 6. Wait for completion or timeout
                     var timeoutMs = testCase.timeout || 5000;
                     var startTime = Date.now();
