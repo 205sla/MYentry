@@ -2,3 +2,5 @@ node_modules/
 .claude/
 *.key
 *.pem
+deploy-key
+deploy-key.pub

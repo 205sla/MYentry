@@ -1,0 +1,39 @@
+name: Deploy to code.205.kr
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: # 수동 트리거 가능
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: SSH deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_KEY }}
+          port: 22
+          command_timeout: 3m
+          script: |
+            set -e
+            cd ~/MYentry
+            echo "== git pull =="
+            git pull --ff-only origin main
+            echo "== npm install (if needed) =="
+            npm install --omit=dev --no-audit --no-fund
+            echo "== pm2 reload =="
+            pm2 reload entry --update-env
+            pm2 save
+            echo "== health check =="
+            sleep 2
+            curl -sf -o /dev/null -w "HTTP %{http_code}\n" http://127.0.0.1:3000/
+            echo "== deploy complete =="
