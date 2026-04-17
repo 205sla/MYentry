@@ -4,7 +4,7 @@ const path = require('path');
 const zlib = require('zlib');
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 const PROBLEMS_DIR = path.join(__dirname, 'problems');
 const SPRITES_CATALOG = path.join(__dirname, 'public', 'sprites', 'catalog.json');
 
