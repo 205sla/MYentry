@@ -609,44 +609,102 @@ function runAllTests(cases, title, mode) {
     });
 }
 
-function runSingleTest(testCase) {
-    return new Promise(function (resolve) {
-        // 1. Stop any running engine (bypass guard via internal helper)
-        engineInternalStop();
+// Install Entry.Dialog + Entry.toast hooks for one test run.
+// - Dialog hook captures say/think/yell output into `sayLog`.
+// - toast hook captures the FIRST warning/alert (used as error signal).
+// Returns { sayLog, getWarning, restore } — caller must call restore() exactly once.
+function installTestHooks() {
+    var sayLog = [];
+    var warning = null;
 
-        // 2. Hook Entry.Dialog to capture say/think/yell output
-        var sayLog = [];
-        var OrigDialog = Entry.Dialog;
-        Entry.Dialog = function (entity, message, mode, isStamp) {
-            sayLog.push({ message: String(message), mode: mode });
-            return new OrigDialog(entity, message, mode, isStamp);
+    // Dialog hook — capture say/think/yell output
+    var OrigDialog = Entry.Dialog;
+    Entry.Dialog = function (entity, message, mode, isStamp) {
+        sayLog.push({ message: String(message), mode: mode });
+        return new OrigDialog(entity, message, mode, isStamp);
+    };
+    Entry.Dialog.prototype = OrigDialog.prototype;
+
+    // toast hook — capture first warning/alert as error signal
+    var OrigWarning = Entry.toast && Entry.toast.warning ? Entry.toast.warning.bind(Entry.toast) : null;
+    var OrigAlert = Entry.toast && Entry.toast.alert ? Entry.toast.alert.bind(Entry.toast) : null;
+    if (Entry.toast) {
+        Entry.toast.warning = function (title, message) {
+            if (!warning) warning = { type: '경고', title: String(title || ''), message: String(message || '') };
+            return OrigWarning && OrigWarning(title, message);
         };
-        Entry.Dialog.prototype = OrigDialog.prototype;
+        Entry.toast.alert = function (title, message) {
+            if (!warning) warning = { type: '오류', title: String(title || ''), message: String(message || '') };
+            return OrigAlert && OrigAlert(title, message);
+        };
+    }
 
-        // 3. Hook Entry.toast to capture warnings/alerts
-        var warning = null;
-        var OrigWarning = Entry.toast && Entry.toast.warning ? Entry.toast.warning.bind(Entry.toast) : null;
-        var OrigAlert = Entry.toast && Entry.toast.alert ? Entry.toast.alert.bind(Entry.toast) : null;
-        if (Entry.toast) {
-            Entry.toast.warning = function (title, message) {
-                if (!warning) warning = { type: '경고', title: String(title || ''), message: String(message || '') };
-                return OrigWarning && OrigWarning(title, message);
-            };
-            Entry.toast.alert = function (title, message) {
-                if (!warning) warning = { type: '오류', title: String(title || ''), message: String(message || '') };
-                return OrigAlert && OrigAlert(title, message);
-            };
-        }
-
-        var restoreHooks = function () {
+    return {
+        sayLog: sayLog,
+        getWarning: function () { return warning; },
+        restore: function () {
             Entry.Dialog = OrigDialog;
             if (Entry.toast) {
                 if (OrigWarning) Entry.toast.warning = OrigWarning;
                 if (OrigAlert) Entry.toast.alert = OrigAlert;
             }
-        };
+        }
+    };
+}
 
-        // Unified exit: clears timers, stops engine, restores hooks, resolves once
+// Snapshot Entry variables_ / lists_ into a plain object. Called BEFORE
+// engineInternalStop() because stop restores the pre-run snapshot — capturing
+// after stop would lose the test's output values.
+function captureFinalState() {
+    var state = { variables: {}, lists: {} };
+    Entry.variableContainer.variables_.forEach(function (v) {
+        state.variables[v.name_] = v.getValue();
+    });
+    Entry.variableContainer.lists_.forEach(function (l) {
+        state.lists[l.name_] = (l.array_ || []).map(function (item) {
+            return item.data;
+        });
+    });
+    return state;
+}
+
+// Result formatters — pure functions, testable without Entry.
+function formatTimeoutResult(timeoutMs) {
+    var secondsStr = (timeoutMs / 1000).toString();
+    return {
+        pass: false,
+        timeout: true,
+        diff: '시간 초과 (' + secondsStr + '초) — 무한 반복이나 너무 느린 연산 가능성'
+    };
+}
+
+function formatWarningResult(warning) {
+    return {
+        error: true,
+        errorMessage: '[' + warning.type + '] ' + warning.title +
+            (warning.message ? ' - ' + warning.message : '')
+    };
+}
+
+// Run a single test case: setup → run → poll until done/timeout/warning →
+// (if not timeout) settle → capture state → evaluate → resolve.
+// Resolves with one of:
+//  - { cancelled: true }                                  — user stopped grading
+//  - { pass: false, timeout: true, diff: '...' }          — pure timeout
+//  - { error: true, errorMessage: '...' }                 — Entry warned/alerted
+//  - { pass: true } | { pass: false, diff: '...' }        — evaluateTest result
+function runSingleTest(testCase) {
+    return new Promise(function (resolve) {
+        engineInternalStop(); // clean slate before hooks install
+
+        var hooks = installTestHooks();
+        var setup = testCase.setup || {};
+        // Auto-answer: if setup.variables['대답'] exists, fill ask_and_wait input when it appears.
+        var autoAnswer = (setup.variables && setup.variables['대답'] !== undefined)
+            ? String(setup.variables['대답']) : null;
+        var timeoutMs = testCase.timeout || CONFIG.DEFAULT_TEST_TIMEOUT_MS;
+
+        // Cleanup plumbing — unified exit via finish()
         var pollInterval = null;
         var delayTimer = null;
         var finalTimer = null;
@@ -658,49 +716,36 @@ function runSingleTest(testCase) {
             if (delayTimer) { clearTimeout(delayTimer); delayTimer = null; }
             if (finalTimer) { clearTimeout(finalTimer); finalTimer = null; }
             engineInternalStop();
-            restoreHooks();
+            hooks.restore();
             if (GradingState.currentCancel === cancelFn) GradingState.currentCancel = null;
             resolve(result);
         };
         var cancelFn = function () { finish({ cancelled: true }); };
         GradingState.currentCancel = cancelFn;
 
-        // Edge case: cancelled before we even started
+        // Edge case: cancelled before we started
         if (GradingState.cancelled) { finish({ cancelled: true }); return; }
 
-        // 4. Apply test setup (variables, lists)
-        var setup = testCase.setup || {};
+        // Setup → run → re-setup (Python mode overwrites during toggleRun)
         applyTestSetup(setup);
-
-        // 5. Run engine (internal helper bypasses the user-stop guard)
         engineInternalRun();
-
-        // 5.5 Re-apply setup (see applyTestSetup docstring — Python mode workaround)
         applyTestSetup(setup);
 
-        // 5.6 Auto-answer for ask_and_wait blocks:
-        // If setup.variables has '대답', auto-fill Entry's input field
-        // whenever it appears during execution.
-        var autoAnswer = (setup.variables && setup.variables['대답'] !== undefined)
-            ? String(setup.variables['대답']) : null;
-
-        // 6. Wait for completion or timeout
-        var timeoutMs = testCase.timeout || CONFIG.DEFAULT_TEST_TIMEOUT_MS;
+        // Poll until one of: cancelled, warning, completion, timeout
         var startTime = Date.now();
         pollInterval = setInterval(function () {
-            if (GradingState.cancelled) { finish({ cancelled: true }); return; }
+            if (GradingState.cancelled) return finish({ cancelled: true });
 
-            // Auto-fill ask_and_wait: when Entry is waiting for input
-            // (inputValue.complete === false), call setInputValue to resume.
-            // The input is canvas-based (CanvasInput), not a DOM element.
+            // Auto-fill ask_and_wait (canvas input, not DOM) once per test
             if (autoAnswer !== null) {
                 var iv = Entry.container.inputValue;
                 if (iv && iv.setValue && iv.complete === false) {
                     try { Entry.container.setInputValue(autoAnswer); } catch (e) {}
-                    autoAnswer = null; // only fill once per test
+                    autoAnswer = null;
                 }
             }
 
+            var warning = hooks.getWarning();
             var elapsed = Date.now() - startTime;
             var noMoreWork = Entry.container.objects_.every(function (obj) {
                 return !obj.script || !obj.script.executors || obj.script.executors.length === 0;
@@ -711,46 +756,24 @@ function runSingleTest(testCase) {
             clearInterval(pollInterval);
             pollInterval = null;
 
-            // Pure timeout (no warning, no completion): treat as wrong answer immediately.
-            // Partial state would be unreliable (e.g. mid-infinite-loop), so skip evaluation.
+            // Pure timeout → fail immediately (partial state mid-infinite-loop is unreliable)
             if (timedOut && !warning && !noMoreWork) {
-                var secondsStr = (timeoutMs / 1000).toString();
-                finish({
-                    pass: false,
-                    timeout: true,
-                    diff: '시간 초과 (' + secondsStr + '초) — 무한 반복이나 너무 느린 연산 가능성'
-                });
-                return;
+                return finish(formatTimeoutResult(timeoutMs));
             }
 
-            // 7. Wait for post-stop settling, then capture state and evaluate
+            // Settle, capture state, then evaluate
             delayTimer = setTimeout(function () {
                 delayTimer = null;
-                if (GradingState.cancelled) { finish({ cancelled: true }); return; }
+                if (GradingState.cancelled) return finish({ cancelled: true });
 
-                if (warning) {
-                    finish({
-                        error: true,
-                        errorMessage: '[' + warning.type + '] ' + warning.title + (warning.message ? ' - ' + warning.message : '')
-                    });
-                    return;
-                }
+                var w = hooks.getWarning();
+                if (w) return finish(formatWarningResult(w));
 
-                // Capture state BEFORE stop (stop restores snapshot)
-                var finalState = { variables: {}, lists: {} };
-                Entry.variableContainer.variables_.forEach(function (v) {
-                    finalState.variables[v.name_] = v.getValue();
-                });
-                Entry.variableContainer.lists_.forEach(function (l) {
-                    finalState.lists[l.name_] = (l.array_ || []).map(function (item) {
-                        return item.data;
-                    });
-                });
-
+                var finalState = captureFinalState();
                 finalTimer = setTimeout(function () {
                     finalTimer = null;
-                    if (GradingState.cancelled) { finish({ cancelled: true }); return; }
-                    finish(evaluateTest(testCase, sayLog, finalState));
+                    if (GradingState.cancelled) return finish({ cancelled: true });
+                    finish(evaluateTest(testCase, hooks.sayLog, finalState));
                 }, CONFIG.POST_CAPTURE_EVAL_DELAY_MS);
             }, CONFIG.POST_STOP_CAPTURE_DELAY_MS);
         }, CONFIG.GRADING_POLL_INTERVAL_MS);
