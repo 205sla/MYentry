@@ -8,7 +8,50 @@ const PORT = process.env.PORT || 3000;
 const PROBLEMS_DIR = path.join(__dirname, 'problems');
 const SPRITES_CATALOG = path.join(__dirname, 'public', 'sprites', 'catalog.json');
 
+const SITE_URL = process.env.SITE_URL || 'https://code.205.kr';
+
 app.use(express.static(path.join(__dirname, 'public')));
+
+// ========== SEO ==========
+
+// Dynamic sitemap — lists static pages + every problem page.
+// Regenerated on each request so new problems appear without a server restart.
+app.get('/sitemap.xml', (req, res) => {
+    const today = new Date().toISOString().slice(0, 10);
+    const urls = [
+        { loc: SITE_URL + '/',                priority: '1.0', changefreq: 'weekly' },
+        { loc: SITE_URL + '/contribute.html', priority: '0.7', changefreq: 'monthly' },
+        { loc: SITE_URL + '/editor.html',     priority: '0.5', changefreq: 'monthly' }
+    ];
+    try {
+        const entries = fs.readdirSync(PROBLEMS_DIR, { withFileTypes: true });
+        entries.forEach(entry => {
+            if (!entry.isDirectory()) return;
+            if (!/^\d+$/.test(entry.name)) return;
+            const id = parseInt(entry.name, 10);
+            if (!readMeta(id)) return;
+            urls.push({
+                loc: SITE_URL + '/editor.html?problem=' + id,
+                priority: '0.8',
+                changefreq: 'monthly'
+            });
+        });
+    } catch (e) {}
+
+    const body = '<?xml version="1.0" encoding="UTF-8"?>\n' +
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
+        urls.map(u =>
+            '  <url>\n' +
+            '    <loc>' + u.loc + '</loc>\n' +
+            '    <lastmod>' + today + '</lastmod>\n' +
+            '    <changefreq>' + u.changefreq + '</changefreq>\n' +
+            '    <priority>' + u.priority + '</priority>\n' +
+            '  </url>'
+        ).join('\n') +
+        '\n</urlset>\n';
+    res.set('Content-Type', 'application/xml; charset=utf-8');
+    res.send(body);
+});
 
 // ========== Helpers ==========
 
