@@ -174,3 +174,23 @@ h2 {
     background: #4f80ff;
     color: #fff;
 }
+
+/* ---------- Disclaimer footer ---------- */
+.disclaimer {
+    max-width: 960px;
+    margin: 24px auto 32px;
+    padding: 0 16px;
+    text-align: center;
+    font-size: 11px;
+    line-height: 1.6;
+    color: #8ba4b3;
+    letter-spacing: -0.2px;
+}
+.disclaimer a {
+    color: #8ba4b3;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+.disclaimer a:hover {
+    color: #4f80ff;
+}
