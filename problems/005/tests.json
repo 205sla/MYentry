@@ -3,19 +3,27 @@
     {
       "name": "안녕이라고 말하기",
       "expected": {
-        "say": [
-          "안녕"
-        ]
+        "say": ["안녕"]
       }
     }
   ],
   "submit": [
     {
-      "name": "안녕이라고 말하기",
+      "name": "1",
       "expected": {
-        "say": [
-          "안녕"
-        ]
+        "say": ["안녕"]
+      }
+    },
+    {
+      "name": "2",
+      "expected": {
+        "say": ["안녕"]
+      }
+    },
+    {
+      "name": "3",
+      "expected": {
+        "say": ["안녕"]
       }
     }
   ]

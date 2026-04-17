@@ -652,6 +652,18 @@
 
             // ========== Grading ==========
             function initGrading() {
+                // Block all keyboard input during grading so user keystrokes
+                // don't interfere with ask_and_wait auto-fill or engine state.
+                document.addEventListener('keydown', function (e) {
+                    if (__isGrading) { e.preventDefault(); e.stopPropagation(); }
+                }, true);
+                document.addEventListener('keyup', function (e) {
+                    if (__isGrading) { e.preventDefault(); e.stopPropagation(); }
+                }, true);
+                document.addEventListener('keypress', function (e) {
+                    if (__isGrading) { e.preventDefault(); e.stopPropagation(); }
+                }, true);
+
                 document.getElementById('test-btn').addEventListener('click', function () {
                     if (!__problemId) return;
                     fetchTestCases('test').then(function (cases) {
@@ -869,11 +881,29 @@
                         });
                     }
 
+                    // 5.6 Auto-answer for ask_and_wait blocks:
+                    // If setup.variables has '대답', auto-fill Entry's input field
+                    // whenever it appears during execution.
+                    var autoAnswer = (setup.variables && setup.variables['대답'] !== undefined)
+                        ? String(setup.variables['대답']) : null;
+
                     // 6. Wait for completion or timeout
                     var timeoutMs = testCase.timeout || 5000;
                     var startTime = Date.now();
                     pollInterval = setInterval(function () {
                         if (__gradingCancelled) { finish({ cancelled: true }); return; }
+
+                        // Auto-fill ask_and_wait: when Entry is waiting for input
+                        // (inputValue.complete === false), call setInputValue to resume.
+                        // The input is canvas-based (CanvasInput), not a DOM element.
+                        if (autoAnswer !== null) {
+                            var iv = Entry.container.inputValue;
+                            if (iv && iv.setValue && iv.complete === false) {
+                                try { Entry.container.setInputValue(autoAnswer); } catch (e) {}
+                                autoAnswer = null; // only fill once per test
+                            }
+                        }
+
                         var elapsed = Date.now() - startTime;
                         var noMoreWork = Entry.container.objects_.every(function (obj) {
                             return !obj.script || !obj.script.executors || obj.script.executors.length === 0;

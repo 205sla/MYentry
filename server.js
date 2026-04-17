@@ -91,7 +91,7 @@ app.get('/api/problems', (req, res) => {
             const id = parseInt(entry.name, 10);
             const meta = readMeta(id);
             if (!meta) return;
-            results.push({ id, title: meta.title || ('문제 ' + id) });
+            results.push({ id, title: meta.title || ('문제 ' + id), difficulty: meta.difficulty || 0 });
         });
     } catch (e) {}
     results.sort((a, b) => a.id - b.id);

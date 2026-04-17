@@ -57,6 +57,13 @@
             color: #555;
             font-weight: 600;
         }
+        .card-difficulty {
+            margin-top: 10px;
+            font-size: 14px;
+            letter-spacing: 2px;
+        }
+        .card-difficulty .star-filled { color: #f5a623; }
+        .card-difficulty .star-empty { color: #ddd; }
         .empty {
             text-align: center;
             color: #999;
@@ -99,7 +106,16 @@
                     var a = document.createElement('a');
                     a.className = 'card';
                     a.href = '/editor.html?problem=' + p.id;
-                    a.innerHTML = '<div class="card-number">' + p.id + '</div><div class="card-title">' + p.title + '</div>';
+                    var stars = '';
+                    var d = Math.max(0, Math.min(5, p.difficulty || 0));
+                    for (var i = 0; i < 5; i++) {
+                        stars += i < d
+                            ? '<span class="star-filled">&#9733;</span>'
+                            : '<span class="star-empty">&#9733;</span>';
+                    }
+                    a.innerHTML = '<div class="card-number">' + p.id + '</div>'
+                        + '<div class="card-title">' + p.title + '</div>'
+                        + '<div class="card-difficulty">' + stars + '</div>';
                     grid.appendChild(a);
                 });
             });

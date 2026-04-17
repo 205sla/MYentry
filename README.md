@@ -156,11 +156,13 @@ Markdown 형식의 문제 설명. 지원 문법:
 
 | 엔드포인트 | 설명 |
 |-----------|------|
-| `GET /api/problems` | 전체 문제 목록 `[{id, title}]` |
+| `GET /api/problems` | 전체 문제 목록 `[{id, title, difficulty}]` |
 | `GET /api/problems/:id/meta` | 문제 제목 + 설명 `{id, title, description}` |
 | `GET /api/problems/:id/tests?mode=test\|submit` | 테스트 케이스 `{mode, cases}` |
 | `GET /api/problems/:id/has-tests` | 테스트 존재 여부 `{hasTests: boolean}` |
 | `GET /api/problems/:id` | 프로젝트 데이터 (`project.ent`에서 추출) |
+| `GET /api/sprites` | 전체 스프라이트 카탈로그 |
+| `GET /api/sprites?problem=N` | 문제별 스프라이트 (meta.json sprites 필드 기준) |
 
 ## 기술 스택
 
@@ -172,5 +174,9 @@ Markdown 형식의 문제 설명. 지원 문법:
 
 - **오프라인 대응**: Entry 관련 라이브러리는 모두 `public/lib/`에 로컬 번들링. 범용 라이브러리(jQuery, React 등)만 CDN 사용.
 - **로컬 채점**: 모든 채점은 클라이언트에서 실행 → 서버 부하 없음.
+- **파이썬 모드 호환**: 블록/파이썬 양쪽 모드에서 동일하게 채점.
+- **묻고 기다리기 자동 응답**: 채점 시 `대답` 변수로 자동 입력.
+- **난이도 시스템**: 문제별 0~5 난이도를 메인 화면에 별로 표시.
+- **실행취소/다시실행**: 헤더 버튼 + Ctrl+Z/Ctrl+Shift+Z.
 - **상태 관리 없음**: 사용자 계정, 저장, 제출 이력 등 일체 없음. 순수하게 브라우저 세션 내에서만 동작.
 - **핫 리로드 가능**: 문제 파일 수정 시 서버 재시작 없이 즉시 반영.
