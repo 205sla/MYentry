@@ -2,10 +2,15 @@
   "name": "my-entry-editor",
   "version": "1.0.0",
   "private": true,
-  "dependencies": {
-    "express": "^4"
+  "description": "Entry(엔트리) 블록 코딩 기반 알고리즘 문제 풀이 플랫폼",
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=18"
   },
   "scripts": {
     "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4"
   }
 }

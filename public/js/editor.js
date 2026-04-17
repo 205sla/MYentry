@@ -1,0 +1,948 @@
+/* ============================================================
+   editor.js — Entry 에디터 화면 스크립트
+   Entry 라이브러리(lib/entry-js 등) 로드 이후에 실행되어야 합니다.
+   ============================================================ */
+
+window.PUBLIC_PATH_FOR_ENTRYJS = 'lib/entry-js/dist/';
+
+// ============================================================
+// 1. Globals — timing constants + grading state
+// ============================================================
+
+// Timing constants (all in milliseconds). Centralized so tuning is localized
+// and behavior is self-documenting at call sites.
+var CONFIG = {
+    // Delay before notifying Entry of a window resize after major layout changes
+    // (Entry init, problem panel hide). Entry needs the DOM to settle first.
+    RESIZE_AFTER_INIT_MS: 100,
+    RESIZE_AFTER_PANEL_HIDE_MS: 50,
+
+    // How often to poll Entry.stateManager for undo/redo availability so the
+    // header buttons enable/disable in sync. Fast enough to feel responsive,
+    // slow enough to avoid CPU waste.
+    UNDO_REDO_SYNC_INTERVAL_MS: 300,
+
+    // Default per-test timeout. Individual tests can override via testCase.timeout.
+    // Kept generous to accommodate Python mode code→block conversion on slow devices.
+    DEFAULT_TEST_TIMEOUT_MS: 5000,
+
+    // How often runSingleTest polls for engine completion (no more executors)
+    // or timeout. Too small wastes CPU; too large delays result display.
+    GRADING_POLL_INTERVAL_MS: 100,
+
+    // After the engine finishes, wait this long before capturing state.
+    // Allows pending say/think animations, final setValue calls, and queued
+    // microtasks to settle so the snapshot reflects the true end state.
+    POST_STOP_CAPTURE_DELAY_MS: 300,
+
+    // After capturing state, wait briefly before calling evaluateTest.
+    // Guards against races where Entry.variableContainer mutations from
+    // synchronous teardown paths overwrite the captured values.
+    POST_CAPTURE_EVAL_DELAY_MS: 50
+};
+
+// All grading-related mutable state, collected in one place so the
+// runAllTests → runSingleTest → grade-stop state machine is easy to
+// trace. Anything accessed across more than one function lives here.
+var GradingState = {
+    // URL-param problem id. null in free mode or while tests are loading.
+    // Set by loadProblemTests() once the server confirms the problem has tests.
+    problemId: null,
+
+    // True from runAllTests() entry until its Promise chain fully settles
+    // (success OR cancellation). Gates keyboard events, reset button, and
+    // Entry.engine toggle buttons to prevent user interference.
+    isRunning: false,
+
+    // True after the user clicks "채점 중단". Checked at every await/poll
+    // boundary so in-flight tests abort promptly. Reset to false at the
+    // start of each runAllTests() call.
+    cancelled: false,
+
+    // Cancellation callback for the currently running runSingleTest.
+    // Stored at entry, cleared at finish(). Called by grade-stop handler
+    // to break out of the poll interval immediately.
+    currentCancel: null,
+
+    // Original Entry.engine methods, captured before installEngineGuard
+    // wraps them. Used by the wrapper to call through when allowed.
+    engine: {
+        origStop: null,    // Entry.engine.toggleStop
+        origRun: null,     // Entry.engine.toggleRun
+        // True when the grading code itself is driving the engine
+        // (engineInternalStop/Run). Bypasses the "isRunning" guard
+        // so the grader can start/stop the engine it's managing.
+        internal: false
+    }
+};
+
+// Local sprite library fetched from /api/sprites (page-scope, not grading state).
+var __spriteCatalog = [];
+
+// ============================================================
+// 2. Workspace mode toggle (called by header buttons via onclick)
+// ============================================================
+
+function changeWorkspaceMode(mode) {
+    var option = {};
+    if (mode === 'block') {
+        option.boardType = Entry.Workspace.MODE_BOARD;
+        option.textType = -1;
+    } else {
+        option.boardType = Entry.Workspace.MODE_VIMBOARD;
+        option.textType = Entry.Vim.TEXT_TYPE_PY;
+        option.runType = Entry.Vim.WORKSPACE_MODE;
+    }
+    var workspace = Entry.getMainWS();
+    if (workspace) {
+        workspace.setMode(option);
+    }
+}
+
+// ============================================================
+// 3. Entry init (DOM ready)
+// ============================================================
+
+$(document).ready(function () {
+    var problemId = new URLSearchParams(location.search).get('problem');
+    var initOption = {
+        libDir: 'lib/entry-js',
+        entryDir: '',
+        type: 'workspace',
+        textCodingEnable: true,
+        // Disable unused features for algorithm platform (Entry built-in options)
+        hardwareEnable: false,       // 하드웨어 블록 카테고리
+        backpackDisable: true,       // 나만의 보관함 (서버 필요)
+        exportObjectEnable: false,   // 오브젝트 내보내기 (우클릭 메뉴)
+        blockSaveImageEnable: false, // 블록 이미지로 저장 (우클릭 메뉴)
+        aiLearningEnable: false,     // 인공지능 학습 블록
+        aiUtilizeDisable: true,      // 인공지능 활용 블록
+        expansionDisable: true,      // 확장 블록 (날씨/번역 등, 서버 API 필요)
+        // Note: pictureeditable / soundeditable는 탭 전체를 숨기므로 사용하지 않음.
+        // 페인트/소리 에디터만 숨기고 목록은 유지하기 위해 CSS로 처리.
+    };
+    Entry.creationChangedEvent = new Entry.Event(window);
+    Entry.init(document.getElementById('workspace'), initOption);
+
+    // Hide unused block categories: 데이터분석, 인공지능, 확장, 하드웨어
+    var banUnusedCategories = function () {
+        var ws = Entry.getMainWS();
+        if (ws && ws.blockMenu) {
+            ['analysis', 'ai_utilize', 'expansion', 'arduino'].forEach(function (cat) {
+                ws.blockMenu.banCategory(cat);
+            });
+        }
+    };
+
+    if (problemId) {
+        loadProblemProject(problemId).finally(banUnusedCategories);
+        loadProblemMeta(problemId);
+        loadProblemTests(problemId);
+    } else {
+        Entry.loadProject();
+        banUnusedCategories();
+        hideProblemPanel();
+    }
+    loadSpriteCatalog(problemId);
+    initEntryPopup();
+    initResizableSplitter();
+    initGrading();
+    initUndoRedo();
+    initReset();
+    // Notify Entry of resize after panel layout is set
+    setTimeout(function () { $(window).trigger('resize'); }, CONFIG.RESIZE_AFTER_INIT_MS);
+});
+
+// ============================================================
+// 4. Data fetching — sprites / problem project / meta / tests
+// ============================================================
+
+// Fetch sprite catalog for the current mode (problem-specific or free mode).
+// In free mode (no problemId), returns all 10. In problem mode, server filters
+// by the problem's meta.json `sprites` field; falls back to all if unspecified.
+function loadSpriteCatalog(problemId) {
+    var url = '/api/sprites' + (problemId ? '?problem=' + encodeURIComponent(problemId) : '');
+    fetch(url)
+        .then(function (r) { return r.ok ? r.json() : { sprites: [] }; })
+        .then(function (data) { __spriteCatalog = (data && data.sprites) || []; })
+        .catch(function () { __spriteCatalog = []; });
+}
+
+// Load a problem's starter project (.ent → tar → project.json) into Entry.
+// On any failure (404, network, parse), falls back to an empty project
+// so the editor stays usable. Returns a Promise that settles after
+// Entry.loadProject(...) returns — callers can chain init logic via .then()/.finally().
+function loadProblemProject(problemId) {
+    return fetch('/api/problems/' + problemId)
+        .then(function (r) { if (r.ok) return r.json(); throw r; })
+        .then(function (project) { Entry.loadProject(project); })
+        .catch(function () { Entry.loadProject(); });
+}
+
+function loadProblemTests(problemId) {
+    fetch('/api/problems/' + problemId + '/has-tests')
+        .then(function (r) { return r.json(); })
+        .then(function (info) {
+            if (info.hasTests) {
+                GradingState.problemId = problemId;
+                document.getElementById('test-btn').style.display = '';
+                document.getElementById('submit-btn').style.display = '';
+            }
+        });
+}
+
+function fetchTestCases(mode) {
+    return fetch('/api/problems/' + GradingState.problemId + '/tests?mode=' + mode)
+        .then(function (r) { if (r.ok) return r.json(); throw r; })
+        .then(function (data) { return data.cases || []; });
+}
+
+function loadProblemMeta(problemId) {
+    fetch('/api/problems/' + problemId + '/meta')
+        .then(function (r) { if (r.ok) return r.json(); throw r; })
+        .then(function (meta) {
+            document.getElementById('problem-panel-title').textContent = meta.title || ('문제 ' + problemId);
+            document.getElementById('problem-panel-body').innerHTML = renderMarkdown(meta.description);
+        })
+        .catch(function () {
+            document.getElementById('problem-panel-title').textContent = '문제 ' + problemId;
+            document.getElementById('problem-panel-body').innerHTML = '<p style="color:#999;">문제 설명이 없습니다.</p>';
+        });
+}
+
+// ============================================================
+// 5. Markdown renderer (minimal)
+// ============================================================
+
+// Minimal Markdown renderer (headings, bold, italic, inline code, code block, lists)
+function renderMarkdown(md) {
+    if (!md) return '';
+    var escape = function (s) {
+        return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    };
+    var lines = md.split('\n');
+    var html = '', inCode = false, inList = false, listType = '';
+    for (var i = 0; i < lines.length; i++) {
+        var line = lines[i];
+        // Code block
+        var codeMatch = line.match(/^```(\w*)/);
+        if (codeMatch) {
+            if (inCode) { html += '</code></pre>'; inCode = false; }
+            else { html += '<pre><code>'; inCode = true; }
+            continue;
+        }
+        if (inCode) { html += escape(line) + '\n'; continue; }
+        // Headings
+        var h = line.match(/^(#{1,3})\s+(.+)/);
+        if (h) {
+            if (inList) { html += '</' + listType + '>'; inList = false; }
+            html += '<h' + h[1].length + '>' + escape(h[2]) + '</h' + h[1].length + '>';
+            continue;
+        }
+        // Lists
+        var ul = line.match(/^[\-\*]\s+(.+)/);
+        var ol = line.match(/^\d+\.\s+(.+)/);
+        if (ul || ol) {
+            var curType = ul ? 'ul' : 'ol';
+            if (!inList) { html += '<' + curType + '>'; inList = true; listType = curType; }
+            else if (listType !== curType) {
+                html += '</' + listType + '><' + curType + '>'; listType = curType;
+            }
+            html += '<li>' + inlineMd((ul || ol)[1]) + '</li>';
+            continue;
+        }
+        if (inList) { html += '</' + listType + '>'; inList = false; }
+        // Empty line
+        if (!line.trim()) continue;
+        // Paragraph
+        html += '<p>' + inlineMd(line) + '</p>';
+    }
+    if (inList) html += '</' + listType + '>';
+    if (inCode) html += '</code></pre>';
+    return html;
+
+    function inlineMd(s) {
+        return escape(s)
+            .replace(/`([^`]+)`/g, '<code>$1</code>')
+            .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+            .replace(/\*([^*]+)\*/g, '<em>$1</em>');
+    }
+}
+
+function escapeHtml(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+// ============================================================
+// 6. Layout — problem panel, splitter
+// ============================================================
+
+function hideProblemPanel() {
+    document.getElementById('problem-panel').classList.add('hidden');
+    document.getElementById('splitter').classList.add('hidden');
+    setTimeout(function () { $(window).trigger('resize'); }, CONFIG.RESIZE_AFTER_PANEL_HIDE_MS);
+}
+
+function initResizableSplitter() {
+    var panel = document.getElementById('problem-panel');
+    var splitter = document.getElementById('splitter');
+
+    // Drag to resize (min 40px so the splitter handle stays grabbable)
+    var dragging = false;
+    splitter.addEventListener('mousedown', function (e) {
+        dragging = true;
+        splitter.classList.add('dragging');
+        document.body.style.cursor = 'col-resize';
+        document.body.style.userSelect = 'none';
+        e.preventDefault();
+    });
+    document.addEventListener('mousemove', function (e) {
+        if (!dragging) return;
+        var w = Math.max(40, Math.min(800, e.clientX));
+        panel.style.width = w + 'px';
+    });
+    document.addEventListener('mouseup', function () {
+        if (!dragging) return;
+        dragging = false;
+        splitter.classList.remove('dragging');
+        document.body.style.cursor = '';
+        document.body.style.userSelect = '';
+        $(window).trigger('resize');
+    });
+}
+
+// ============================================================
+// 7. Reset button — confirm dialog + project reload
+// ============================================================
+
+function initReset() {
+    var overlay = document.getElementById('confirm-overlay');
+    var yesBtn = document.getElementById('confirm-yes');
+    var noBtn = document.getElementById('confirm-no');
+
+    document.getElementById('reset-btn').addEventListener('click', function () {
+        // Don't allow reset during grading
+        if (GradingState.isRunning) return;
+        overlay.classList.add('active');
+    });
+
+    noBtn.addEventListener('click', function () {
+        overlay.classList.remove('active');
+    });
+
+    // Close on overlay background click
+    overlay.addEventListener('click', function (e) {
+        if (e.target === overlay) overlay.classList.remove('active');
+    });
+
+    yesBtn.addEventListener('click', function () {
+        overlay.classList.remove('active');
+        // Clear all existing state first, then reload
+        Entry.clearProject();
+        var problemId = new URLSearchParams(location.search).get('problem');
+        if (problemId) {
+            loadProblemProject(problemId);
+        } else {
+            Entry.loadProject();
+        }
+    });
+}
+
+// ============================================================
+// 8. Undo / Redo — header buttons synced with Entry.stateManager
+// ============================================================
+
+function initUndoRedo() {
+    var undoBtn = document.getElementById('undo-btn');
+    var redoBtn = document.getElementById('redo-btn');
+
+    undoBtn.addEventListener('click', function () {
+        Entry.dispatchEvent('undo');
+    });
+    redoBtn.addEventListener('click', function () {
+        Entry.dispatchEvent('redo');
+    });
+
+    // Periodically sync button disabled state with stateManager
+    setInterval(function () {
+        var sm = Entry.stateManager;
+        if (!sm) return;
+        undoBtn.disabled = !sm.canUndo();
+        redoBtn.disabled = !sm.canRedo();
+    }, CONFIG.UNDO_REDO_SYNC_INTERVAL_MS);
+}
+
+// ============================================================
+// 9. Engine guard — prevent user interference during grading
+// ============================================================
+
+// Hook Entry.engine.toggleStop/toggleRun so user shortcuts and the ■/▶ button
+// cannot disturb an in-progress grading run. Grading code bypasses the guard
+// via GradingState.engine.internal. Idempotent — only installs once.
+function installEngineGuard() {
+    if (GradingState.engine.origStop) return;
+    if (!window.Entry || !Entry.engine) return;
+    GradingState.engine.origStop = Entry.engine.toggleStop;
+    GradingState.engine.origRun = Entry.engine.toggleRun;
+    Entry.engine.toggleStop = function () {
+        if (GradingState.isRunning && !GradingState.engine.internal) return;
+        return GradingState.engine.origStop.apply(this, arguments);
+    };
+    Entry.engine.toggleRun = function () {
+        if (GradingState.isRunning && !GradingState.engine.internal) return;
+        return GradingState.engine.origRun.apply(this, arguments);
+    };
+}
+
+function engineInternalStop() {
+    GradingState.engine.internal = true;
+    try {
+        if (Entry.engine.state === 'run') Entry.engine.toggleStop();
+    } catch (e) {}
+    finally { GradingState.engine.internal = false; }
+}
+
+function engineInternalRun() {
+    GradingState.engine.internal = true;
+    try { Entry.engine.toggleRun(); } catch (e) {}
+    finally { GradingState.engine.internal = false; }
+}
+
+// Apply test case setup to Entry's variables/lists.
+// Called TWICE per test: once before engineInternalRun(), once after —
+// Python mode converts code→blocks synchronously during toggleRun() and
+// overwrites variables/lists with hardcoded values, so re-applying after
+// toggleRun() restores the test values before the first block executes.
+// Idempotent in block mode (second call is a no-op refresh).
+function applyTestSetup(setup) {
+    if (!setup) return;
+    if (setup.variables) {
+        Object.keys(setup.variables).forEach(function (vName) {
+            var v = Entry.variableContainer.getVariableByName(vName);
+            if (v) v.setValue(setup.variables[vName]);
+        });
+    }
+    if (setup.lists) {
+        Object.keys(setup.lists).forEach(function (lName) {
+            var list = Entry.variableContainer.getListByName(lName);
+            if (list) {
+                list.array_ = setup.lists[lName].map(function (v) { return { data: v }; });
+                list.updateView && list.updateView();
+            }
+        });
+    }
+}
+
+// ============================================================
+// 10. Grading — button wiring, modal, localStorage persistence
+// ============================================================
+
+function initGrading() {
+    // Block all keyboard input during grading so user keystrokes
+    // don't interfere with ask_and_wait auto-fill or engine state.
+    document.addEventListener('keydown', function (e) {
+        if (GradingState.isRunning) { e.preventDefault(); e.stopPropagation(); }
+    }, true);
+    document.addEventListener('keyup', function (e) {
+        if (GradingState.isRunning) { e.preventDefault(); e.stopPropagation(); }
+    }, true);
+    document.addEventListener('keypress', function (e) {
+        if (GradingState.isRunning) { e.preventDefault(); e.stopPropagation(); }
+    }, true);
+
+    document.getElementById('test-btn').addEventListener('click', function () {
+        if (!GradingState.problemId) return;
+        fetchTestCases('test').then(function (cases) {
+            if (!cases.length) { alert('테스트 케이스가 없습니다.'); return; }
+            runAllTests(cases, '테스트 결과', 'test');
+        });
+    });
+    document.getElementById('submit-btn').addEventListener('click', function () {
+        if (!GradingState.problemId) return;
+        fetchTestCases('submit').then(function (cases) {
+            if (!cases.length) { alert('제출용 테스트 케이스가 없습니다.'); return; }
+            runAllTests(cases, '제출 결과', 'submit');
+        });
+    });
+    // Stop grading: cancel in-progress grading, stop engine, skip remaining tests, close modal
+    document.getElementById('grade-stop').addEventListener('click', function () {
+        GradingState.cancelled = true;
+        if (GradingState.currentCancel) {
+            var fn = GradingState.currentCancel;
+            GradingState.currentCancel = null;
+            try { fn(); } catch (e) {}
+        }
+        GradingState.isRunning = false; // release user control over start/stop
+        document.getElementById('grade-overlay').classList.remove('active');
+    });
+
+    // Close (after grading done): just hide modal, stay in editor
+    document.getElementById('grade-close-btn').addEventListener('click', function () {
+        document.getElementById('grade-overlay').classList.remove('active');
+    });
+
+    // Home: navigate back to problem selection page
+    document.getElementById('grade-home').addEventListener('click', function () {
+        location.href = '/';
+    });
+}
+
+function showGradeModal() {
+    // Reset footer each time the modal opens:
+    //  - "running" shows the stop button only
+    //  - no "show-home" until we confirm submit + all pass
+    var footer = document.getElementById('grade-footer');
+    footer.classList.add('running');
+    footer.classList.remove('show-home');
+    document.getElementById('grade-overlay').classList.add('active');
+}
+
+// Persist a solved problem id to localStorage (browser-only, not synced to server)
+function markProblemSolved(id) {
+    try {
+        var idNum = parseInt(id, 10);
+        if (!idNum) return;
+        var raw = localStorage.getItem('entry:solved') || '[]';
+        var list = JSON.parse(raw);
+        if (!Array.isArray(list)) list = [];
+        if (list.indexOf(idNum) === -1) {
+            list.push(idNum);
+            localStorage.setItem('entry:solved', JSON.stringify(list));
+        }
+    } catch (e) { /* quota or privacy mode — silent fail */ }
+}
+
+function renderGradeResults(results, running, mode) {
+    var body = document.getElementById('grade-body');
+    var passCount = results.filter(function (r) { return r.pass; }).length;
+    var errorCount = results.filter(function (r) { return r.error; }).length;
+    var timeoutCount = results.filter(function (r) { return r.timeout; }).length;
+    var total = results.length;
+    var summaryClass = running ? 'running' : (passCount === total ? 'pass' : 'fail');
+    var summaryText;
+    if (running) {
+        summaryText = '채점 중... (' + (results.filter(function (r) { return r.done; }).length) + '/' + total + ')';
+    } else if (passCount === total) {
+        summaryText = '✅ 전체 통과 (' + passCount + '/' + total + ')';
+    } else {
+        summaryText = '❌ ' + passCount + '/' + total + ' 통과';
+        var aux = [];
+        if (errorCount > 0) aux.push('오류 ' + errorCount);
+        if (timeoutCount > 0) aux.push('시간 초과 ' + timeoutCount);
+        if (aux.length) summaryText += ' (' + aux.join(', ') + ')';
+    }
+
+    var html = '<div class="grade-summary ' + summaryClass + '">' + summaryText + '</div>';
+    results.forEach(function (r, idx) {
+        var cls, status;
+        if (!r.done) { cls = 'running'; status = '실행중'; }
+        else if (r.error) { cls = 'error'; status = '오류'; }
+        else if (r.timeout) { cls = 'fail'; status = '시간 초과'; }
+        else if (r.pass) { cls = 'pass'; status = '통과'; }
+        else { cls = 'fail'; status = '실패'; }
+
+        // Submit mode: hide case names — show "테스트 N" instead
+        var displayName = (mode === 'submit') ? ('테스트 ' + (idx + 1)) : (r.name || '테스트');
+
+        html += '<div class="test-case ' + cls + '">';
+        html += '<div class="test-status">' + status + '</div>';
+        html += '<div class="test-detail"><div class="test-name">' + escapeHtml(displayName) + '</div>';
+        if (r.done && r.error && r.errorMessage) {
+            html += '<div class="test-diff">' + escapeHtml(r.errorMessage) + '</div>';
+        } else if (r.done && r.timeout) {
+            // Timeout reason is always shown (even in submit) — doesn't leak expected output
+            html += '<div class="test-diff">' + escapeHtml(r.diff || '시간 초과') + '</div>';
+        } else if (r.done && !r.pass && r.diff && mode !== 'submit') {
+            html += '<div class="test-diff">' + r.diff + '</div>';
+        }
+        html += '</div></div>';
+    });
+    body.innerHTML = html;
+}
+
+function runAllTests(cases, title, mode) {
+    GradingState.cancelled = false;
+    installEngineGuard();
+    GradingState.isRunning = true; // block user-initiated start/stop until done or cancelled
+    showGradeModal();
+    document.getElementById('grade-title').textContent = title || '채점 결과';
+    var results = cases.map(function (c) {
+        return { name: c.name || '테스트', done: false, pass: false };
+    });
+    renderGradeResults(results, true, mode);
+
+    var chain = Promise.resolve();
+    cases.forEach(function (testCase, idx) {
+        chain = chain.then(function () {
+            if (GradingState.cancelled) return;
+            return runSingleTest(testCase).then(function (result) {
+                if (GradingState.cancelled || (result && result.cancelled)) return;
+                results[idx].done = true;
+                results[idx].pass = result.pass;
+                results[idx].diff = result.diff;
+                results[idx].error = result.error;
+                results[idx].errorMessage = result.errorMessage;
+                results[idx].timeout = result.timeout;
+                renderGradeResults(results, idx < cases.length - 1, mode);
+            });
+        });
+    });
+    chain.then(function () {
+        GradingState.isRunning = false; // release user control once chain fully settles
+        if (GradingState.cancelled) return;
+        renderGradeResults(results, false, mode);
+
+        var footer = document.getElementById('grade-footer');
+        // Exit "running" → show 닫기 button
+        footer.classList.remove('running');
+
+        // Submit + all-pass only:
+        //  - show "문제 선택으로" button (via .show-home)
+        //  - persist this problem id to localStorage
+        // Test mode: never show home button, never save
+        var allPass = results.length > 0 &&
+                      results.every(function (r) { return r.done && r.pass; });
+        if (mode === 'submit' && GradingState.problemId && allPass) {
+            footer.classList.add('show-home');
+            markProblemSolved(GradingState.problemId);
+        }
+    });
+}
+
+function runSingleTest(testCase) {
+    return new Promise(function (resolve) {
+        // 1. Stop any running engine (bypass guard via internal helper)
+        engineInternalStop();
+
+        // 2. Hook Entry.Dialog to capture say/think/yell output
+        var sayLog = [];
+        var OrigDialog = Entry.Dialog;
+        Entry.Dialog = function (entity, message, mode, isStamp) {
+            sayLog.push({ message: String(message), mode: mode });
+            return new OrigDialog(entity, message, mode, isStamp);
+        };
+        Entry.Dialog.prototype = OrigDialog.prototype;
+
+        // 3. Hook Entry.toast to capture warnings/alerts
+        var warning = null;
+        var OrigWarning = Entry.toast && Entry.toast.warning ? Entry.toast.warning.bind(Entry.toast) : null;
+        var OrigAlert = Entry.toast && Entry.toast.alert ? Entry.toast.alert.bind(Entry.toast) : null;
+        if (Entry.toast) {
+            Entry.toast.warning = function (title, message) {
+                if (!warning) warning = { type: '경고', title: String(title || ''), message: String(message || '') };
+                return OrigWarning && OrigWarning(title, message);
+            };
+            Entry.toast.alert = function (title, message) {
+                if (!warning) warning = { type: '오류', title: String(title || ''), message: String(message || '') };
+                return OrigAlert && OrigAlert(title, message);
+            };
+        }
+
+        var restoreHooks = function () {
+            Entry.Dialog = OrigDialog;
+            if (Entry.toast) {
+                if (OrigWarning) Entry.toast.warning = OrigWarning;
+                if (OrigAlert) Entry.toast.alert = OrigAlert;
+            }
+        };
+
+        // Unified exit: clears timers, stops engine, restores hooks, resolves once
+        var pollInterval = null;
+        var delayTimer = null;
+        var finalTimer = null;
+        var done = false;
+        var finish = function (result) {
+            if (done) return;
+            done = true;
+            if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
+            if (delayTimer) { clearTimeout(delayTimer); delayTimer = null; }
+            if (finalTimer) { clearTimeout(finalTimer); finalTimer = null; }
+            engineInternalStop();
+            restoreHooks();
+            if (GradingState.currentCancel === cancelFn) GradingState.currentCancel = null;
+            resolve(result);
+        };
+        var cancelFn = function () { finish({ cancelled: true }); };
+        GradingState.currentCancel = cancelFn;
+
+        // Edge case: cancelled before we even started
+        if (GradingState.cancelled) { finish({ cancelled: true }); return; }
+
+        // 4. Apply test setup (variables, lists)
+        var setup = testCase.setup || {};
+        applyTestSetup(setup);
+
+        // 5. Run engine (internal helper bypasses the user-stop guard)
+        engineInternalRun();
+
+        // 5.5 Re-apply setup (see applyTestSetup docstring — Python mode workaround)
+        applyTestSetup(setup);
+
+        // 5.6 Auto-answer for ask_and_wait blocks:
+        // If setup.variables has '대답', auto-fill Entry's input field
+        // whenever it appears during execution.
+        var autoAnswer = (setup.variables && setup.variables['대답'] !== undefined)
+            ? String(setup.variables['대답']) : null;
+
+        // 6. Wait for completion or timeout
+        var timeoutMs = testCase.timeout || CONFIG.DEFAULT_TEST_TIMEOUT_MS;
+        var startTime = Date.now();
+        pollInterval = setInterval(function () {
+            if (GradingState.cancelled) { finish({ cancelled: true }); return; }
+
+            // Auto-fill ask_and_wait: when Entry is waiting for input
+            // (inputValue.complete === false), call setInputValue to resume.
+            // The input is canvas-based (CanvasInput), not a DOM element.
+            if (autoAnswer !== null) {
+                var iv = Entry.container.inputValue;
+                if (iv && iv.setValue && iv.complete === false) {
+                    try { Entry.container.setInputValue(autoAnswer); } catch (e) {}
+                    autoAnswer = null; // only fill once per test
+                }
+            }
+
+            var elapsed = Date.now() - startTime;
+            var noMoreWork = Entry.container.objects_.every(function (obj) {
+                return !obj.script || !obj.script.executors || obj.script.executors.length === 0;
+            });
+            var timedOut = elapsed >= timeoutMs;
+            if (!warning && !noMoreWork && !timedOut) return;
+
+            clearInterval(pollInterval);
+            pollInterval = null;
+
+            // Pure timeout (no warning, no completion): treat as wrong answer immediately.
+            // Partial state would be unreliable (e.g. mid-infinite-loop), so skip evaluation.
+            if (timedOut && !warning && !noMoreWork) {
+                var secondsStr = (timeoutMs / 1000).toString();
+                finish({
+                    pass: false,
+                    timeout: true,
+                    diff: '시간 초과 (' + secondsStr + '초) — 무한 반복이나 너무 느린 연산 가능성'
+                });
+                return;
+            }
+
+            // 7. Wait for post-stop settling, then capture state and evaluate
+            delayTimer = setTimeout(function () {
+                delayTimer = null;
+                if (GradingState.cancelled) { finish({ cancelled: true }); return; }
+
+                if (warning) {
+                    finish({
+                        error: true,
+                        errorMessage: '[' + warning.type + '] ' + warning.title + (warning.message ? ' - ' + warning.message : '')
+                    });
+                    return;
+                }
+
+                // Capture state BEFORE stop (stop restores snapshot)
+                var finalState = { variables: {}, lists: {} };
+                Entry.variableContainer.variables_.forEach(function (v) {
+                    finalState.variables[v.name_] = v.getValue();
+                });
+                Entry.variableContainer.lists_.forEach(function (l) {
+                    finalState.lists[l.name_] = (l.array_ || []).map(function (item) {
+                        return item.data;
+                    });
+                });
+
+                finalTimer = setTimeout(function () {
+                    finalTimer = null;
+                    if (GradingState.cancelled) { finish({ cancelled: true }); return; }
+                    finish(evaluateTest(testCase, sayLog, finalState));
+                }, CONFIG.POST_CAPTURE_EVAL_DELAY_MS);
+            }, CONFIG.POST_STOP_CAPTURE_DELAY_MS);
+        }, CONFIG.GRADING_POLL_INTERVAL_MS);
+    });
+}
+
+function evaluateTest(testCase, sayLog, finalState) {
+    var expected = testCase.expected || {};
+    var failures = [];
+    finalState = finalState || { variables: {}, lists: {} };
+
+    // Check say outputs
+    if (expected.say) {
+        var actualSays = sayLog.map(function (s) { return s.message; });
+        expected.say.forEach(function (expectedMsg) {
+            var found = actualSays.some(function (actual) {
+                return actual === expectedMsg || actual.indexOf(expectedMsg) !== -1;
+            });
+            if (!found) {
+                failures.push({
+                    type: 'say',
+                    expected: expectedMsg,
+                    actual: actualSays.length ? actualSays.join(', ') : '(말하기 없음)'
+                });
+            }
+        });
+    }
+
+    // Check variable values (captured before stop)
+    if (expected.variables) {
+        Object.keys(expected.variables).forEach(function (vName) {
+            var actualRaw = finalState.variables.hasOwnProperty(vName) ? finalState.variables[vName] : null;
+            var actual = actualRaw === null ? '(없음)' : String(actualRaw);
+            var exp = String(expected.variables[vName]);
+            if (actual !== exp) {
+                failures.push({ type: 'variable', name: vName, expected: exp, actual: actual });
+            }
+        });
+    }
+
+    // Check list values (captured before stop)
+    if (expected.lists) {
+        Object.keys(expected.lists).forEach(function (lName) {
+            var actualArr = finalState.lists[lName];
+            var expArr = expected.lists[lName];
+            if (!actualArr) {
+                failures.push({ type: 'list', name: lName, expected: JSON.stringify(expArr), actual: '(리스트 없음)' });
+            } else if (!listsEqual(actualArr, expArr)) {
+                failures.push({
+                    type: 'list',
+                    name: lName,
+                    expected: JSON.stringify(expArr),
+                    actual: JSON.stringify(actualArr.map(function(v){ return normalizeValue(v); }))
+                });
+            }
+        });
+    }
+
+    if (failures.length === 0) {
+        return { pass: true };
+    }
+
+    var diffHtml = failures.map(function (f) {
+        if (f.type === 'say') {
+            return '말하기: <span class="expected">기대: "' + escapeHtml(f.expected) + '"</span> / <span class="actual">실제: ' + escapeHtml(f.actual) + '</span>';
+        } else if (f.type === 'list') {
+            return '리스트 "' + escapeHtml(f.name) + '": <span class="expected">기대: ' + escapeHtml(f.expected) + '</span> / <span class="actual">실제: ' + escapeHtml(f.actual) + '</span>';
+        } else {
+            return '변수 "' + escapeHtml(f.name) + '": <span class="expected">기대: ' + escapeHtml(f.expected) + '</span> / <span class="actual">실제: ' + escapeHtml(f.actual) + '</span>';
+        }
+    }).join('<br>');
+    return { pass: false, diff: diffHtml };
+}
+
+// Normalize list values: numbers as numbers, strings as strings
+function normalizeValue(v) {
+    if (typeof v === 'number') return v;
+    if (typeof v === 'string' && v !== '' && !isNaN(Number(v))) return Number(v);
+    return v;
+}
+
+function listsEqual(a, b) {
+    if (a.length !== b.length) return false;
+    for (var i = 0; i < a.length; i++) {
+        if (normalizeValue(a[i]) !== normalizeValue(b[i])) return false;
+    }
+    return true;
+}
+
+// ============================================================
+// 11. Entry sprite/picture/sound popup (local catalog)
+// ============================================================
+
+function initEntryPopup() {
+    var container = document.getElementById('popup-container');
+    var popup = new EntryTool.Popup({
+        container: container,
+        isShow: false,
+        theme: 'entry',
+        data: { data: { data: [] } }
+    });
+
+    var currentType = '';
+
+    // Catalog items carry both `id` (our canonical key) and `_id` (same value,
+    // required by EntryTool.Popup for selection tracking). The server filters
+    // by `id` via meta.json; the popup reads `_id` from the data as-is.
+    function showPopup(type) {
+        currentType = type;
+        container.style.display = 'block';
+        var data;
+        if (type === 'sprite') {
+            // Sprite mode: wrap each catalog item as {_id, name, pictures[], sounds[]}
+            data = __spriteCatalog.map(function (img) {
+                return { _id: img.id, name: img.name, pictures: [img], sounds: [] };
+            });
+        } else if (type === 'picture') {
+            // Picture mode: catalog items used directly (already have _id & id)
+            data = __spriteCatalog;
+        } else {
+            data = []; // sound: no bundled sounds yet
+        }
+        if (typeof popup.setData === 'function') {
+            popup.setData({ data: { data: data } });
+        }
+        popup.show({ type: type });
+    }
+
+    Entry.addEventListener('openSpriteManager', function () { showPopup('sprite'); });
+    Entry.addEventListener('openPictureManager', function () { showPopup('picture'); });
+    Entry.addEventListener('openSoundManager', function () { showPopup('sound'); });
+
+    popup.on('submit', function (items) {
+        if (!items || !items.length) return;
+        var sceneId = Entry.scene.selectedScene.id;
+
+        if (currentType === 'sprite') {
+            items.forEach(function (item) {
+                var pics = (item.pictures || []).map(function (p) {
+                    p.id = p.id || Entry.generateHash();
+                    p.fileurl = p.fileurl || p.thumbUrl || '';
+                    p.thumbUrl = p.thumbUrl || p.fileurl || '';
+                    p.filename = p.filename || '_';
+                    return p;
+                });
+                var snds = (item.sounds || []).map(function (s) {
+                    s.id = s.id || Entry.generateHash();
+                    s.fileurl = s.fileurl || '';
+                    s.filename = s.filename || '_';
+                    return s;
+                });
+                var firstPic = pics[0] || { dimension: { width: 100, height: 100 } };
+                var w = firstPic.dimension ? firstPic.dimension.width : 100;
+                var h = firstPic.dimension ? firstPic.dimension.height : 100;
+                Entry.container.addObject({
+                    id: Entry.generateHash(),
+                    name: item.name || 'Object',
+                    objectType: 'sprite',
+                    rotateMethod: 'free',
+                    scene: sceneId,
+                    sprite: { pictures: pics, sounds: snds },
+                    entity: { x: 0, y: 0, regX: w / 2, regY: h / 2, scaleX: 1, scaleY: 1, rotation: 0, direction: 90, width: w, height: h, visible: true }
+                }, 0);
+            });
+        } else if (currentType === 'picture') {
+            items.forEach(function (pic) {
+                pic.id = Entry.generateHash();
+                pic.fileurl = pic.fileurl || pic.thumbUrl || '';
+                pic.thumbUrl = pic.thumbUrl || pic.fileurl || '';
+                pic.filename = pic.filename || '_';
+                Entry.playground.addPicture(pic, true);
+            });
+        } else if (currentType === 'sound') {
+            items.forEach(function (snd) {
+                snd.id = Entry.generateHash();
+                snd.fileurl = snd.fileurl || '';
+                snd.filename = snd.filename || '_';
+                Entry.playground.addSound(snd, true);
+            });
+            if (Entry.Utils && Entry.Utils.forceStopSounds) {
+                Entry.Utils.forceStopSounds();
+            }
+        }
+        container.style.display = 'none';
+        currentType = '';
+    });
+
+    popup.on('close', function () {
+        container.style.display = 'none';
+        currentType = '';
+    });
+
+    // Note: 'uploads', 'draw', 'write' handlers removed — those tabs are hidden
+    // via CSS because they require a server upload endpoint (offline unsupported).
+}

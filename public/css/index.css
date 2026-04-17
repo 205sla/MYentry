@@ -1,0 +1,176 @@
+/* ============================================================
+   index.css — 메인 문제 선택 화면
+   Entry 디자인 토큰을 따릅니다.
+   ============================================================ */
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: NanumGothic, 'Nanum Gothic', 'Malgun Gothic', sans-serif;
+    background: #f9f8f7;
+    color: #2c313d;
+    min-height: 100vh;
+    letter-spacing: -0.3px;
+}
+
+/* ---------- Header ---------- */
+header {
+    background: #2c313d;
+    color: #fff;
+    padding: 14px 24px;
+    font-size: 16px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    letter-spacing: -0.3px;
+}
+.beta-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    background: #fa5536;
+    color: #fff;
+    font-size: 10px;
+    font-weight: bold;
+    border-radius: 3px;
+    letter-spacing: 1px;
+    vertical-align: middle;
+}
+
+/* ---------- Beta notice bar ---------- */
+.beta-notice {
+    background: #ecf8ff;
+    border-bottom: 1px solid #d6e9f4;
+    color: #2c313d;
+    padding: 10px 24px;
+    font-size: 12px;
+    line-height: 1.5;
+    letter-spacing: -0.3px;
+}
+.beta-notice::before {
+    content: 'BETA';
+    display: inline-block;
+    background: #fa5536;
+    color: #fff;
+    font-size: 10px;
+    font-weight: bold;
+    padding: 1px 6px;
+    border-radius: 3px;
+    margin-right: 8px;
+    letter-spacing: 1px;
+    vertical-align: middle;
+}
+
+/* ---------- Container ---------- */
+.container {
+    max-width: 960px;
+    margin: 28px auto;
+    padding: 0 16px;
+}
+h2 {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 16px;
+    color: #2c313d;
+    letter-spacing: -0.3px;
+}
+
+/* ---------- Problem grid / cards ---------- */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 12px;
+}
+.card {
+    background: #fff;
+    border-radius: 6px;
+    padding: 20px 16px;
+    text-align: center;
+    border: 1px solid #d6e9f4;
+    transition: border-color 0.15s, box-shadow 0.15s, transform 0.1s;
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    position: relative;
+}
+.card:hover {
+    border-color: #4f80ff;
+    box-shadow: 0 4px 12px rgba(79,128,255,0.18);
+    transform: translateY(-1px);
+}
+.card.solved {
+    border-color: #32d27d;
+    background: #f3fbf7;
+}
+.card.solved:hover {
+    border-color: #28b36a;
+    box-shadow: 0 4px 12px rgba(50,210,125,0.22);
+}
+.card-solved-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: #32d27d;
+    color: #fff;
+    font-size: 10px;
+    font-weight: bold;
+    padding: 2px 7px;
+    border-radius: 3px;
+    letter-spacing: -0.2px;
+}
+.card-number {
+    font-size: 30px;
+    font-weight: bold;
+    color: #4f80ff;
+    margin-bottom: 6px;
+    letter-spacing: -0.5px;
+}
+.card.solved .card-number { color: #28b36a; }
+.card-title {
+    font-size: 13px;
+    color: #555;
+    font-weight: bold;
+    letter-spacing: -0.3px;
+}
+.card-difficulty {
+    margin-top: 10px;
+    font-size: 13px;
+    letter-spacing: 2px;
+}
+.card-difficulty .star-filled { color: #ffcf5f; }
+.card-difficulty .star-empty  { color: #e2e2e2; }
+
+/* ---------- Empty state ---------- */
+.empty {
+    text-align: center;
+    color: #8ba4b3;
+    padding: 60px;
+    font-size: 14px;
+    background: #fff;
+    border: 1px solid #d6e9f4;
+    border-radius: 6px;
+}
+
+/* ---------- Free mode section ---------- */
+.free-section {
+    text-align: center;
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid #d6e9f4;
+}
+.free-link {
+    display: inline-block;
+    padding: 10px 24px;
+    background: #fff;
+    color: #4f80ff;
+    border: 1px solid #4f80ff;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 13px;
+    letter-spacing: -0.3px;
+    transition: background 0.15s, color 0.15s;
+}
+.free-link:hover {
+    background: #4f80ff;
+    color: #fff;
+}

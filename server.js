@@ -117,12 +117,7 @@ app.get('/api/problems/:id/tests', (req, res) => {
     if (!tests) return res.status(404).json({ error: 'no tests' });
 
     const mode = req.query.mode || 'test';
-    let cases = [];
-    if (Array.isArray(tests.cases)) {
-        cases = tests.cases; // legacy
-    } else if (tests[mode]) {
-        cases = tests[mode];
-    }
+    const cases = Array.isArray(tests[mode]) ? tests[mode] : [];
     res.json({ mode, cases });
 });
 
@@ -130,7 +125,7 @@ app.get('/api/problems/:id/tests', (req, res) => {
 app.get('/api/problems/:id/has-tests', (req, res) => {
     if (!isValidId(req.params.id)) return res.json({ hasTests: false });
     const tests = readTests(req.params.id);
-    const has = !!(tests && (tests.test || tests.submit || tests.cases));
+    const has = !!(tests && (tests.test || tests.submit));
     res.json({ hasTests: has });
 });
 

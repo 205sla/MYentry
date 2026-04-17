@@ -4,146 +4,20 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>엔트리 알고리즘 (Beta)</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'NanumGothic', 'Malgun Gothic', sans-serif;
-            background: #f0f2f5;
-            min-height: 100vh;
-        }
-        header {
-            background: #2c313d;
-            color: #fff;
-            padding: 16px 24px;
-            font-size: 18px;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .beta-badge {
-            display: inline-block;
-            padding: 2px 8px;
-            background: #ff6b35;
-            color: #fff;
-            font-size: 11px;
-            font-weight: 800;
-            border-radius: 4px;
-            letter-spacing: 1px;
-            vertical-align: middle;
-        }
-        .beta-notice {
-            background: #fff8e1;
-            border-left: 4px solid #ff6b35;
-            color: #5c4a1a;
-            padding: 10px 16px;
-            font-size: 13px;
-            line-height: 1.5;
-        }
-        .container {
-            max-width: 960px;
-            margin: 32px auto;
-            padding: 0 16px;
-        }
-        h2 { font-size: 20px; margin-bottom: 20px; color: #333; }
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 16px;
-        }
-        .card {
-            background: #fff;
-            border-radius: 12px;
-            padding: 24px;
-            text-align: center;
-            cursor: pointer;
-            border: 2px solid #e5e5e5;
-            transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s;
-            text-decoration: none;
-            color: inherit;
-            display: block;
-        }
-        .card:hover {
-            border-color: #4c7fec;
-            box-shadow: 0 4px 16px rgba(76,127,236,0.2);
-            transform: translateY(-2px);
-        }
-        .card-number {
-            font-size: 36px;
-            font-weight: 800;
-            color: #4c7fec;
-            margin-bottom: 8px;
-        }
-        .card-title {
-            font-size: 15px;
-            color: #555;
-            font-weight: 600;
-        }
-        .card-difficulty {
-            margin-top: 10px;
-            font-size: 14px;
-            letter-spacing: 2px;
-        }
-        .card-difficulty .star-filled { color: #f5a623; }
-        .card-difficulty .star-empty { color: #ddd; }
-        .empty {
-            text-align: center;
-            color: #999;
-            padding: 60px;
-            font-size: 16px;
-        }
-        .free-link {
-            display: inline-block;
-            margin-top: 24px;
-            padding: 12px 28px;
-            background: #4caf50;
-            color: #fff;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 15px;
-        }
-        .free-link:hover { background: #43a047; }
-    </style>
+    <link href="css/index.css" rel="stylesheet">
 </head>
 <body>
     <header>엔트리 알고리즘 <span class="beta-badge">BETA</span></header>
     <div class="beta-notice">
-        현재 베타 버전입니다. 예고 없이 문제 · 채점 · 기능이 변경될 수 있고, 진행 상황은 저장되지 않습니다.
+        현재 베타 버전입니다. 예고 없이 문제 · 채점 · 기능이 변경될 수 있으며, 해결한 문제 정보는 이 브라우저에만 저장됩니다.
     </div>
     <div class="container">
         <h2>문제 목록</h2>
         <div class="grid" id="problem-list"></div>
-        <div style="text-align:center; margin-top:32px;">
+        <div class="free-section">
             <a href="/editor.html" class="free-link">자유 모드로 시작</a>
         </div>
     </div>
-    <script>
-        fetch('/api/problems')
-            .then(function(r) { return r.json(); })
-            .then(function(problems) {
-                var grid = document.getElementById('problem-list');
-                if (!problems.length) {
-                    grid.innerHTML = '<div class="empty">ENT/ 폴더에 문제 파일(.ent)이 없습니다.</div>';
-                    return;
-                }
-                problems.forEach(function(p) {
-                    var a = document.createElement('a');
-                    a.className = 'card';
-                    a.href = '/editor.html?problem=' + p.id;
-                    var stars = '';
-                    var d = Math.max(0, Math.min(5, p.difficulty || 0));
-                    for (var i = 0; i < 5; i++) {
-                        stars += i < d
-                            ? '<span class="star-filled">&#9733;</span>'
-                            : '<span class="star-empty">&#9733;</span>';
-                    }
-                    a.innerHTML = '<div class="card-number">' + p.id + '</div>'
-                        + '<div class="card-title">' + p.title + '</div>'
-                        + '<div class="card-difficulty">' + stars + '</div>';
-                    grid.appendChild(a);
-                });
-            });
-    </script>
+    <script src="js/index.js"></script>
 </body>
 </html>
