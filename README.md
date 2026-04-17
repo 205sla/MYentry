@@ -6,6 +6,8 @@ Entry(엔트리) 블록 코딩 기반 알고리즘 문제 풀이 플랫폼입니
 
 🌐 **Live**: [https://code.205.kr](https://code.205.kr) (Beta)
 
+> **Attribution**: 이 프로젝트는 [entrylabs/entryjs](https://github.com/entrylabs/entryjs) (Apache License 2.0)를 런타임 엔진으로 사용합니다. Entry Labs의 공식 서비스가 아니며, 3rd-party 라이선스 정보는 [NOTICE.md](NOTICE.md)를 참고하세요.
+
 ## 실행 방법
 
 ```bash
