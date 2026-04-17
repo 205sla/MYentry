@@ -160,21 +160,76 @@ npm test
 
 채점 로직 / XSS 이스케이프 / 리스트 비교 엣지케이스를 포함한 **57개 테스트**가 80ms 내 통과.
 
-### 배포 파이프라인
+### CI/CD 파이프라인
 
-`main` 브랜치에 push하면 GitHub Actions가 자동 실행:
+`main` 브랜치 push 또는 `workflow_dispatch` 수동 트리거 시 GitHub Actions 실행 (`.github/workflows/deploy.yml`):
 
-1. **Unit tests** — `npm test` (실패 시 배포 차단)
-2. **SSH deploy** — Oracle Cloud ARM 서버에서 `git pull` + `pm2 reload`
-3. **Health check** — `curl localhost:3000/` 200 확인
+```
+push → [ test ] ──(needs: test)──▶ [ deploy ] ──▶ [ health check ] → live
+       57 tests                     git pull                HTTP 200 확인
+       ~10초                        npm install
+                                    pm2 reload entry
+                                    pm2 save
+                                    ~10초
+```
 
-총 소요 ~20초. `needs: test` 게이트로 회귀 방지.
+- **총 소요**: ~20초
+- **동시 배포 방지**: `concurrency: deploy-production`
+- **SSH 인증**: 전용 ed25519 배포 키 (GitHub Secrets `DEPLOY_KEY`)
+- **롤백**: `git revert <commit> && git push` → 자동 재배포
 
 ### 운영 인프라
-- **서버**: Oracle Cloud Free Tier (ARM A1, Ubuntu 22.04)
-- **리버스 프록시**: Nginx (gzip, 64MB 정적 자산 캐싱)
-- **SSL**: Let's Encrypt (certbot 자동 갱신)
-- **프로세스 관리**: PM2 + systemd (재부팅 자동 시작)
+
+| 계층 | 구성 | 비고 |
+|------|------|------|
+| 컴퓨트 | Oracle Cloud ARM A1 Flex (2 OCPU / 12 GB) | Always Free |
+| OS | Ubuntu 22.04 LTS | |
+| 리버스 프록시 | Nginx 1.18 (gzip, rate limit) | TLS 종료 |
+| SSL | Let's Encrypt + certbot | 60일 자동 갱신 |
+| 프로세스 관리 | PM2 6 + systemd(`pm2-ubuntu.service`) | 재부팅 자동 시작 |
+| 모니터링 | PM2 logs, Nginx access/error logs | — |
+| 예산 | OCI Budget $1, alert at 1% | 1원 과금 즉시 이메일 |
+
+## 보안
+
+### 애플리케이션 레이어
+- **XSS 방어**: 모든 문자열은 `escapeHtml`/`renderMarkdown`을 거쳐 렌더링. 사용자 입력, 문제 이름, 오류 메시지 포함
+- **자동 XSS 회귀 테스트** 5종 (`npm test`)
+  - HTML 태그 이스케이프 / 코드 블록 이스케이프 / 인라인 코드 이스케이프 / 헤딩 이스케이프 / 변수명 이스케이프
+- **Path Traversal 차단**: `server.js`의 `isValidId` 정규식(`/^\d+$/`)으로 숫자 문제 id만 허용 → `../` 조작 불가
+- **Read-only API**: GET 전용 엔드포인트만 존재 → CSRF 무관
+
+### Nginx 서버 하드닝
+```
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+X-Content-Type-Options:    nosniff
+X-Frame-Options:           SAMEORIGIN
+Referrer-Policy:           strict-origin-when-cross-origin
+Server:                    nginx                       (버전 은닉)
+```
+
+- **Rate Limiting**
+  - 일반: 30 req/s per IP, burst 100
+  - API: 10 req/s per IP, burst 30
+  - 초과 시 HTTP 429 Too Many Requests
+  - DDoS / 크롤러로 인한 대역폭 고갈 방지
+
+### 시스템 레이어
+- **SSH 강화**
+  - Password 인증 비활성화 (키 인증 전용)
+  - `fail2ban` — 5회 실패 시 10분 자동 차단
+  - 승인된 키 2개만 (개인 + GitHub Actions 배포 전용)
+- **방화벽**
+  - OCI Security List: 22/80/443만 공개
+  - iptables: 동일 포트 외 전부 REJECT
+- **TLS 1.2 / 1.3만 허용** (SSLv3, TLS 1.0/1.1 차단)
+- **불필요 서비스 비활성화**: `rpcbind` (NFS 미사용, CVE-2017-8779 등 공격면 제거)
+- **최소 권한 실행**: Node.js가 `root`가 아닌 `ubuntu` 유저로 동작
+
+### 비밀 관리
+- SSH 개인키, 배포 키: `.gitignore`로 커밋 차단 (`*.key`, `*.pem`, `deploy-key*`)
+- GitHub Secrets로 CI 크레덴셜 주입 (`DEPLOY_KEY`, `DEPLOY_HOST`, `DEPLOY_USER`)
+- Actions 로그에는 `***`로 마스킹되어 출력
 
 ## 기술 스택
 
