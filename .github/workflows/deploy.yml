@@ -44,7 +44,7 @@ jobs:
           command_timeout: 3m
           script: |
             set -e
-            cd ~/MYentry
+            cd ~/CODE-205
             echo "== git pull =="
             git pull --ff-only origin main
             echo "== npm install (if needed) =="
