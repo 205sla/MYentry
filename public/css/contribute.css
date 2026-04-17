@@ -1,0 +1,264 @@
+/* ============================================================
+   contribute.css — 문제 기여 가이드 페이지
+   ============================================================ */
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: NanumGothic, 'Nanum Gothic', 'Malgun Gothic', sans-serif;
+    background: #f9f8f7;
+    color: #2c313d;
+    min-height: 100vh;
+    letter-spacing: -0.3px;
+    line-height: 1.6;
+}
+
+/* ---------- Header ---------- */
+header {
+    background: #2c313d;
+    color: #fff;
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    letter-spacing: -0.3px;
+}
+.back-link {
+    color: #8ba4b3;
+    font-size: 13px;
+    text-decoration: none;
+    transition: color 0.15s;
+}
+.back-link:hover { color: #fff; }
+.header-title {
+    font-size: 16px;
+    font-weight: bold;
+}
+.beta-badge {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 2px 8px;
+    background: #fa5536;
+    color: #fff;
+    font-size: 10px;
+    font-weight: bold;
+    border-radius: 3px;
+    letter-spacing: 1px;
+    vertical-align: middle;
+}
+
+/* ---------- Container ---------- */
+.container {
+    max-width: 760px;
+    margin: 32px auto;
+    padding: 0 16px;
+}
+
+h1 {
+    font-size: 26px;
+    font-weight: bold;
+    letter-spacing: -0.5px;
+    margin-bottom: 8px;
+}
+.lead {
+    font-size: 15px;
+    color: #555;
+    margin-bottom: 28px;
+}
+
+/* ---------- TOC box ---------- */
+.toc-box {
+    background: #ecf8ff;
+    border: 1px solid #d6e9f4;
+    border-radius: 6px;
+    padding: 16px 20px;
+    margin-bottom: 36px;
+    font-size: 14px;
+}
+.toc-box strong {
+    display: block;
+    margin-bottom: 8px;
+    color: #4f80ff;
+}
+.toc-box ol {
+    margin: 0;
+    padding-left: 20px;
+    line-height: 1.8;
+}
+
+/* ---------- Sections ---------- */
+h2 {
+    font-size: 18px;
+    font-weight: bold;
+    color: #2c313d;
+    letter-spacing: -0.4px;
+    margin-top: 36px;
+    margin-bottom: 12px;
+    padding-top: 20px;
+    border-top: 1px solid #e2e2e2;
+}
+h2:first-of-type {
+    margin-top: 28px;
+    padding-top: 0;
+    border-top: none;
+}
+h3 {
+    font-size: 15px;
+    font-weight: bold;
+    color: #2c313d;
+    letter-spacing: -0.3px;
+    margin-top: 20px;
+    margin-bottom: 8px;
+}
+
+.required, .optional {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 2px 8px;
+    font-size: 11px;
+    font-weight: bold;
+    border-radius: 3px;
+    letter-spacing: 0;
+    vertical-align: middle;
+}
+.required { background: #fa5536; color: #fff; }
+.optional { background: #e2e2e2; color: #555; }
+
+p, ul, ol {
+    font-size: 14px;
+    margin-bottom: 12px;
+    color: #2c313d;
+}
+ul, ol {
+    padding-left: 24px;
+}
+li { margin-bottom: 4px; }
+
+/* ---------- Tables ---------- */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0 20px;
+    font-size: 13px;
+    background: #fff;
+}
+th, td {
+    border: 1px solid #d6e9f4;
+    padding: 8px 12px;
+    text-align: left;
+    vertical-align: top;
+}
+th {
+    background: #ecf8ff;
+    font-weight: bold;
+    color: #2c313d;
+}
+
+/* ---------- Code ---------- */
+code {
+    background: #f1f3f5;
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 12.5px;
+    font-family: 'Consolas', 'Monaco', monospace;
+    color: #e03131;
+}
+pre {
+    background: #2c313d;
+    color: #f0f2f5;
+    padding: 16px 20px;
+    border-radius: 6px;
+    overflow-x: auto;
+    margin: 12px 0 20px;
+    font-size: 13px;
+    line-height: 1.55;
+}
+pre code {
+    background: none;
+    color: inherit;
+    padding: 0;
+    font-size: 13px;
+}
+
+kbd {
+    background: #fff;
+    border: 1px solid #d6e9f4;
+    border-bottom-width: 2px;
+    border-radius: 3px;
+    padding: 1px 6px;
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 12px;
+    color: #2c313d;
+}
+
+/* ---------- Step list (GitHub 기여 절차) ---------- */
+ol.steps {
+    counter-reset: steps;
+    list-style: none;
+    padding-left: 0;
+    margin-top: 8px;
+}
+ol.steps > li {
+    counter-increment: steps;
+    position: relative;
+    padding-left: 40px;
+    margin-bottom: 24px;
+}
+ol.steps > li::before {
+    content: counter(steps);
+    position: absolute;
+    left: 0;
+    top: 2px;
+    width: 28px;
+    height: 28px;
+    background: #4f80ff;
+    color: #fff;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 28px;
+    font-weight: bold;
+    font-size: 13px;
+}
+ol.steps > li strong {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 15px;
+    color: #2c313d;
+    letter-spacing: -0.3px;
+}
+ol.steps > li p {
+    margin-bottom: 6px;
+}
+ol.steps > li pre {
+    margin-top: 6px;
+}
+ol.steps > li ul {
+    margin-top: 6px;
+    padding-left: 20px;
+}
+
+/* ---------- Links ---------- */
+a {
+    color: #4f80ff;
+    text-decoration: none;
+}
+a:hover { text-decoration: underline; }
+
+/* ---------- Disclaimer footer ---------- */
+.disclaimer {
+    max-width: 960px;
+    margin: 32px auto;
+    padding: 0 16px;
+    text-align: center;
+    font-size: 11px;
+    line-height: 1.6;
+    color: #8ba4b3;
+    letter-spacing: -0.2px;
+}
+.disclaimer a {
+    color: #8ba4b3;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+.disclaimer a:hover {
+    color: #4f80ff;
+}

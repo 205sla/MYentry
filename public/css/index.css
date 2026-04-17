@@ -167,17 +167,19 @@ h2 {
 
 /* ---------- Free mode section ---------- */
 .free-section {
-    text-align: center;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
     margin-top: 32px;
     padding-top: 24px;
     border-top: 1px solid #d6e9f4;
 }
-.free-link {
+.free-link,
+.contribute-link {
     display: inline-block;
     padding: 10px 24px;
     background: #fff;
-    color: #4f80ff;
-    border: 1px solid #4f80ff;
     border-radius: 4px;
     text-decoration: none;
     font-weight: bold;
@@ -185,8 +187,20 @@ h2 {
     letter-spacing: -0.3px;
     transition: background 0.15s, color 0.15s;
 }
+.free-link {
+    color: #4f80ff;
+    border: 1px solid #4f80ff;
+}
 .free-link:hover {
     background: #4f80ff;
+    color: #fff;
+}
+.contribute-link {
+    color: #32d27d;
+    border: 1px solid #32d27d;
+}
+.contribute-link:hover {
+    background: #32d27d;
     color: #fff;
 }
 
