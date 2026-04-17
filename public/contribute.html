@@ -26,13 +26,14 @@
         </section>
 
         <h2>문제 파일 구조</h2>
-        <p>각 문제는 <code>problems/NNN/</code> 폴더 안에 최대 4개 파일로 구성됩니다. <code>NNN</code>은 <code>001</code>부터 시작하는 3자리 일련번호(0 패딩).</p>
+        <p>각 문제는 <code>problems/NNN/</code> 폴더 안에 최대 5개 파일로 구성됩니다. <code>NNN</code>은 <code>001</code>부터 시작하는 3자리 일련번호(0 패딩).</p>
 <pre><code>problems/
 └── 017/
     ├── meta.json          # (필수) 제목, 난이도, 작성자
     ├── description.md     # (선택) 문제 설명 Markdown
     ├── tests.json         # (필수) 테스트·채점 케이스
-    └── project.ent        # (선택) 기본 프로젝트 파일</code></pre>
+    ├── project.ent        # (선택) 기본 프로젝트 파일
+    └── solution.txt       # (권장) 모범답안 — 엔트리 파이썬 코드</code></pre>
 
         <h2>1. meta.json <span class="required">필수</span></h2>
         <p>문제의 메타데이터. 목록 화면의 카드 표시에 사용됩니다.</p>
@@ -116,6 +117,22 @@
             <li>생성한 파일을 <code>problems/NNN/project.ent</code>로 배치</li>
             <li>생략 시 학습자는 빈 프로젝트에서 시작</li>
         </ul>
+
+        <h2>5. solution.txt <span class="recommended">권장</span></h2>
+        <p>문제를 실제로 풀었을 때의 <strong>모범답안을 엔트리 파이썬 모드 코드로 변환</strong>한 텍스트 파일. 리뷰어가 의도한 풀이를 따라가며 <code>tests.json</code>의 기대값이 실제로 나오는지 검증하는 용도입니다.</p>
+        <p><strong>생성 방법</strong>:</p>
+        <ol>
+            <li>엔트리 에디터에서 블록으로 문제를 푼다</li>
+            <li>상단 <kbd>파이썬</kbd> 모드 버튼 클릭 → 코드가 파이썬으로 변환됨</li>
+            <li>코드 영역 전체를 복사해서 <code>problems/NNN/solution.txt</code>에 저장</li>
+        </ol>
+        <p>예시 (<code>solution.txt</code>):</p>
+<pre><code>answer = int(input())
+if answer % 2 == 0:
+    Entry.print("짝")
+else:
+    Entry.print("홀")</code></pre>
+        <p><strong>참고</strong>: 이 파일은 웹 서비스에서 사용되지 않습니다. 기여 리뷰와 문제 검증 참고용으로만 저장소에 포함됩니다.</p>
 
         <h2>GitHub로 기여하기</h2>
 
