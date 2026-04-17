@@ -7,7 +7,7 @@
 ```
 problems/NNN/
 ├── meta.json         # (필수) 제목, 난이도, 옵션
-├── description.md    # (선택) 문제 설명
+├── description.md    # (필수) 문제 설명
 ├── project.ent       # (선택) 기본 프로젝트 파일
 ├── tests.json        # (선택) 테스트/채점 케이스
 └── solution.txt      # (권장) 모범답안 — 엔트리 파이썬 코드
@@ -92,7 +92,7 @@ problems/NNN/
 
 ---
 
-## 2. `description.md` (선택)
+## 2. `description.md` (필수)
 
 좌측 문제 패널에 렌더링되는 Markdown 문서. 모든 문제에 아래 4개 섹션을 **동일 순서**로 작성합니다.
 
