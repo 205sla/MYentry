@@ -1,12 +1,14 @@
-# Entry Algorithm Platform
+# CODE 205
 
-Entry(엔트리) 블록 코딩 기반 알고리즘 문제 풀이 플랫폼입니다.
-좌측 패널에서 문제 지문을 읽고, 우측 엔트리 에디터로 블록을 조립하여 풀이합니다.
+블록 코딩 기반 알고리즘 문제 풀이 플랫폼입니다.
+좌측 패널에서 문제 지문을 읽고, 우측 에디터로 블록을 조립하여 풀이합니다.
 제출 시 브라우저에서 테스트 케이스를 자동 채점합니다.
 
 🌐 **Live**: [https://code.205.kr](https://code.205.kr) (Beta)
 
-> **Attribution**: 이 프로젝트는 [entrylabs/entryjs](https://github.com/entrylabs/entryjs) (Apache License 2.0)를 런타임 엔진으로 사용합니다. Entry Labs의 공식 서비스가 아니며, 3rd-party 라이선스 정보는 [NOTICE.md](NOTICE.md)를 참고하세요.
+> **상표**: "205"®는 대한민국 특허청에 출원된 등록 상표입니다 (출원번호 40-2023-0165693). 상표 및 3rd-party 라이선스 정보는 [NOTICE.md](NOTICE.md)를 참고하세요.
+>
+> **Attribution**: 이 프로젝트는 [entrylabs/entryjs](https://github.com/entrylabs/entryjs) (Apache License 2.0)를 런타임 엔진으로 사용합니다. Entry Labs의 공식 서비스가 아닙니다.
 
 ## 실행 방법
 
