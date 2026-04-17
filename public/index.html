@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>엔트리 알고리즘</title>
+    <title>엔트리 알고리즘 (Beta)</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -17,6 +17,28 @@
             padding: 16px 24px;
             font-size: 18px;
             font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .beta-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            background: #ff6b35;
+            color: #fff;
+            font-size: 11px;
+            font-weight: 800;
+            border-radius: 4px;
+            letter-spacing: 1px;
+            vertical-align: middle;
+        }
+        .beta-notice {
+            background: #fff8e1;
+            border-left: 4px solid #ff6b35;
+            color: #5c4a1a;
+            padding: 10px 16px;
+            font-size: 13px;
+            line-height: 1.5;
         }
         .container {
             max-width: 960px;
@@ -85,7 +107,10 @@
     </style>
 </head>
 <body>
-    <header>엔트리 알고리즘</header>
+    <header>엔트리 알고리즘 <span class="beta-badge">BETA</span></header>
+    <div class="beta-notice">
+        현재 베타 버전입니다. 예고 없이 문제 · 채점 · 기능이 변경될 수 있고, 진행 상황은 저장되지 않습니다.
+    </div>
     <div class="container">
         <h2>문제 목록</h2>
         <div class="grid" id="problem-list"></div>

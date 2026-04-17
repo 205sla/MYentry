@@ -7,7 +7,7 @@
             name="viewport"
             content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"
         />
-        <title>엔트리 만들기</title>
+        <title>엔트리 만들기 (Beta)</title>
         <link href="lib/entry-js/dist/entry.min.css" rel="stylesheet" />
         <link href="lib/entry-tool/dist/entry-tool.css" rel="stylesheet" />
         <link href="lib/entry-lms/dist/assets/app.css" rel="stylesheet" />
@@ -26,6 +26,18 @@
                 z-index: 100;
             }
             #header h1 { font-size: 16px; font-weight: 600; flex: 1; }
+            #header .beta-badge {
+                display: inline-block;
+                margin-left: 8px;
+                padding: 1px 6px;
+                background: #ff6b35;
+                color: #fff;
+                font-size: 10px;
+                font-weight: 800;
+                border-radius: 3px;
+                letter-spacing: 1px;
+                vertical-align: middle;
+            }
             #header button {
                 border: none; border-radius: 4px;
                 padding: 6px 16px; margin-left: 8px;
@@ -340,7 +352,7 @@
 
     <body>
         <div id="header">
-            <h1>엔트리 만들기</h1>
+            <h1>엔트리 만들기<span class="beta-badge">BETA</span></h1>
             <button class="mode-btn" onclick="changeWorkspaceMode('block')">블록</button>
             <button class="mode-btn" onclick="changeWorkspaceMode('python')">파이썬</button>
             <button id="undo-btn" class="history-btn" disabled title="실행취소 (Ctrl+Z)">&#8617; 실행취소</button>
