@@ -4,6 +4,8 @@ Entry(엔트리) 블록 코딩 기반 알고리즘 문제 풀이 플랫폼입니
 좌측 패널에서 문제 지문을 읽고, 우측 엔트리 에디터로 블록을 조립하여 풀이합니다.
 제출 시 브라우저에서 테스트 케이스를 자동 채점합니다.
 
+🌐 **Live**: [https://code.205.kr](https://code.205.kr) (Beta)
+
 ## 실행 방법
 
 ```bash
@@ -11,18 +13,23 @@ npm install
 npm start
 ```
 
-브라우저에서 `http://localhost:3000` 접속 (또는 `start.bat` 더블클릭)
+브라우저에서 `http://localhost:3000` 접속 (Windows는 `start.bat` 더블클릭).
 
 > 반드시 HTTP 서버를 통해 접속해야 합니다. `index.html`을 직접 더블클릭하면 브라우저 보안 정책 때문에 동작하지 않습니다.
 
-## 스크린샷
+### 요구 사항
+- Node.js ≥ 18
+
+## 화면 구성
 
 ### 메인 화면
 - 문제 목록을 카드로 표시, 난이도를 별(0~5)로 표시
+- 해결한 문제는 초록 테두리 + "✓ 해결" 배지로 구분 (브라우저 `localStorage`에만 저장)
 - "자유 모드로 시작" 버튼으로 문제 없이 에디터 열기 가능
+- 상단에 베타 안내 배너
 
 ### 에디터 화면
-- 좌측: 문제 설명 패널 (Markdown 렌더링, 리사이즈 가능)
+- 좌측: 문제 설명 패널 (Markdown 렌더링, 드래그로 크기 조절)
 - 우측: 엔트리 블록 코딩 워크스페이스 + 스테이지
 - 상단 헤더: 블록/파이썬 모드 전환, 실행취소/다시실행, 초기화, 테스트/제출
 
@@ -32,9 +39,12 @@ npm start
 - **로컬 채점**: 모든 채점은 브라우저에서 실행 (서버 부하 없음)
 - **테스트하기**: 공개 케이스로 풀이 검증 (케이스 이름, 실패 상세 공개)
 - **제출하기**: 숨김 케이스로 최종 평가 (케이스 이름, 실패 상세 비공개)
+- **화면 차단 모달**: 채점 중 전체 화면을 가리고 진행 현황만 표시
+- **⏹ 채점 중단** 버튼으로 즉시 취소 가능
+- **전체 통과 시**: 해당 문제 id를 `localStorage`에 기록 + "🏠 문제 선택으로" 버튼 노출
 - **시간 초과 감지**: 무한 반복 등 타임아웃 시 오답 처리 (기본 5초, 케이스별 설정 가능)
 - **오류 감지**: 실행 중 경고(빨간색 블록) 발생 시 오류 처리
-- **채점 중 보호**: 키보드 입력 차단, 엔진 시작/정지 버튼 차단, 닫기로 즉시 중단
+- **채점 중 보호**: 키보드 입력 차단, 엔진 시작/정지 버튼 차단
 
 ### 입출력 지원
 | 입력 방식 | 출력 방식 |
@@ -52,13 +62,14 @@ npm start
 - `tests.json`에 `"대답": "값"` 설정 시 채점 중 자동 입력
 - 캔버스 기반 입력 필드를 감지하여 `Entry.container.setInputValue()` 호출
 
-### 난이도 시스템
-- `meta.json`의 `difficulty` 필드 (0~5)
-- 메인 화면에서 별 아이콘으로 시각화
+### 해결 기록 (localStorage)
+- 제출에서 전체 통과 시 문제 id가 `entry:solved` 키로 브라우저에 저장됨
+- 서버 저장 없음, 계정 없음 — 개인 브라우저 안에만 존재
+- 초기화: DevTools 콘솔에서 `localStorage.removeItem('entry:solved')`
 
 ### 에디터 기능
 - **실행취소/다시실행**: 헤더 버튼 + Ctrl+Z / Ctrl+Shift+Z
-- **초기화**: 프로젝트를 원래 상태로 복원 (확인 팝업 포함)
+- **초기화**: 프로젝트를 원래 상태로 복원 (확인 다이얼로그 포함)
 - **블록/파이썬 모드 전환**: 헤더 버튼
 - **스프라이트 카탈로그**: 로컬 번들 SVG/PNG 스프라이트, 문제별 필터링
 
@@ -73,52 +84,43 @@ npm start
 
 ```
 MYentry/
-├── server.js                 # Express 서버 (포트 3000)
+├── server.js                 # Express 서버 (포트 3000, PORT 환경변수 지원)
+├── package.json              # scripts: start / test
 ├── PROBLEM_GUIDE.md          # 문제 출제 가이드라인
-├── problems/                 # 문제 데이터 (16개)
-│   ├── 001/                  # 선형 탐색 ★★★
-│   │   ├── meta.json         # 제목, 난이도, 스프라이트 설정
-│   │   ├── description.md    # Markdown 문제 설명
-│   │   ├── project.ent       # 기본 프로젝트 (선택)
-│   │   └── tests.json        # 테스트/채점 케이스
-│   ├── 002/ ~ 016/
-│   └── ...
-└── public/
-    ├── index.html            # 메인 화면 (문제 선택 + 난이도 표시)
-    ├── editor.html           # Entry 블록 코딩 에디터 + 채점 시스템
-    ├── sprites/              # 로컬 스프라이트 카탈로그
-    │   ├── 01.svg ~ 10.svg   # SVG 스프라이트 10종
-    │   ├── test01~03.png     # PNG 테스트 스프라이트 3종
-    │   └── catalog.json      # 스프라이트 메타데이터
-    └── lib/                  # Entry 라이브러리 (로컬 번들)
-        ├── entry-js/         # 엔트리 코어 엔진
-        ├── entry-tool/       # 팝업 UI
-        ├── entry-paint/      # 그림 편집기
-        ├── entry-lms/        # 모달 시스템
-        ├── sound-editor/     # 소리 편집기
-        └── legacy-video/     # 비디오 모듈
+├── .github/workflows/
+│   └── deploy.yml            # CI: 테스트 통과 시 자동 배포
+├── problems/                 # 문제 데이터 (NNN/ 3자리 0패딩)
+│   └── NNN/
+│       ├── meta.json         # 제목, 난이도, 스프라이트 설정
+│       ├── description.md    # Markdown 문제 설명
+│       ├── project.ent       # 기본 프로젝트 (선택)
+│       └── tests.json        # 테스트/채점 케이스
+├── public/
+│   ├── index.html            # 메인 화면
+│   ├── editor.html           # Entry 블록 코딩 에디터
+│   ├── css/
+│   │   ├── index.css
+│   │   └── editor.css
+│   ├── js/
+│   │   ├── index.js          # 메인 화면 스크립트
+│   │   ├── editor.js         # 에디터 통합 로직
+│   │   └── editor-pure.js    # 순수 함수 (테스트 대상)
+│   ├── sprites/              # 로컬 스프라이트 카탈로그
+│   │   ├── *.svg / *.png
+│   │   └── catalog.json
+│   └── lib/                  # Entry 라이브러리 (로컬 번들, ~64MB)
+│       ├── entry-js/         # 엔트리 코어 엔진
+│       ├── entry-tool/       # 팝업 UI
+│       ├── entry-paint/      # 그림 편집기
+│       ├── entry-lms/        # 모달 시스템
+│       ├── sound-editor/     # 소리 편집기
+│       └── legacy-video/     # 비디오 모듈
+└── tests/                    # node:test 단위 테스트 (57개)
+    ├── format.test.js
+    ├── lists.test.js
+    ├── markdown.test.js
+    └── evaluate.test.js
 ```
-
-## 등록된 문제
-
-| # | 제목 | 난이도 | 입력 | 출력 |
-|---|------|--------|------|------|
-| 001 | 선형 탐색 | ★★★ | 묻고 기다리기 + 리스트 | 말하기 |
-| 002 | 소수 찾기 | ★★★★ | 묻고 기다리기 | 리스트 |
-| 003 | 정렬 | ★★★★★ | 리스트 | 리스트 |
-| 004 | 리스트에서 값 찾기 | ★★ | 묻고 기다리기 + 리스트 | 변수 |
-| 005 | 안녕이라고 말하기 | ★ | 없음 | 말하기 |
-| 006 | 더하기 | ★ | 변수 | 말하기 |
-| 007 | 인사하기 | - | 없음 | 말하기 |
-| 008 | 자기소개 | - | 없음 | 말하기 (×2) |
-| 009 | 덧셈 결과 | ★ | 없음 | 말하기 (계산) |
-| 010 | 뺄셈 결과 | ★ | 없음 | 말하기 (계산) |
-| 011 | 곱셈 결과 | ★ | 없음 | 말하기 (계산) |
-| 012 | 나머지 구하기 | ★ | 없음 | 말하기 (계산) |
-| 013 | 글자 합치기 | ★ | 없음 | 말하기 (합치기) |
-| 014 | 반복 말하기 | ★ | 없음 | 말하기 (반복) |
-| 015 | 과일 나열 | ★ | 없음 | 말하기 (순차) |
-| 016 | 복합 계산 | ★ | 없음 | 말하기 (중첩 계산) |
 
 ## 문제 추가
 
@@ -146,9 +148,39 @@ MYentry/
 | `GET /api/sprites` | 전체 스프라이트 카탈로그 |
 | `GET /api/sprites?problem=N` | 문제별 스프라이트 필터링 |
 
+## 개발
+
+### 테스트
+
+순수 함수(`evaluateTest`, `listsEqual`, `normalizeValue`, `renderMarkdown`, `escapeHtml`, `formatTimeoutResult`, `formatWarningResult`)는 Node 내장 `node:test`로 단위 테스트 되어 있습니다.
+
+```bash
+npm test
+```
+
+채점 로직 / XSS 이스케이프 / 리스트 비교 엣지케이스를 포함한 **57개 테스트**가 80ms 내 통과.
+
+### 배포 파이프라인
+
+`main` 브랜치에 push하면 GitHub Actions가 자동 실행:
+
+1. **Unit tests** — `npm test` (실패 시 배포 차단)
+2. **SSH deploy** — Oracle Cloud ARM 서버에서 `git pull` + `pm2 reload`
+3. **Health check** — `curl localhost:3000/` 200 확인
+
+총 소요 ~20초. `needs: test` 게이트로 회귀 방지.
+
+### 운영 인프라
+- **서버**: Oracle Cloud Free Tier (ARM A1, Ubuntu 22.04)
+- **리버스 프록시**: Nginx (gzip, 64MB 정적 자산 캐싱)
+- **SSL**: Let's Encrypt (certbot 자동 갱신)
+- **프로세스 관리**: PM2 + systemd (재부팅 자동 시작)
+
 ## 기술 스택
 
 - **Frontend**: EntryJS v4.0.22 (엔트리 블록 코딩 엔진)
-- **Backend**: Node.js + Express
+- **Backend**: Node.js ≥ 18 + Express
 - **Entry 라이브러리**: entry-js, entry-tool, entry-paint, entry-lms, sound-editor, legacy-video
+- **테스트**: `node:test` (내장) + TAP
+- **CI/CD**: GitHub Actions → SSH deploy
 - **오프라인 대응**: Entry 관련 라이브러리는 `public/lib/`에 로컬 번들링. jQuery, React 등 범용 라이브러리만 CDN 사용.
