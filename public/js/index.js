@@ -15,6 +15,38 @@ function getSolvedSet() {
     } catch (e) { return {}; }
 }
 
+function escapeHtml(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+// Render a single problem card's inner HTML.
+function renderCard(p, isSolved) {
+    var stars = '';
+    var d = Math.max(0, Math.min(5, p.difficulty || 0));
+    for (var i = 0; i < 5; i++) {
+        stars += i < d
+            ? '<span class="star-filled">&#9733;</span>'
+            : '<span class="star-empty">&#9733;</span>';
+    }
+    var badge = isSolved ? '<span class="card-solved-badge">&#10004; 해결</span>' : '';
+
+    // Credits: 출제자 + (선택) 수정자
+    var credits = '';
+    if (p.author) {
+        credits += '<div class="card-author">출제 ' + escapeHtml(p.author) + '</div>';
+    }
+    if (Array.isArray(p.contributors) && p.contributors.length > 0) {
+        var names = p.contributors.map(escapeHtml).join(', ');
+        credits += '<div class="card-contributors">수정 ' + names + '</div>';
+    }
+
+    return badge
+        + '<div class="card-number">' + p.id + '</div>'
+        + '<div class="card-title">' + escapeHtml(p.title) + '</div>'
+        + '<div class="card-difficulty">' + stars + '</div>'
+        + credits;
+}
+
 fetch('/api/problems')
     .then(function(r) {
         if (!r.ok) throw new Error('HTTP ' + r.status);
@@ -32,18 +64,7 @@ fetch('/api/problems')
             var isSolved = !!solved[p.id];
             a.className = 'card' + (isSolved ? ' solved' : '');
             a.href = '/editor.html?problem=' + p.id;
-            var stars = '';
-            var d = Math.max(0, Math.min(5, p.difficulty || 0));
-            for (var i = 0; i < 5; i++) {
-                stars += i < d
-                    ? '<span class="star-filled">&#9733;</span>'
-                    : '<span class="star-empty">&#9733;</span>';
-            }
-            var badge = isSolved ? '<span class="card-solved-badge">&#10004; 해결</span>' : '';
-            a.innerHTML = badge
-                + '<div class="card-number">' + p.id + '</div>'
-                + '<div class="card-title">' + p.title + '</div>'
-                + '<div class="card-difficulty">' + stars + '</div>';
+            a.innerHTML = renderCard(p, isSolved);
             grid.appendChild(a);
         });
     })

@@ -52,9 +52,19 @@ problems/NNN/
 {
   "title": "문제 제목",
   "difficulty": 3,
+  "author": "출제자 닉네임",
+  "contributors": ["수정자1", "수정자2"],
   "sprites": ["sp01", "sp03", "sp07"]
 }
 ```
+
+### author / contributors 필드 (선택)
+문제 선택 화면 카드 하단에 작은 회색 글씨로 표시됩니다.
+
+- `author`: 최초 출제자 1명의 닉네임 (문자열)
+- `contributors`: 이후 수정에 기여한 사람들의 닉네임 배열 (문자열 배열, 순서 유지)
+
+`contributors`가 없거나 빈 배열이면 "수정" 줄은 표시되지 않습니다.
 
 ### difficulty 필드 (선택)
 문제 선택 화면에 별(0~5개)로 표시되는 난이도.

@@ -139,6 +139,21 @@ h2 {
 .card-difficulty .star-filled { color: #ffcf5f; }
 .card-difficulty .star-empty  { color: #e2e2e2; }
 
+/* ---------- Card credits (author / contributors) ---------- */
+.card-author,
+.card-contributors {
+    margin-top: 6px;
+    font-size: 11px;
+    color: #8ba4b3;
+    letter-spacing: -0.2px;
+    line-height: 1.4;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.card-author { margin-top: 8px; }
+.card-contributors { margin-top: 2px; }
+
 /* ---------- Empty state ---------- */
 .empty {
     text-align: center;

@@ -91,7 +91,13 @@ app.get('/api/problems', (req, res) => {
             const id = parseInt(entry.name, 10);
             const meta = readMeta(id);
             if (!meta) return;
-            results.push({ id, title: meta.title || ('문제 ' + id), difficulty: meta.difficulty || 0 });
+            results.push({
+                id,
+                title: meta.title || ('문제 ' + id),
+                difficulty: meta.difficulty || 0,
+                author: meta.author || null,
+                contributors: Array.isArray(meta.contributors) ? meta.contributors : []
+            });
         });
     } catch (e) {}
     results.sort((a, b) => a.id - b.id);
