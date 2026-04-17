@@ -213,65 +213,8 @@ function loadProblemMeta(problemId) {
 // ============================================================
 // 5. Markdown renderer (minimal)
 // ============================================================
-
-// Minimal Markdown renderer (headings, bold, italic, inline code, code block, lists)
-function renderMarkdown(md) {
-    if (!md) return '';
-    var escape = function (s) {
-        return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    };
-    var lines = md.split('\n');
-    var html = '', inCode = false, inList = false, listType = '';
-    for (var i = 0; i < lines.length; i++) {
-        var line = lines[i];
-        // Code block
-        var codeMatch = line.match(/^```(\w*)/);
-        if (codeMatch) {
-            if (inCode) { html += '</code></pre>'; inCode = false; }
-            else { html += '<pre><code>'; inCode = true; }
-            continue;
-        }
-        if (inCode) { html += escape(line) + '\n'; continue; }
-        // Headings
-        var h = line.match(/^(#{1,3})\s+(.+)/);
-        if (h) {
-            if (inList) { html += '</' + listType + '>'; inList = false; }
-            html += '<h' + h[1].length + '>' + escape(h[2]) + '</h' + h[1].length + '>';
-            continue;
-        }
-        // Lists
-        var ul = line.match(/^[\-\*]\s+(.+)/);
-        var ol = line.match(/^\d+\.\s+(.+)/);
-        if (ul || ol) {
-            var curType = ul ? 'ul' : 'ol';
-            if (!inList) { html += '<' + curType + '>'; inList = true; listType = curType; }
-            else if (listType !== curType) {
-                html += '</' + listType + '><' + curType + '>'; listType = curType;
-            }
-            html += '<li>' + inlineMd((ul || ol)[1]) + '</li>';
-            continue;
-        }
-        if (inList) { html += '</' + listType + '>'; inList = false; }
-        // Empty line
-        if (!line.trim()) continue;
-        // Paragraph
-        html += '<p>' + inlineMd(line) + '</p>';
-    }
-    if (inList) html += '</' + listType + '>';
-    if (inCode) html += '</code></pre>';
-    return html;
-
-    function inlineMd(s) {
-        return escape(s)
-            .replace(/`([^`]+)`/g, '<code>$1</code>')
-            .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-            .replace(/\*([^*]+)\*/g, '<em>$1</em>');
-    }
-}
-
-function escapeHtml(s) {
-    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-}
+// Note: renderMarkdown() and escapeHtml() are defined in editor-pure.js.
+// ============================================================
 
 // ============================================================
 // 6. Layout — problem panel, splitter
@@ -668,23 +611,9 @@ function captureFinalState() {
     return state;
 }
 
-// Result formatters — pure functions, testable without Entry.
-function formatTimeoutResult(timeoutMs) {
-    var secondsStr = (timeoutMs / 1000).toString();
-    return {
-        pass: false,
-        timeout: true,
-        diff: '시간 초과 (' + secondsStr + '초) — 무한 반복이나 너무 느린 연산 가능성'
-    };
-}
-
-function formatWarningResult(warning) {
-    return {
-        error: true,
-        errorMessage: '[' + warning.type + '] ' + warning.title +
-            (warning.message ? ' - ' + warning.message : '')
-    };
-}
+// Note: escapeHtml, renderMarkdown, normalizeValue, listsEqual,
+// formatTimeoutResult, formatWarningResult, evaluateTest are defined in
+// editor-pure.js (loaded before this file) — they are pure and unit-tested.
 
 // Run a single test case: setup → run → poll until done/timeout/warning →
 // (if not timeout) settle → capture state → evaluate → resolve.
@@ -780,88 +709,7 @@ function runSingleTest(testCase) {
     });
 }
 
-function evaluateTest(testCase, sayLog, finalState) {
-    var expected = testCase.expected || {};
-    var failures = [];
-    finalState = finalState || { variables: {}, lists: {} };
-
-    // Check say outputs
-    if (expected.say) {
-        var actualSays = sayLog.map(function (s) { return s.message; });
-        expected.say.forEach(function (expectedMsg) {
-            var found = actualSays.some(function (actual) {
-                return actual === expectedMsg || actual.indexOf(expectedMsg) !== -1;
-            });
-            if (!found) {
-                failures.push({
-                    type: 'say',
-                    expected: expectedMsg,
-                    actual: actualSays.length ? actualSays.join(', ') : '(말하기 없음)'
-                });
-            }
-        });
-    }
-
-    // Check variable values (captured before stop)
-    if (expected.variables) {
-        Object.keys(expected.variables).forEach(function (vName) {
-            var actualRaw = finalState.variables.hasOwnProperty(vName) ? finalState.variables[vName] : null;
-            var actual = actualRaw === null ? '(없음)' : String(actualRaw);
-            var exp = String(expected.variables[vName]);
-            if (actual !== exp) {
-                failures.push({ type: 'variable', name: vName, expected: exp, actual: actual });
-            }
-        });
-    }
-
-    // Check list values (captured before stop)
-    if (expected.lists) {
-        Object.keys(expected.lists).forEach(function (lName) {
-            var actualArr = finalState.lists[lName];
-            var expArr = expected.lists[lName];
-            if (!actualArr) {
-                failures.push({ type: 'list', name: lName, expected: JSON.stringify(expArr), actual: '(리스트 없음)' });
-            } else if (!listsEqual(actualArr, expArr)) {
-                failures.push({
-                    type: 'list',
-                    name: lName,
-                    expected: JSON.stringify(expArr),
-                    actual: JSON.stringify(actualArr.map(function(v){ return normalizeValue(v); }))
-                });
-            }
-        });
-    }
-
-    if (failures.length === 0) {
-        return { pass: true };
-    }
-
-    var diffHtml = failures.map(function (f) {
-        if (f.type === 'say') {
-            return '말하기: <span class="expected">기대: "' + escapeHtml(f.expected) + '"</span> / <span class="actual">실제: ' + escapeHtml(f.actual) + '</span>';
-        } else if (f.type === 'list') {
-            return '리스트 "' + escapeHtml(f.name) + '": <span class="expected">기대: ' + escapeHtml(f.expected) + '</span> / <span class="actual">실제: ' + escapeHtml(f.actual) + '</span>';
-        } else {
-            return '변수 "' + escapeHtml(f.name) + '": <span class="expected">기대: ' + escapeHtml(f.expected) + '</span> / <span class="actual">실제: ' + escapeHtml(f.actual) + '</span>';
-        }
-    }).join('<br>');
-    return { pass: false, diff: diffHtml };
-}
-
-// Normalize list values: numbers as numbers, strings as strings
-function normalizeValue(v) {
-    if (typeof v === 'number') return v;
-    if (typeof v === 'string' && v !== '' && !isNaN(Number(v))) return Number(v);
-    return v;
-}
-
-function listsEqual(a, b) {
-    if (a.length !== b.length) return false;
-    for (var i = 0; i < a.length; i++) {
-        if (normalizeValue(a[i]) !== normalizeValue(b[i])) return false;
-    }
-    return true;
-}
+// Note: evaluateTest(), normalizeValue(), listsEqual() are defined in editor-pure.js.
 
 // ============================================================
 // 11. Entry sprite/picture/sound popup (local catalog)

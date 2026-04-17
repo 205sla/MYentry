@@ -116,7 +116,10 @@
         <!-- Entry main bundle -->
         <script src="lib/entry-js/dist/entry.min.js"></script>
 
-        <!-- App entry point (must load AFTER all Entry libs) -->
+        <!-- App code (must load AFTER all Entry libs).
+             editor-pure.js defines pure helpers used by editor.js and is unit-tested
+             via `npm test` — must be loaded first since editor.js references them. -->
+        <script src="js/editor-pure.js"></script>
         <script src="js/editor.js"></script>
     </body>
 </html>
