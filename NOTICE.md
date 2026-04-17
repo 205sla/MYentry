@@ -58,6 +58,6 @@
 
 ---
 
-## 이 저장소(MYentry) 자체의 코드
+## 이 저장소(CODE-205) 자체의 코드
 
 상기 3rd-party 코드를 제외한 본 저장소 자체 저작물(server.js, public/js/\*, public/css/\*, public/contribute.html, public/index.html, problems/\* 등)은 별도 라이선스가 명시되지 않는 한 모든 권리가 저작자(205)에게 유보됩니다.

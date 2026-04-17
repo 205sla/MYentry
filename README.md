@@ -87,7 +87,7 @@ npm start
 ## 디렉터리 구조
 
 ```
-MYentry/
+CODE-205/
 ├── server.js                 # Express 서버 (포트 3000, PORT 환경변수 지원)
 ├── package.json              # scripts: start / test
 ├── PROBLEM_GUIDE.md          # 문제 출제 가이드라인
