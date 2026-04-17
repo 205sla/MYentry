@@ -289,6 +289,52 @@
             .entryPlaygroundSoundEdit {
                 display: none !important;
             }
+            /* Reset button */
+            #reset-btn { background: #e53935; color: #fff; }
+            #reset-btn:hover { background: #c62828; }
+            /* Confirm dialog overlay */
+            #confirm-overlay {
+                display: none;
+                position: fixed; top: 0; left: 0;
+                width: 100%; height: 100%;
+                background: rgba(0,0,0,0.5);
+                z-index: 10001;
+                justify-content: center;
+                align-items: center;
+                font-family: 'NanumGothic', 'Malgun Gothic', sans-serif;
+            }
+            #confirm-overlay.active { display: flex; }
+            #confirm-dialog {
+                background: #fff;
+                border-radius: 12px;
+                padding: 28px 32px;
+                max-width: 360px;
+                text-align: center;
+                box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+            }
+            #confirm-dialog p {
+                font-size: 15px;
+                color: #333;
+                margin-bottom: 20px;
+                line-height: 1.6;
+            }
+            #confirm-dialog .confirm-btns {
+                display: flex;
+                gap: 12px;
+                justify-content: center;
+            }
+            #confirm-dialog .confirm-btns button {
+                border: none;
+                border-radius: 6px;
+                padding: 10px 28px;
+                font-size: 14px;
+                font-weight: 600;
+                cursor: pointer;
+            }
+            #confirm-yes { background: #e53935; color: #fff; }
+            #confirm-yes:hover { background: #c62828; }
+            #confirm-no { background: #e0e0e0; color: #333; }
+            #confirm-no:hover { background: #bdbdbd; }
         </style>
     </head>
 
@@ -299,8 +345,18 @@
             <button class="mode-btn" onclick="changeWorkspaceMode('python')">파이썬</button>
             <button id="undo-btn" class="history-btn" disabled title="실행취소 (Ctrl+Z)">&#8617; 실행취소</button>
             <button id="redo-btn" class="history-btn" disabled title="다시실행 (Ctrl+Shift+Z)">&#8618; 다시실행</button>
+            <button id="reset-btn" title="프로젝트를 초기 상태로 되돌립니다">&#8635; 초기화</button>
             <button id="test-btn" style="display:none;" title="공개 테스트 케이스로 확인">&#128269; 테스트하기</button>
             <button id="submit-btn" style="display:none;">&#10004; 제출하기</button>
+        </div>
+        <div id="confirm-overlay">
+            <div id="confirm-dialog">
+                <p id="confirm-message">정말 초기화하시겠습니까?</p>
+                <div class="confirm-btns">
+                    <button id="confirm-yes">초기화</button>
+                    <button id="confirm-no">취소</button>
+                </div>
+            </div>
         </div>
         <div id="grade-overlay">
             <div id="grade-modal">
@@ -451,6 +507,7 @@
                 initResizableSplitter();
                 initGrading();
                 initUndoRedo();
+                initReset();
                 // Notify Entry of resize after panel layout is set
                 setTimeout(function () { $(window).trigger('resize'); }, 100);
             });
@@ -628,6 +685,43 @@
             }
 
 
+
+            // ========== Reset ==========
+            function initReset() {
+                var overlay = document.getElementById('confirm-overlay');
+                var yesBtn = document.getElementById('confirm-yes');
+                var noBtn = document.getElementById('confirm-no');
+
+                document.getElementById('reset-btn').addEventListener('click', function () {
+                    // Don't allow reset during grading
+                    if (__isGrading) return;
+                    overlay.classList.add('active');
+                });
+
+                noBtn.addEventListener('click', function () {
+                    overlay.classList.remove('active');
+                });
+
+                // Close on overlay background click
+                overlay.addEventListener('click', function (e) {
+                    if (e.target === overlay) overlay.classList.remove('active');
+                });
+
+                yesBtn.addEventListener('click', function () {
+                    overlay.classList.remove('active');
+                    // Clear all existing state first, then reload
+                    Entry.clearProject();
+                    var problemId = new URLSearchParams(location.search).get('problem');
+                    if (problemId) {
+                        fetch('/api/problems/' + problemId)
+                            .then(function (r) { if (r.ok) return r.json(); throw r; })
+                            .then(function (project) { Entry.loadProject(project); })
+                            .catch(function () { Entry.loadProject(); });
+                    } else {
+                        Entry.loadProject();
+                    }
+                });
+            }
 
             // ========== Undo / Redo ==========
             function initUndoRedo() {
