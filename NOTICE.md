@@ -16,11 +16,27 @@
     - 실행 시 `Entry.engine.toggleRun`/`toggleStop`을 래핑하여 사용자 인터랙션 가드 추가 (editor.js `installEngineGuard`)
     - 블록 카테고리 일부 비활성화 (`analysis`, `ai_utilize`, `expansion`, `arduino`) — Entry가 공식 제공하는 옵션을 통한 설정
 
-## entry-tool, entry-paint, entry-lms, sound-editor, legacy-video
+## entry-tool
 
 - **저작권**: Copyright Entry Labs
-- **사용 위치**: `public/lib/` 내 각 서브디렉토리
-- EntryJS와 동일 출처의 보조 라이브러리로 간주. 원본 라이선스는 각 라이브러리 배포판에 포함됨.
+- **라이선스**: MIT (npm `@entrylabs/tool` + GitHub [entrylabs/entry-tool](https://github.com/entrylabs/entry-tool) 확인)
+- **라이선스 파일**: [`public/lib/entry-tool/LICENSE`](public/lib/entry-tool/LICENSE)
+- **사용 위치**: `public/lib/entry-tool/`
+
+## legacy-video
+
+- **저작권**: Copyright Entry Labs
+- **라이선스**: MIT (npm `@entrylabs/legacy-video` + GitHub [entrylabs/legacy-video](https://github.com/entrylabs/legacy-video) 확인)
+- **라이선스 파일**: [`public/lib/legacy-video/LICENSE`](public/lib/legacy-video/LICENSE)
+- **사용 위치**: `public/lib/legacy-video/`
+
+## entry-paint, entry-lms, sound-editor
+
+- **저작권**: Copyright Entry Labs (추정)
+- **라이선스**: **명시적으로 선언되지 않음** (업스트림에 공개 저장소·NPM 패키지·라이선스 헤더 없음)
+- **사용 위치**: `public/lib/entry-paint/`, `public/lib/entry-lms/`, `public/lib/sound-editor/`
+- 동일 출처(Entry Labs)의 다른 오픈소스 패키지가 MIT 또는 Apache 2.0을 사용하는 점을 근거로 동일 기조의 재배포 허용을 가정하나, 공식 확인은 되지 않았습니다.
+- 이 저장소를 포크/재배포하려는 분은 [Entry Labs](https://playentry.org)에 직접 문의하여 라이선스 상태를 확인하시기 바랍니다.
 
 ## 외부 CDN 의존성
 
