@@ -244,6 +244,15 @@ a {
 }
 a:hover { text-decoration: underline; }
 
+/* ---------- Effective date (legal pages) ---------- */
+.effective-date {
+    margin-top: 36px;
+    padding-top: 20px;
+    border-top: 1px solid #e2e2e2;
+    font-size: 13px;
+    color: #555;
+}
+
 /* ---------- Disclaimer footer ---------- */
 .disclaimer {
     max-width: 960px;

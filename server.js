@@ -21,7 +21,9 @@ app.get('/sitemap.xml', (req, res) => {
     const urls = [
         { loc: SITE_URL + '/',                priority: '1.0', changefreq: 'weekly' },
         { loc: SITE_URL + '/contribute.html', priority: '0.7', changefreq: 'monthly' },
-        { loc: SITE_URL + '/editor.html',     priority: '0.5', changefreq: 'monthly' }
+        { loc: SITE_URL + '/editor.html',     priority: '0.5', changefreq: 'monthly' },
+        { loc: SITE_URL + '/privacy.html',    priority: '0.3', changefreq: 'yearly' },
+        { loc: SITE_URL + '/terms.html',      priority: '0.3', changefreq: 'yearly' }
     ];
     try {
         const entries = fs.readdirSync(PROBLEMS_DIR, { withFileTypes: true });
