@@ -196,6 +196,17 @@ function makeTar(files) {
     return Buffer.concat(parts);
 }
 
+// Generate a 32-char Entry-style file id. Entry's format uses lowercase
+// alphanumerics (see official docs: e.g. "e49448cdlyy4s42e0013f820158i7nqj").
+// crypto.randomBytes % 36 has a tiny distribution bias but is harmless here.
+function entryStyleHash() {
+    const chars = '0123456789abcdefghijklmnopqrstuvwxyz';
+    const bytes = crypto.randomBytes(32);
+    let out = '';
+    for (let i = 0; i < 32; i++) out += chars[bytes[i] % 36];
+    return out;
+}
+
 // Resolve an asset URL referenced in project.json to raw bytes + extension.
 // Returns { buf, ext } or null. Two sources:
 //   - /images/…             → read from public/ on disk (whitelisted)
@@ -351,15 +362,20 @@ app.get('/api/problems/:id/asset/*', (req, res) => {
 // disk, or /api/problems/:id/asset/* from an imported .ent) are embedded in
 // the tar under Entry's conventional layout:
 //   temp/<aa>/<bb>/image/<hash>.<ext>   ← original image
-//   temp/<aa>/<bb>/thumb/<hash>.<ext>   ← thumbnail (same bytes; SVG serves both roles)
+//   temp/<aa>/<bb>/thumb/<hash>.<ext>   ← thumbnail (reuses image bytes)
 //   temp/<aa>/<bb>/sound/<hash>.<ext>   ← sound
 //
-// Each picture/sound is rewritten so that `filename` holds the bare hash and
-// `fileurl` points to the image/ path. `thumbUrl` (a CODE-205-ism) is dropped
-// because Entry derives the thumb path from `filename` itself.
+// For every picture we set THREE fields that Entry's engine uses:
+//   filename : 32-char lowercase alphanumeric (Entry convention)
+//   fileurl  : "temp/<aa>/<bb>/image/<hash>.<ext>"
+//   thumbUrl : "temp/<aa>/<bb>/thumb/<hash>.<ext>"
+// Keeping `thumbUrl` is important — Entry's updateThumbnailView() picks it
+// first; only when both thumbUrl AND fileurl are missing does it fall back
+// to `filename + ".png"` under Entry.defaultPath (which breaks on playentry).
 //
-// Tar entries are laid out in the depth-first order that Entry's own export
-// produces: level-1 dirs → project.json → level-2 dirs → level-3 dirs → files.
+// Tar entries are laid out in the order Entry's own export produces:
+//   level-1 dirs → project.json → level-2 dirs → level-3 dirs → files.
+// Gzip uses memLevel: 6 to match Entry's documented setting.
 app.post('/api/export', express.json({ limit: '25mb' }), (req, res) => {
     try {
         const project = req.body;
@@ -394,12 +410,12 @@ app.post('/api/export', express.json({ limit: '25mb' }), (req, res) => {
 
             const asset = resolveAsset(url);
             if (!asset) {
-                const r = { fileurl: url, filename: null };
+                const r = { fileurl: url, filename: null, thumbUrl: null };
                 cache.set(url, r);
                 return r;
             }
 
-            const hash = crypto.randomBytes(16).toString('hex'); // 32 hex chars
+            const hash = entryStyleHash(); // 32 lowercase-alphanumeric chars (Entry style)
             const d1 = hash.slice(0, 2), d2 = hash.slice(2, 4);
             addDir(dirs1, `temp/${d1}/`);
             addDir(dirs2, `temp/${d1}/${d2}/`);
@@ -407,17 +423,17 @@ app.post('/api/export', express.json({ limit: '25mb' }), (req, res) => {
             const fileurl = `temp/${d1}/${d2}/${kind}/${hash}.${asset.ext}`;
             payloads.push({ name: fileurl, data: asset.buf, typeflag: '0' });
 
-            // Entry expects a thumb file even for images we don't rasterize;
-            // reuse the same SVG/PNG bytes so the editor's thumbnail lookup succeeds.
+            // For images: also drop a thumb with the same bytes. We explicitly
+            // set thumbUrl on the picture (below) so Entry's updateThumbnailView
+            // picks our path rather than falling back to "<defaultPath>/uploads/..../thumb/<hash>.png".
+            let thumbUrl = null;
             if (kind === 'image') {
                 addDir(dirs3, `temp/${d1}/${d2}/thumb/`);
-                payloads.push({
-                    name: `temp/${d1}/${d2}/thumb/${hash}.${asset.ext}`,
-                    data: asset.buf, typeflag: '0'
-                });
+                thumbUrl = `temp/${d1}/${d2}/thumb/${hash}.${asset.ext}`;
+                payloads.push({ name: thumbUrl, data: asset.buf, typeflag: '0' });
             }
 
-            const r = { fileurl, filename: hash };
+            const r = { fileurl, filename: hash, thumbUrl };
             cache.set(url, r);
             return r;
         };
@@ -430,7 +446,9 @@ app.post('/api/export', express.json({ limit: '25mb' }), (req, res) => {
                 if (!r) return;
                 p.fileurl = r.fileurl;
                 if (r.filename) p.filename = r.filename;
-                delete p.thumbUrl; // Entry uses `filename` for thumb lookup, not thumbUrl
+                // Keep thumbUrl aligned with our bundled thumb file — Entry reads
+                // this before falling back to filename-based path derivation.
+                if (r.thumbUrl) p.thumbUrl = r.thumbUrl;
             });
             (obj.sprite.sounds || []).forEach(sn => {
                 if (!sn.fileurl) return;
@@ -458,7 +476,8 @@ app.post('/api/export', express.json({ limit: '25mb' }), (req, res) => {
             ...payloads
         ];
 
-        const gz = zlib.gzipSync(makeTar(files));
+        // memLevel: 6 matches the setting documented for Entry's own .ent tooling.
+        const gz = zlib.gzipSync(makeTar(files), { memLevel: 6 });
         const ts = new Date().toISOString().replace(/[-:]/g, '').replace(/\..+/, '').replace('T', '-');
         res.setHeader('Content-Type', 'application/x-gzip');
         res.setHeader('Content-Disposition', `attachment; filename="code205-${ts}.ent"`);
