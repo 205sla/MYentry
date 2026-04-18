@@ -196,11 +196,26 @@ function makeTar(files) {
     return Buffer.concat(parts);
 }
 
-// Resolve an asset URL referenced in project.json to an on-disk file.
-// Returns { buf, ext } or null. Whitelists /images/ under public/ only,
-// with path-traversal defense (resolved path must stay inside publicDir).
-function resolveLocalAsset(url) {
-    if (typeof url !== 'string') return null;
+// Resolve an asset URL referenced in project.json to raw bytes + extension.
+// Returns { buf, ext } or null. Two sources:
+//   - /images/…             → read from public/ on disk (whitelisted)
+//   - /api/problems/N/asset/temp/… → read from that problem's .ent tar
+// path-traversal defense on the disk branch (resolved path must stay inside publicDir).
+function resolveAsset(url) {
+    if (typeof url !== 'string' || !url) return null;
+
+    // Branch 1: our API-served problem asset (round-trip from import)
+    const m = /^\/api\/problems\/(\d+)\/asset\/(.+)$/.exec(url);
+    if (m) {
+        const tarBuf = loadProblemTar(m[1]);
+        if (!tarBuf) return null;
+        const buf = extractTarFile(tarBuf, m[2]);
+        if (!buf) return null;
+        const ext = (path.extname(m[2]).slice(1) || 'bin').toLowerCase();
+        return { buf, ext };
+    }
+
+    // Branch 2: our static /images/ directory
     if (!/^\/images\//.test(url)) return null;
     const publicDir = path.resolve(__dirname, 'public');
     const fsPath = path.resolve(publicDir, url.slice(1));
@@ -332,11 +347,19 @@ app.get('/api/problems/:id/asset/*', (req, res) => {
 });
 
 // POST /api/export - repackage a live Entry project (JSON) into a .ent file
-// that playentry.org (and our own loader) can import. For every picture/sound
-// fileurl that points to a local /images/* asset we read the file from disk,
-// embed it inside the tar under temp/<hh>/<hh>/(image|sound)/<hash>.<ext>,
-// and rewrite the fileurl in project.json so the exported archive is
-// self-contained. External URLs and data: URIs pass through unchanged.
+// that playentry.org (and our own loader) can import. Assets (/images/* on
+// disk, or /api/problems/:id/asset/* from an imported .ent) are embedded in
+// the tar under Entry's conventional layout:
+//   temp/<aa>/<bb>/image/<hash>.<ext>   ← original image
+//   temp/<aa>/<bb>/thumb/<hash>.<ext>   ← thumbnail (same bytes; SVG serves both roles)
+//   temp/<aa>/<bb>/sound/<hash>.<ext>   ← sound
+//
+// Each picture/sound is rewritten so that `filename` holds the bare hash and
+// `fileurl` points to the image/ path. `thumbUrl` (a CODE-205-ism) is dropped
+// because Entry derives the thumb path from `filename` itself.
+//
+// Tar entries are laid out in the depth-first order that Entry's own export
+// produces: level-1 dirs → project.json → level-2 dirs → level-3 dirs → files.
 app.post('/api/export', express.json({ limit: '25mb' }), (req, res) => {
     try {
         const project = req.body;
@@ -344,54 +367,96 @@ app.post('/api/export', express.json({ limit: '25mb' }), (req, res) => {
             return res.status(400).json({ error: 'invalid project JSON' });
         }
 
-        const files = [{ name: 'temp/', data: Buffer.alloc(0), typeflag: '5' }];
-        const seenDirs = new Set(['temp/']);
-        const cache = new Map(); // original url → rewritten tar path
+        // Buckets, flushed in the order below when assembling the final tar.
+        const dirs1 = [];       // temp/XX/
+        const dirs2 = [];       // temp/XX/YY/
+        const dirs3 = [];       // temp/XX/YY/{image,thumb,sound}/
+        const payloads = [];    // actual file data
+        const seen = new Set();
+        const cache = new Map(); // original url → { fileurl, filename } | null (bundled or passthrough)
 
-        const addDir = (dirPath) => {
-            if (seenDirs.has(dirPath)) return;
-            seenDirs.add(dirPath);
-            files.push({ name: dirPath, data: Buffer.alloc(0), typeflag: '5' });
+        const addDir = (bucket, p) => {
+            if (seen.has(p)) return;
+            seen.add(p);
+            bucket.push({ name: p, data: Buffer.alloc(0), typeflag: '5' });
         };
 
         const bundleAsset = (url, kind /* 'image' | 'sound' */) => {
-            if (!url) return url;
+            if (!url) return null;
             if (cache.has(url)) return cache.get(url);
-            // Already an archive-relative path or absolute URL → leave alone.
-            if (/^(\.\/)?temp\//.test(url)) return url;
-            if (/^(https?:|data:)/.test(url)) return url;
 
-            const asset = resolveLocalAsset(url);
-            if (!asset) return url; // unknown → leave as-is; import may fail but we don't guess
+            // Already in-archive or external → leave unchanged, no filename.
+            if (/^(\.\/)?temp\//.test(url) || /^(https?:|data:)/.test(url)) {
+                const r = { fileurl: url, filename: null };
+                cache.set(url, r);
+                return r;
+            }
+
+            const asset = resolveAsset(url);
+            if (!asset) {
+                const r = { fileurl: url, filename: null };
+                cache.set(url, r);
+                return r;
+            }
 
             const hash = crypto.randomBytes(16).toString('hex'); // 32 hex chars
             const d1 = hash.slice(0, 2), d2 = hash.slice(2, 4);
-            const newPath = `temp/${d1}/${d2}/${kind}/${hash}.${asset.ext}`;
+            addDir(dirs1, `temp/${d1}/`);
+            addDir(dirs2, `temp/${d1}/${d2}/`);
+            addDir(dirs3, `temp/${d1}/${d2}/${kind}/`);
+            const fileurl = `temp/${d1}/${d2}/${kind}/${hash}.${asset.ext}`;
+            payloads.push({ name: fileurl, data: asset.buf, typeflag: '0' });
 
-            addDir(`temp/${d1}/`);
-            addDir(`temp/${d1}/${d2}/`);
-            addDir(`temp/${d1}/${d2}/${kind}/`);
-            files.push({ name: newPath, data: asset.buf, typeflag: '0' });
-            cache.set(url, newPath);
-            return newPath;
+            // Entry expects a thumb file even for images we don't rasterize;
+            // reuse the same SVG/PNG bytes so the editor's thumbnail lookup succeeds.
+            if (kind === 'image') {
+                addDir(dirs3, `temp/${d1}/${d2}/thumb/`);
+                payloads.push({
+                    name: `temp/${d1}/${d2}/thumb/${hash}.${asset.ext}`,
+                    data: asset.buf, typeflag: '0'
+                });
+            }
+
+            const r = { fileurl, filename: hash };
+            cache.set(url, r);
+            return r;
         };
 
         project.objects.forEach(obj => {
             if (!obj || !obj.sprite) return;
             (obj.sprite.pictures || []).forEach(p => {
-                if (p.fileurl) p.fileurl = bundleAsset(p.fileurl, 'image');
-                if (p.thumbUrl) p.thumbUrl = bundleAsset(p.thumbUrl, 'image');
+                if (!p.fileurl) return;
+                const r = bundleAsset(p.fileurl, 'image');
+                if (!r) return;
+                p.fileurl = r.fileurl;
+                if (r.filename) p.filename = r.filename;
+                delete p.thumbUrl; // Entry uses `filename` for thumb lookup, not thumbUrl
             });
             (obj.sprite.sounds || []).forEach(sn => {
-                if (sn.fileurl) sn.fileurl = bundleAsset(sn.fileurl, 'sound');
+                if (!sn.fileurl) return;
+                const r = bundleAsset(sn.fileurl, 'sound');
+                if (!r) return;
+                sn.fileurl = r.fileurl;
+                if (r.filename) sn.filename = r.filename;
             });
         });
 
-        files.push({
+        const projectJson = {
             name: 'temp/project.json',
             data: Buffer.from(JSON.stringify(project), 'utf8'),
             typeflag: '0'
-        });
+        };
+
+        // Layout mirrors Entry's own export: root → level-1 dirs → project.json →
+        // level-2 dirs → level-3 dirs → file payloads.
+        const files = [
+            { name: 'temp/', data: Buffer.alloc(0), typeflag: '5' },
+            ...dirs1,
+            projectJson,
+            ...dirs2,
+            ...dirs3,
+            ...payloads
+        ];
 
         const gz = zlib.gzipSync(makeTar(files));
         const ts = new Date().toISOString().replace(/[-:]/g, '').replace(/\..+/, '').replace('T', '-');
