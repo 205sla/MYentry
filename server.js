@@ -497,9 +497,15 @@ app.post('/api/export', express.json({ limit: '25mb' }), async (req, res) => {
                 if (!r) continue;
                 p.fileurl = r.fileurl;
                 if (r.filename) p.filename = r.filename;
-                // Keep thumbUrl aligned with our bundled thumb file — Entry reads
-                // this before falling back to filename-based path derivation.
-                if (r.thumbUrl) p.thumbUrl = r.thumbUrl;
+                // Intentionally DROP thumbUrl. Entry's engine checks thumbUrl
+                // first and uses it verbatim when present; but once a .ent
+                // round-trips through playentry.org the server rewrites its
+                // own thumbUrl to a hash that has no matching file in the tar,
+                // leaving the object-list preview blank even though the image
+                // itself still renders. Entry's official exports omit the
+                // field entirely — letting the engine derive the thumb path
+                // from `filename` is the stable behavior.
+                delete p.thumbUrl;
             }
             for (const sn of (obj.sprite.sounds || [])) {
                 if (!sn.fileurl) continue;
