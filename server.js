@@ -86,10 +86,6 @@ function readTests(id) {
     return tryRead(() => JSON.parse(fs.readFileSync(path.join(problemDir(id), 'tests.json'), 'utf8')), null);
 }
 
-function readProjectEnt(id) {
-    const p = path.join(problemDir(id), 'project.ent');
-    return fs.existsSync(p) ? fs.readFileSync(p) : null;
-}
 
 function loadSpriteCatalog() {
     return tryRead(() => JSON.parse(fs.readFileSync(SPRITES_CATALOG, 'utf8')), []);
@@ -107,21 +103,62 @@ function filterSpritesByMeta(all, meta) {
     return meta.sprites.map(function (id) { return byId[id]; }).filter(Boolean);
 }
 
-// Parse tar to extract temp/project.json
-function extractProjectJson(buffer) {
+// Parse tar and return the raw bytes of the named entry, or null if absent.
+// Matches both `path` and `./path` (Entry editor sometimes emits the latter).
+function extractTarFile(buffer, targetName) {
     let offset = 0;
-    while (offset < buffer.length) {
+    while (offset < buffer.length - 512) {
         if (buffer[offset] === 0) break;
-        const name = buffer.toString('utf8', offset, offset + 100).replace(/\0/g, '');
-        const sizeStr = buffer.toString('utf8', offset + 124, offset + 136).replace(/\0/g, '').trim();
+        const name = buffer.toString('utf8', offset, offset + 100).replace(/\0.*/, '');
+        const sizeStr = buffer.toString('ascii', offset + 124, offset + 136).replace(/\0.*/, '').trim();
         const size = parseInt(sizeStr, 8) || 0;
         const dataStart = offset + 512;
-        if (name === 'temp/project.json' || name === './temp/project.json') {
-            return buffer.toString('utf8', dataStart, dataStart + size);
+        if (name === targetName || name === './' + targetName) {
+            return buffer.slice(dataStart, dataStart + size);
         }
         offset = dataStart + Math.ceil(size / 512) * 512;
     }
     return null;
+}
+
+// In-memory tar cache keyed by problem id, invalidated by project.ent mtime.
+// Each problem's .ent is unzipped at most once per file-system change — repeated
+// asset requests hit the cache. Returns the tar Buffer or null if no .ent.
+const __tarCache = new Map();
+function loadProblemTar(id) {
+    const p = path.join(problemDir(id), 'project.ent');
+    let stat;
+    try { stat = fs.statSync(p); } catch (e) { return null; }
+    const cached = __tarCache.get(id);
+    if (cached && cached.mtimeMs === stat.mtimeMs) return cached.tarBuf;
+    const tarBuf = zlib.gunzipSync(fs.readFileSync(p));
+    __tarCache.set(id, { mtimeMs: stat.mtimeMs, tarBuf });
+    return tarBuf;
+}
+
+// Map file extension → HTTP Content-Type for tar-sourced assets.
+const MIME_BY_EXT = {
+    '.svg': 'image/svg+xml', '.png': 'image/png',
+    '.jpg': 'image/jpeg',    '.jpeg': 'image/jpeg',
+    '.gif': 'image/gif',     '.webp': 'image/webp',
+    '.mp3': 'audio/mpeg',    '.wav': 'audio/wav',
+    '.ogg': 'audio/ogg',     '.m4a': 'audio/mp4'
+};
+function mimeByExt(p) {
+    return MIME_BY_EXT[path.extname(p).toLowerCase()] || 'application/octet-stream';
+}
+
+// Rewrite a fileurl/thumbUrl from project.json so the browser can fetch it.
+//   temp/XX/YY/…       → /api/problems/:id/asset/temp/XX/YY/…   (served from tar)
+//   lib/…              → /lib/…                                  (served from public/)
+//   /images/…, http(s):, data:  pass through untouched
+function rewriteAssetUrl(url, id) {
+    if (typeof url !== 'string' || !url) return url;
+    if (/^(https?:|data:|\/)/.test(url)) return url;
+    const clean = url.replace(/^\.\//, '');
+    if (/^temp\//.test(clean)) return '/api/problems/' + id + '/asset/' + clean;
+    if (/^lib\//.test(clean)) return '/' + clean;
+    return url;
 }
 
 // Build a ustar-format tar entry header. Minimal fields for the Entry
@@ -244,21 +281,54 @@ app.get('/api/sprites', (req, res) => {
 });
 
 // GET /api/problems/:id - project data from .ent file
+// Rewrites picture/sound fileurls so browser requests land on either our
+// asset endpoint (for tar-embedded assets) or our /public static tree.
 app.get('/api/problems/:id', (req, res) => {
     if (!isValidId(req.params.id)) return res.status(400).json({ error: 'invalid id' });
-    const gz = readProjectEnt(req.params.id);
-    if (!gz) return res.status(404).json({ error: 'not found' });
+    const id = req.params.id;
+    const tarBuf = loadProblemTar(id);
+    if (!tarBuf) return res.status(404).json({ error: 'not found' });
     try {
-        const tarBuf = zlib.gunzipSync(gz);
-        const jsonStr = extractProjectJson(tarBuf);
-        if (!jsonStr) return res.status(500).json({ error: 'project.json not found in .ent' });
-        const fixed = jsonStr
+        const jsonBuf = extractTarFile(tarBuf, 'temp/project.json');
+        if (!jsonBuf) return res.status(500).json({ error: 'project.json not found in .ent' });
+        const jsonStr = jsonBuf.toString('utf8')
             .replace(/\.\/bower_components\/entry-js\//g, 'lib/entry-js/')
             .replace(/\.\/node_modules\/@entrylabs\/entry\//g, 'lib/entry-js/');
-        res.json(JSON.parse(fixed));
+        const project = JSON.parse(jsonStr);
+
+        (project.objects || []).forEach(o => {
+            if (!o || !o.sprite) return;
+            (o.sprite.pictures || []).forEach(p => {
+                if (p.fileurl)  p.fileurl  = rewriteAssetUrl(p.fileurl,  id);
+                if (p.thumbUrl) p.thumbUrl = rewriteAssetUrl(p.thumbUrl, id);
+            });
+            (o.sprite.sounds || []).forEach(s => {
+                if (s.fileurl)  s.fileurl  = rewriteAssetUrl(s.fileurl, id);
+            });
+        });
+
+        res.json(project);
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
+});
+
+// GET /api/problems/:id/asset/<path>  — serve a file embedded in project.ent
+// Accepts only `temp/…` paths (the Entry convention) and blocks traversal.
+app.get('/api/problems/:id/asset/*', (req, res) => {
+    if (!isValidId(req.params.id)) return res.status(400).end();
+    const subpath = req.params[0] || '';
+    if (!/^temp\//.test(subpath)) return res.status(400).end();
+    if (/(^|\/)\.\.(\/|$)/.test(subpath)) return res.status(400).end();
+
+    const tarBuf = loadProblemTar(req.params.id);
+    if (!tarBuf) return res.status(404).end();
+    const buf = extractTarFile(tarBuf, subpath);
+    if (!buf) return res.status(404).end();
+
+    res.setHeader('Content-Type', mimeByExt(subpath));
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+    res.send(buf);
 });
 
 // POST /api/export - repackage a live Entry project (JSON) into a .ent file
