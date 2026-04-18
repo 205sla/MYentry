@@ -368,12 +368,12 @@ function initExport() {
 
         var project;
         try { project = Entry.exportProject({}); }
-        catch (e) { alert('프로젝트 내보내기 준비에 실패했습니다.'); return; }
-        if (!project) { alert('내보낼 오브젝트가 없습니다.'); return; }
+        catch (e) { alert('작품 저장 준비에 실패했습니다.'); return; }
+        if (!project) { alert('저장할 오브젝트가 없습니다.'); return; }
 
         btn.disabled = true;
         var originalText = btn.innerHTML;
-        btn.innerHTML = '내보내는 중…';
+        btn.innerHTML = '저장 중…';
 
         fetch('/api/export', {
             method: 'POST',
@@ -396,7 +396,7 @@ function initExport() {
             document.body.removeChild(a);
             setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
         }).catch(function (err) {
-            alert('내보내기 실패: ' + (err && err.message ? err.message : err));
+            alert('저장 실패: ' + (err && err.message ? err.message : err));
         }).then(function () {
             btn.disabled = false;
             btn.innerHTML = originalText;
