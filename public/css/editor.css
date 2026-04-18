@@ -54,6 +54,9 @@ body {
 #submit-btn:disabled { background: #aaa; cursor: wait; }
 #reset-btn { background: #e53935; color: #fff; }
 #reset-btn:hover { background: #c62828; }
+#export-btn { background: #4f80ff; color: #fff; }
+#export-btn:hover { background: #3e6ae6; }
+#export-btn:disabled { background: #aaa; cursor: wait; }
 
 /* ---------- Main layout ---------- */
 #main { display: flex; height: calc(100vh - 42px); }

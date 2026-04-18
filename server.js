@@ -2,6 +2,7 @@ const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const zlib = require('zlib');
+const crypto = require('crypto');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -123,6 +124,56 @@ function extractProjectJson(buffer) {
     return null;
 }
 
+// Build a ustar-format tar entry header. Minimal fields for the Entry
+// ecosystem (our extractor + playentry.org importer). typeflag: '0' file, '5' dir.
+function tarHeader(name, size, typeflag) {
+    const h = Buffer.alloc(512);
+    h.write(name, 0, 100, 'utf8');
+    h.write('0000644\0', 100, 8, 'ascii');
+    h.write('0000000\0', 108, 8, 'ascii');
+    h.write('0000000\0', 116, 8, 'ascii');
+    h.write(size.toString(8).padStart(11, '0') + '\0', 124, 12, 'ascii');
+    h.write(Math.floor(Date.now() / 1000).toString(8).padStart(11, '0') + '\0', 136, 12, 'ascii');
+    h.write('        ', 148, 8, 'ascii');      // chksum placeholder (spaces)
+    h.write(typeflag, 156, 1, 'ascii');
+    h.write('ustar\0', 257, 6, 'ascii');
+    h.write('00', 263, 2, 'ascii');
+    let sum = 0;
+    for (let i = 0; i < 512; i++) sum += h[i];
+    h.write(sum.toString(8).padStart(6, '0') + '\0 ', 148, 8, 'ascii');
+    return h;
+}
+
+// Assemble an array of { name, data, typeflag } into a valid tar buffer.
+function makeTar(files) {
+    const parts = [];
+    for (const f of files) {
+        parts.push(tarHeader(f.name, f.data.length, f.typeflag || '0'));
+        if (f.data.length > 0) {
+            parts.push(f.data);
+            const pad = (512 - (f.data.length % 512)) % 512;
+            if (pad) parts.push(Buffer.alloc(pad));
+        }
+    }
+    parts.push(Buffer.alloc(1024)); // end-of-archive marker (two zero blocks)
+    return Buffer.concat(parts);
+}
+
+// Resolve an asset URL referenced in project.json to an on-disk file.
+// Returns { buf, ext } or null. Whitelists /images/ under public/ only,
+// with path-traversal defense (resolved path must stay inside publicDir).
+function resolveLocalAsset(url) {
+    if (typeof url !== 'string') return null;
+    if (!/^\/images\//.test(url)) return null;
+    const publicDir = path.resolve(__dirname, 'public');
+    const fsPath = path.resolve(publicDir, url.slice(1));
+    if (!fsPath.startsWith(publicDir + path.sep) && fsPath !== publicDir) return null;
+    if (!fs.existsSync(fsPath)) return null;
+    const buf = fs.readFileSync(fsPath);
+    const ext = (path.extname(url).slice(1) || 'bin').toLowerCase();
+    return { buf, ext };
+}
+
 // ========== Endpoints ==========
 
 // GET /api/problems - list all problems (directories with meta.json)
@@ -207,6 +258,80 @@ app.get('/api/problems/:id', (req, res) => {
         res.json(JSON.parse(fixed));
     } catch (e) {
         res.status(500).json({ error: e.message });
+    }
+});
+
+// POST /api/export - repackage a live Entry project (JSON) into a .ent file
+// that playentry.org (and our own loader) can import. For every picture/sound
+// fileurl that points to a local /images/* asset we read the file from disk,
+// embed it inside the tar under temp/<hh>/<hh>/(image|sound)/<hash>.<ext>,
+// and rewrite the fileurl in project.json so the exported archive is
+// self-contained. External URLs and data: URIs pass through unchanged.
+app.post('/api/export', express.json({ limit: '25mb' }), (req, res) => {
+    try {
+        const project = req.body;
+        if (!project || typeof project !== 'object' || !Array.isArray(project.objects)) {
+            return res.status(400).json({ error: 'invalid project JSON' });
+        }
+
+        const files = [{ name: 'temp/', data: Buffer.alloc(0), typeflag: '5' }];
+        const seenDirs = new Set(['temp/']);
+        const cache = new Map(); // original url → rewritten tar path
+
+        const addDir = (dirPath) => {
+            if (seenDirs.has(dirPath)) return;
+            seenDirs.add(dirPath);
+            files.push({ name: dirPath, data: Buffer.alloc(0), typeflag: '5' });
+        };
+
+        const bundleAsset = (url, kind /* 'image' | 'sound' */) => {
+            if (!url) return url;
+            if (cache.has(url)) return cache.get(url);
+            // Already an archive-relative path or absolute URL → leave alone.
+            if (/^(\.\/)?temp\//.test(url)) return url;
+            if (/^(https?:|data:)/.test(url)) return url;
+
+            const asset = resolveLocalAsset(url);
+            if (!asset) return url; // unknown → leave as-is; import may fail but we don't guess
+
+            const hash = crypto.randomBytes(16).toString('hex'); // 32 hex chars
+            const d1 = hash.slice(0, 2), d2 = hash.slice(2, 4);
+            const newPath = `temp/${d1}/${d2}/${kind}/${hash}.${asset.ext}`;
+
+            addDir(`temp/${d1}/`);
+            addDir(`temp/${d1}/${d2}/`);
+            addDir(`temp/${d1}/${d2}/${kind}/`);
+            files.push({ name: newPath, data: asset.buf, typeflag: '0' });
+            cache.set(url, newPath);
+            return newPath;
+        };
+
+        project.objects.forEach(obj => {
+            if (!obj || !obj.sprite) return;
+            (obj.sprite.pictures || []).forEach(p => {
+                if (p.fileurl) p.fileurl = bundleAsset(p.fileurl, 'image');
+                if (p.thumbUrl) p.thumbUrl = bundleAsset(p.thumbUrl, 'image');
+            });
+            (obj.sprite.sounds || []).forEach(sn => {
+                if (sn.fileurl) sn.fileurl = bundleAsset(sn.fileurl, 'sound');
+            });
+        });
+
+        files.push({
+            name: 'temp/project.json',
+            data: Buffer.from(JSON.stringify(project), 'utf8'),
+            typeflag: '0'
+        });
+
+        const gz = zlib.gzipSync(makeTar(files));
+        const ts = new Date().toISOString().replace(/[-:]/g, '').replace(/\..+/, '').replace('T', '-');
+        res.setHeader('Content-Type', 'application/x-gzip');
+        res.setHeader('Content-Disposition', `attachment; filename="code205-${ts}.ent"`);
+        res.setHeader('Content-Length', gz.length);
+        res.send(gz);
+    } catch (e) {
+        console.error('export error:', e);
+        res.status(500).json({ error: String(e.message || e) });
     }
 });
 

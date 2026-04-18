@@ -155,6 +155,7 @@ $(document).ready(function () {
     initGrading();
     initUndoRedo();
     initReset();
+    initExport();
     // Notify Entry of resize after panel layout is set
     setTimeout(function () { $(window).trigger('resize'); }, CONFIG.RESIZE_AFTER_INIT_MS);
 });
@@ -348,6 +349,58 @@ function initReset() {
         } else {
             Entry.loadProject(bot205DefaultProject());
         }
+    });
+}
+
+// ============================================================
+// 7b. Export to .ent — bundle current project into a playentry.org
+// -compatible archive that can be uploaded via "오프라인 작품 불러오기"
+// ============================================================
+
+// Ask the Entry engine for its current project JSON, POST it to the server
+// (which re-bundles local /images/* assets into the tar), then trigger a
+// browser download of the returned .ent blob. Disabled during grading.
+function initExport() {
+    var btn = document.getElementById('export-btn');
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+        if (GradingState.isRunning) return;
+
+        var project;
+        try { project = Entry.exportProject({}); }
+        catch (e) { alert('프로젝트 내보내기 준비에 실패했습니다.'); return; }
+        if (!project) { alert('내보낼 오브젝트가 없습니다.'); return; }
+
+        btn.disabled = true;
+        var originalText = btn.innerHTML;
+        btn.innerHTML = '내보내는 중…';
+
+        fetch('/api/export', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(project)
+        }).then(function (r) {
+            if (!r.ok) throw new Error('서버 오류 (' + r.status + ')');
+            // Honor server-provided filename when present
+            var cd = r.headers.get('Content-Disposition') || '';
+            var m = /filename="([^"]+)"/.exec(cd);
+            var filename = m ? m[1] : 'code205.ent';
+            return r.blob().then(function (blob) { return { blob: blob, filename: filename }; });
+        }).then(function (out) {
+            var url = URL.createObjectURL(out.blob);
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = out.filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+        }).catch(function (err) {
+            alert('내보내기 실패: ' + (err && err.message ? err.message : err));
+        }).then(function () {
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        });
     });
 }
 
