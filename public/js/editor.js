@@ -859,6 +859,20 @@ function initEntryPopup() {
         data: { data: { data: [] } }
     });
 
+    // Match the official example's init defaults — EntryTool.Popup's project-nav
+    // uses these even when we don't surface the "작품" tab, and leaving them
+    // unset can leave the popup shell in a half-rendered state.
+    // Ref: https://github.com/entrylabs/example/blob/main/base/js/popup/index.mjs
+    if (typeof popup.setData === 'function') {
+        popup.setData({
+            projectNavOptions: {
+                categoryOptions: ['all', 'game', 'living', 'storytelling', 'arts', 'knowledge', 'etc'],
+                sortOptions:     ['updated', 'visit', 'likeCnt', 'comment'],
+                periodOptions:   ['all', 'today', 'week', 'month', 'quarter'],
+            },
+        });
+    }
+
     var currentType = '';
 
     // Catalog items carry both `id` (our canonical key) and `_id` (same value,
@@ -869,9 +883,18 @@ function initEntryPopup() {
         container.style.display = 'block';
         var data;
         if (type === 'sprite') {
-            // Sprite mode: wrap each catalog item as {_id, name, pictures[], sounds[]}
+            // Sprite mode: wrap each catalog item as {_id, name, pictures[], sounds[], category}.
+            // `category` is required because Entry.EntryObject.initEntity() reads
+            // `model.sprite.category.main` unconditionally (src/class/object.js L152).
+            // Missing it triggers TypeError and the object silently fails to spawn.
             data = __spriteCatalog.map(function (img) {
-                return { _id: img.id, name: img.name, pictures: [img], sounds: [] };
+                return {
+                    _id: img.id,
+                    name: img.name,
+                    pictures: [img],
+                    sounds: [],
+                    category: {},
+                };
             });
         } else if (type === 'picture') {
             // Picture mode: catalog items used directly (already have _id & id)
@@ -882,43 +905,43 @@ function initEntryPopup() {
         if (typeof popup.setData === 'function') {
             popup.setData({ data: { data: data } });
         }
-        popup.show({ type: type });
+        popup.show({ type: type }, {});
     }
 
-    Entry.addEventListener('openSpriteManager', function () { showPopup('sprite'); });
+    Entry.addEventListener('openSpriteManager',  function () { showPopup('sprite');  });
     Entry.addEventListener('openPictureManager', function () { showPopup('picture'); });
-    Entry.addEventListener('openSoundManager', function () { showPopup('sound'); });
+    Entry.addEventListener('openSoundManager',   function () { showPopup('sound');   });
 
-    popup.on('submit', function (items) {
-        if (!items || !items.length) return;
-        var sceneId = Entry.scene.selectedScene.id;
+    // EntryTool.Popup emits 'submit' with a `{ selected: [...] }` object — NOT a
+    // plain array. Treating the argument as an array silently short-circuits on
+    // `items.length === undefined` and nothing ever gets added. Always unwrap
+    // `data.selected` first. Ref: base/js/popup/{sprite,picture,sound}.mjs
+    popup.on('submit', function (data) {
+        var items = (data && data.selected) || [];
+        if (!items.length) return;
 
         if (currentType === 'sprite') {
-            items.forEach(function (item) {
-                var pics = (item.pictures || []).map(function (p) {
-                    p.id = p.id || Entry.generateHash();
+            items.forEach(function (sprite) {
+                // Each `sprite` keeps the wrap shape we set in showPopup():
+                // { _id, name, pictures:[<catalog img>], sounds:[] }.
+                // Regenerate picture IDs so duplicate adds stay distinct in Entry.
+                (sprite.pictures || []).forEach(function (p) {
+                    p.id = Entry.generateHash();
                     p.fileurl = p.fileurl || p.thumbUrl || '';
                     p.thumbUrl = p.thumbUrl || p.fileurl || '';
                     p.filename = p.filename || '_';
-                    return p;
                 });
-                var snds = (item.sounds || []).map(function (s) {
+                (sprite.sounds || []).forEach(function (s) {
                     s.id = s.id || Entry.generateHash();
                     s.fileurl = s.fileurl || '';
                     s.filename = s.filename || '_';
-                    return s;
                 });
-                var firstPic = pics[0] || { dimension: { width: 100, height: 100 } };
-                var w = firstPic.dimension ? firstPic.dimension.width : 100;
-                var h = firstPic.dimension ? firstPic.dimension.height : 100;
+                // Entry fills in scene/entity/rotateMethod defaults when they
+                // are omitted, matching the official sprite.mjs pattern.
                 Entry.container.addObject({
                     id: Entry.generateHash(),
-                    name: item.name || 'Object',
                     objectType: 'sprite',
-                    rotateMethod: 'free',
-                    scene: sceneId,
-                    sprite: { pictures: pics, sounds: snds },
-                    entity: { x: 0, y: 0, regX: w / 2, regY: h / 2, scaleX: 1, scaleY: 1, rotation: 0, direction: 90, width: w, height: h, visible: true }
+                    sprite: sprite,
                 }, 0);
             });
         } else if (currentType === 'picture') {

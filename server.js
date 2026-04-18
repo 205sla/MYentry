@@ -3,6 +3,11 @@ const fs = require('fs');
 const path = require('path');
 const zlib = require('zlib');
 const crypto = require('crypto');
+const sharp = require('sharp');
+
+// Thumbnail resolution used when rasterizing for .ent export (matches the
+// compact PNGs Entry's own export produces — ~100px long edge).
+const THUMB_MAX_PX = 96;
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -161,20 +166,36 @@ function rewriteAssetUrl(url, id) {
     return url;
 }
 
-// Build a ustar-format tar entry header. Minimal fields for the Entry
-// ecosystem (our extractor + playentry.org importer). typeflag: '0' file, '5' dir.
+// Build a ustar-format tar entry header matching npm `tar` portable output
+// (https://www.npmjs.com/package/tar). Entry's server-side importer uses the
+// npm tar package; differences in header bytes — especially a directory that
+// carries 0644 instead of 0755 — cause the importer to skip directory
+// creation, after which child file paths fail to resolve and the uploaded
+// project's fileurls never get rewritten to Entry's CDN. The result is that
+// every image on playentry.org 404s.
+//
+// Portable format specifics (reproduced from the npm tar output we compared):
+//   mode      : "000755 \0" for dirs, "000644 \0" for files (space + NUL)
+//   uid/gid   : all-NUL (portable strips the actual values)
+//   mtime     : all-NUL for dirs, octal timestamp for files
+//   uname/gn. : left as NUL (portable)
+//   magic/ver : "ustar\0" + "00"
 function tarHeader(name, size, typeflag) {
     const h = Buffer.alloc(512);
     h.write(name, 0, 100, 'utf8');
-    h.write('0000644\0', 100, 8, 'ascii');
-    h.write('0000000\0', 108, 8, 'ascii');
-    h.write('0000000\0', 116, 8, 'ascii');
+    const isDir = (typeflag === '5');
+    h.write(isDir ? '000755 \0' : '000644 \0', 100, 8, 'ascii');
+    // uid/gid: leave as NUL bytes (Buffer.alloc default)
     h.write(size.toString(8).padStart(11, '0') + '\0', 124, 12, 'ascii');
-    h.write(Math.floor(Date.now() / 1000).toString(8).padStart(11, '0') + '\0', 136, 12, 'ascii');
+    if (!isDir) {
+        h.write(Math.floor(Date.now() / 1000).toString(8).padStart(11, '0') + '\0',
+                136, 12, 'ascii');
+    } // dirs: mtime stays all-NUL
     h.write('        ', 148, 8, 'ascii');      // chksum placeholder (spaces)
     h.write(typeflag, 156, 1, 'ascii');
     h.write('ustar\0', 257, 6, 'ascii');
     h.write('00', 263, 2, 'ascii');
+    // uname/gname: leave as NUL bytes (portable)
     let sum = 0;
     for (let i = 0; i < 512; i++) sum += h[i];
     h.write(sum.toString(8).padStart(6, '0') + '\0 ', 148, 8, 'ascii');
@@ -209,9 +230,11 @@ function entryStyleHash() {
 
 // Resolve an asset URL referenced in project.json to raw bytes + extension.
 // Returns { buf, ext } or null. Two sources:
-//   - /images/…             → read from public/ on disk (whitelisted)
-//   - /api/problems/N/asset/temp/… → read from that problem's .ent tar
-// path-traversal defense on the disk branch (resolved path must stay inside publicDir).
+//   - /<anything>.<media-ext>  → read from public/ on disk (any path under public/)
+//   - /api/problems/N/asset/temp/…  → read from that problem's .ent tar
+// Extensions are whitelisted to image/audio formats so we never bundle JS/CSS/HTML.
+// Path-traversal defense: resolved path must stay inside publicDir.
+const MEDIA_EXT_RE = /\.(svg|png|jpg|jpeg|gif|webp|mp3|wav|ogg|m4a)$/i;
 function resolveAsset(url) {
     if (typeof url !== 'string' || !url) return null;
 
@@ -226,8 +249,10 @@ function resolveAsset(url) {
         return { buf, ext };
     }
 
-    // Branch 2: our static /images/ directory
-    if (!/^\/images\//.test(url)) return null;
+    // Branch 2: any absolute-path media file under public/
+    // (catches /images/*, /sprites/*, and any future asset directories).
+    if (!url.startsWith('/') || url.startsWith('/api/')) return null;
+    if (!MEDIA_EXT_RE.test(url)) return null;
     const publicDir = path.resolve(__dirname, 'public');
     const fsPath = path.resolve(publicDir, url.slice(1));
     if (!fsPath.startsWith(publicDir + path.sep) && fsPath !== publicDir) return null;
@@ -376,7 +401,7 @@ app.get('/api/problems/:id/asset/*', (req, res) => {
 // Tar entries are laid out in the order Entry's own export produces:
 //   level-1 dirs → project.json → level-2 dirs → level-3 dirs → files.
 // Gzip uses memLevel: 6 to match Entry's documented setting.
-app.post('/api/export', express.json({ limit: '25mb' }), (req, res) => {
+app.post('/api/export', express.json({ limit: '25mb' }), async (req, res) => {
     try {
         const project = req.body;
         if (!project || typeof project !== 'object' || !Array.isArray(project.objects)) {
@@ -397,13 +422,13 @@ app.post('/api/export', express.json({ limit: '25mb' }), (req, res) => {
             bucket.push({ name: p, data: Buffer.alloc(0), typeflag: '5' });
         };
 
-        const bundleAsset = (url, kind /* 'image' | 'sound' */) => {
+        const bundleAsset = async (url, kind /* 'image' | 'sound' */) => {
             if (!url) return null;
             if (cache.has(url)) return cache.get(url);
 
             // Already in-archive or external → leave unchanged, no filename.
             if (/^(\.\/)?temp\//.test(url) || /^(https?:|data:)/.test(url)) {
-                const r = { fileurl: url, filename: null };
+                const r = { fileurl: url, filename: null, thumbUrl: null };
                 cache.set(url, r);
                 return r;
             }
@@ -420,17 +445,43 @@ app.post('/api/export', express.json({ limit: '25mb' }), (req, res) => {
             addDir(dirs1, `temp/${d1}/`);
             addDir(dirs2, `temp/${d1}/${d2}/`);
             addDir(dirs3, `temp/${d1}/${d2}/${kind}/`);
+
+            // Original file (SVG, PNG, MP3, etc.) always goes in.
             const fileurl = `temp/${d1}/${d2}/${kind}/${hash}.${asset.ext}`;
             payloads.push({ name: fileurl, data: asset.buf, typeflag: '0' });
 
-            // For images: also drop a thumb with the same bytes. We explicitly
-            // set thumbUrl on the picture (below) so Entry's updateThumbnailView
-            // picks our path rather than falling back to "<defaultPath>/uploads/..../thumb/<hash>.png".
             let thumbUrl = null;
             if (kind === 'image') {
+                // Entry's upload pipeline expects a same-named PNG raster alongside
+                // the SVG (every SVG in official .ent exports ships with a .png
+                // sibling). Rasterize the SVG and drop it next to the original.
+                if (asset.ext === 'svg') {
+                    try {
+                        const pngBuf = await sharp(asset.buf).png().toBuffer();
+                        payloads.push({
+                            name: `temp/${d1}/${d2}/image/${hash}.png`,
+                            data: pngBuf, typeflag: '0',
+                        });
+                    } catch (e) {
+                        console.warn('SVG→PNG rasterize failed for', url, '—', e.message);
+                    }
+                }
+
+                // Thumbnail: a small PNG under thumb/ (matches Entry's convention
+                // of PNG thumbnails with ~96px long edge).
                 addDir(dirs3, `temp/${d1}/${d2}/thumb/`);
-                thumbUrl = `temp/${d1}/${d2}/thumb/${hash}.${asset.ext}`;
-                payloads.push({ name: thumbUrl, data: asset.buf, typeflag: '0' });
+                thumbUrl = `temp/${d1}/${d2}/thumb/${hash}.png`;
+                try {
+                    const thumbBuf = await sharp(asset.buf)
+                        .resize(THUMB_MAX_PX, THUMB_MAX_PX, { fit: 'inside' })
+                        .png().toBuffer();
+                    payloads.push({ name: thumbUrl, data: thumbBuf, typeflag: '0' });
+                } catch (e) {
+                    // Non-raster source or native deps missing — point thumbUrl
+                    // back to the original so Entry's engine renders *something*.
+                    console.warn('thumb rasterize failed for', url, '—', e.message);
+                    thumbUrl = fileurl;
+                }
             }
 
             const r = { fileurl, filename: hash, thumbUrl };
@@ -438,26 +489,26 @@ app.post('/api/export', express.json({ limit: '25mb' }), (req, res) => {
             return r;
         };
 
-        project.objects.forEach(obj => {
-            if (!obj || !obj.sprite) return;
-            (obj.sprite.pictures || []).forEach(p => {
-                if (!p.fileurl) return;
-                const r = bundleAsset(p.fileurl, 'image');
-                if (!r) return;
+        for (const obj of project.objects) {
+            if (!obj || !obj.sprite) continue;
+            for (const p of (obj.sprite.pictures || [])) {
+                if (!p.fileurl) continue;
+                const r = await bundleAsset(p.fileurl, 'image');
+                if (!r) continue;
                 p.fileurl = r.fileurl;
                 if (r.filename) p.filename = r.filename;
                 // Keep thumbUrl aligned with our bundled thumb file — Entry reads
                 // this before falling back to filename-based path derivation.
                 if (r.thumbUrl) p.thumbUrl = r.thumbUrl;
-            });
-            (obj.sprite.sounds || []).forEach(sn => {
-                if (!sn.fileurl) return;
-                const r = bundleAsset(sn.fileurl, 'sound');
-                if (!r) return;
+            }
+            for (const sn of (obj.sprite.sounds || [])) {
+                if (!sn.fileurl) continue;
+                const r = await bundleAsset(sn.fileurl, 'sound');
+                if (!r) continue;
                 sn.fileurl = r.fileurl;
                 if (r.filename) sn.filename = r.filename;
-            });
-        });
+            }
+        }
 
         const projectJson = {
             name: 'temp/project.json',
