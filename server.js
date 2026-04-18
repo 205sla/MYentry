@@ -79,8 +79,17 @@ function tryRead(fn, fallback) {
     try { return fn(); } catch (e) { return fallback; }
 }
 
+// Windows editors (Notepad, etc.) often save JSON with a leading UTF-8 BOM
+// (EF BB BF). JSON.parse rejects it, which used to make a problem silently
+// disappear from /api/problems. Strip it before parsing.
+function readJsonFile(p) {
+    let s = fs.readFileSync(p, 'utf8');
+    if (s.charCodeAt(0) === 0xFEFF) s = s.slice(1);
+    return JSON.parse(s);
+}
+
 function readMeta(id) {
-    return tryRead(() => JSON.parse(fs.readFileSync(path.join(problemDir(id), 'meta.json'), 'utf8')), null);
+    return tryRead(() => readJsonFile(path.join(problemDir(id), 'meta.json')), null);
 }
 
 function readDescription(id) {
@@ -88,12 +97,12 @@ function readDescription(id) {
 }
 
 function readTests(id) {
-    return tryRead(() => JSON.parse(fs.readFileSync(path.join(problemDir(id), 'tests.json'), 'utf8')), null);
+    return tryRead(() => readJsonFile(path.join(problemDir(id), 'tests.json')), null);
 }
 
 
 function loadSpriteCatalog() {
-    return tryRead(() => JSON.parse(fs.readFileSync(SPRITES_CATALOG, 'utf8')), []);
+    return tryRead(() => readJsonFile(SPRITES_CATALOG), []);
 }
 
 // Filter catalog by problem's meta.json `sprites` array (list of id values).
