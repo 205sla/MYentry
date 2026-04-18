@@ -4,3 +4,7 @@ node_modules/
 *.pem
 *.pub
 deploy-key
+
+# Local-only reference docs (Entry official docs mirror — not committed)
+docs/
+.tmp-entrydocs/
