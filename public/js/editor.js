@@ -73,7 +73,13 @@ var GradingState = {
         // (engineInternalStop/Run). Bypasses the "isRunning" guard
         // so the grader can start/stop the engine it's managing.
         internal: false
-    }
+    },
+
+    // User's Entry.isTurbo value captured at runAllTests() entry.
+    // Grading forces turbo ON for faster loop evaluation; this restores
+    // the user's original setting on exit (completion OR cancellation).
+    // null when not in a grading run.
+    prevTurbo: null
 };
 
 // Local sprite library fetched from /api/sprites (page-scope, not grading state).
@@ -416,6 +422,7 @@ function initGrading() {
             try { fn(); } catch (e) {}
         }
         GradingState.isRunning = false; // release user control over start/stop
+        restoreTurboState();            // restore user's Entry.isTurbo setting
         document.getElementById('grade-overlay').classList.remove('active');
     });
 
@@ -503,10 +510,30 @@ function renderGradeResults(results, running, mode) {
     body.innerHTML = html;
 }
 
+// Restore Entry.isTurbo to the user's original setting captured at
+// runAllTests() entry. Idempotent — safe to call multiple times
+// (e.g. from both normal completion and grade-stop cancellation).
+function restoreTurboState() {
+    if (window.Entry && GradingState.prevTurbo !== null) {
+        Entry.isTurbo = GradingState.prevTurbo;
+        GradingState.prevTurbo = null;
+    }
+}
+
 function runAllTests(cases, title, mode) {
     GradingState.cancelled = false;
     installEngineGuard();
     GradingState.isRunning = true; // block user-initiated start/stop until done or cancelled
+
+    // Force turbo mode ON during grading so loop-heavy solutions complete
+    // within the timeout budget. Manual ▶ runs are unaffected because this
+    // only wraps the test/submit code path. User's original setting is
+    // restored on completion or cancellation (see restoreTurboState).
+    if (window.Entry) {
+        GradingState.prevTurbo = Entry.isTurbo || false;
+        Entry.isTurbo = true;
+    }
+
     showGradeModal();
     document.getElementById('grade-title').textContent = title || '채점 결과';
     var results = cases.map(function (c) {
@@ -532,6 +559,7 @@ function runAllTests(cases, title, mode) {
     });
     chain.then(function () {
         GradingState.isRunning = false; // release user control once chain fully settles
+        restoreTurboState();            // restore user's Entry.isTurbo setting
         if (GradingState.cancelled) return;
         renderGradeResults(results, false, mode);
 
