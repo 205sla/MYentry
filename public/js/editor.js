@@ -145,7 +145,7 @@ $(document).ready(function () {
         loadProblemMeta(problemId);
         loadProblemTests(problemId);
     } else {
-        Entry.loadProject();
+        Entry.loadProject(bot205DefaultProject());
         banUnusedCategories();
         hideProblemPanel();
     }
@@ -182,7 +182,61 @@ function loadProblemProject(problemId) {
     return fetch('/api/problems/' + problemId)
         .then(function (r) { if (r.ok) return r.json(); throw r; })
         .then(function (project) { Entry.loadProject(project); })
-        .catch(function () { Entry.loadProject(); });
+        .catch(function () { Entry.loadProject(bot205DefaultProject()); });
+}
+
+// Build a starter project with CODE 205's mascot (205봇 / bot205) instead
+// of the default Entrybot. Called in three places:
+//  - Free mode entry (no problemId)
+//  - Reset button in free mode
+//  - Fallback when a problem has no project.ent / fails to load
+//
+// Uses Entry.getStartProject() as the base so scenes/variables/expansion
+// flags match whatever the engine expects, then swaps the sole object.
+// Returns a fresh plain object each call (Entry mutates it internally).
+function bot205DefaultProject() {
+    var base;
+    try {
+        base = Entry.getStartProject();
+    } catch (e) {
+        base = { scenes: [{ name: '장면 1', id: 'bot205sc' }], variables: [],
+                 objects: [], expansionBlocks: [], aiUtilizeBlocks: [], speed: 60 };
+    }
+    var sceneId = (base.scenes && base.scenes[0] && base.scenes[0].id) || 'bot205sc';
+    var pic = function (slug, name) {
+        var url = '/images/mascot/' + slug + '.svg';
+        return { id: slug, fileurl: url, thumbUrl: url, name: name,
+                 imageType: 'svg', dimension: { width: 200, height: 240 } };
+    };
+    base.objects = [{
+        id: 'bot205',
+        name: '205봇',
+        script: [[]],
+        selectedPictureId: 'bot205-idle',
+        objectType: 'sprite',
+        rotateMethod: 'free',
+        scene: sceneId,
+        sprite: {
+            sounds: [],
+            pictures: [
+                pic('bot205-idle',   '205봇_서기'),
+                pic('bot205-walk-1', '205봇_걷기1'),
+                pic('bot205-walk-2', '205봇_걷기2'),
+                pic('bot205-hello',  '205봇_인사')
+            ]
+        },
+        entity: {
+            x: 0, y: 0,
+            regX: 100, regY: 120,     // anchor at image center (200x240)
+            scaleX: 0.5, scaleY: 0.5, // stage size ≈ 100x120, similar to Entrybot footprint
+            rotation: 0, direction: 90,
+            width: 200, height: 240,
+            visible: true
+        },
+        lock: false,
+        active: true
+    }];
+    return base;
 }
 
 function loadProblemTests(problemId) {
@@ -292,7 +346,7 @@ function initReset() {
         if (problemId) {
             loadProblemProject(problemId);
         } else {
-            Entry.loadProject();
+            Entry.loadProject(bot205DefaultProject());
         }
     });
 }
