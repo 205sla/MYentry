@@ -1,4 +1,4 @@
-합계 = 0
+합 = 0
 for i in range(len(리스트)):
-    합계 = 합계 + 리스트[i]
-Entry.print(합계)
+    합 = 합 + 리스트[i]
+Entry.print(합)
