@@ -1,5 +1,8 @@
 node_modules/
-.claude/
+# Claude Code config is private except for shared skills.
+.claude/*
+!.claude/skills/
+!.claude/skills/**
 *.key
 *.pem
 *.pub
