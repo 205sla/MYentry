@@ -1,0 +1,71 @@
+{
+  "test": [
+    {
+      "name": "12와 18 → 6",
+      "setup": { "variables": { "a": "12", "b": "18" } },
+      "expected": { "say": ["6"] }
+    },
+    {
+      "name": "48과 36 → 12",
+      "setup": { "variables": { "a": "48", "b": "36" } },
+      "expected": { "say": ["12"] }
+    },
+    {
+      "name": "17과 5 → 1 (서로소)",
+      "setup": { "variables": { "a": "17", "b": "5" } },
+      "expected": { "say": ["1"] }
+    }
+  ],
+  "submit": [
+    {
+      "name": "작은 서로소 (3, 5)",
+      "setup": { "variables": { "a": "3", "b": "5" } },
+      "expected": { "say": ["1"] }
+    },
+    {
+      "name": "배수 관계 (6, 24)",
+      "setup": { "variables": { "a": "6", "b": "24" } },
+      "expected": { "say": ["6"] }
+    },
+    {
+      "name": "같은 수 (7, 7)",
+      "setup": { "variables": { "a": "7", "b": "7" } },
+      "expected": { "say": ["7"] }
+    },
+    {
+      "name": "1 포함 (1, 100)",
+      "setup": { "variables": { "a": "1", "b": "100" } },
+      "expected": { "say": ["1"] }
+    },
+    {
+      "name": "큰 수 (1000, 750)",
+      "setup": { "variables": { "a": "1000", "b": "750" } },
+      "expected": { "say": ["250"] }
+    },
+    {
+      "name": "100과 35",
+      "setup": { "variables": { "a": "100", "b": "35" } },
+      "expected": { "say": ["5"] }
+    },
+    {
+      "name": "8과 12",
+      "setup": { "variables": { "a": "8", "b": "12" } },
+      "expected": { "say": ["4"] }
+    },
+    {
+      "name": "같은 큰 수 (100, 100)",
+      "setup": { "variables": { "a": "100", "b": "100" } },
+      "expected": { "say": ["100"] }
+    },
+    {
+      "name": "완전 배수 (27, 9)",
+      "setup": { "variables": { "a": "27", "b": "9" } },
+      "expected": { "say": ["9"] }
+    },
+    {
+      "name": "91과 26",
+      "setup": { "variables": { "a": "91", "b": "26" } },
+      "expected": { "say": ["13"] }
+    }
+  ]
+}

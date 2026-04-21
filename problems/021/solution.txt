@@ -1,0 +1,5 @@
+while b != 0:
+    나머지 = a % b
+    a = b
+    b = 나머지
+Entry.print(a)
