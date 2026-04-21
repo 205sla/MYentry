@@ -1,0 +1,66 @@
+{
+  "test": [
+    {
+      "name": "반가워 → 반가워냥",
+      "setup": { "variables": { "대답": "반가워" } },
+      "expected": { "say": ["반가워냥"] }
+    },
+    {
+      "name": "안녕 → 안녕냥",
+      "setup": { "variables": { "대답": "안녕" } },
+      "expected": { "say": ["안녕냥"] }
+    }
+  ],
+  "submit": [
+    {
+      "name": "짧은 한글",
+      "setup": { "variables": { "대답": "나" } },
+      "expected": { "say": ["나냥"] }
+    },
+    {
+      "name": "긴 한글",
+      "setup": { "variables": { "대답": "안녕하세요" } },
+      "expected": { "say": ["안녕하세요냥"] }
+    },
+    {
+      "name": "영문 소문자",
+      "setup": { "variables": { "대답": "hello" } },
+      "expected": { "say": ["hello냥"] }
+    },
+    {
+      "name": "숫자 문자열",
+      "setup": { "variables": { "대답": "205" } },
+      "expected": { "say": ["205냥"] }
+    },
+    {
+      "name": "냥으로 끝나는 말",
+      "setup": { "variables": { "대답": "냥" } },
+      "expected": { "say": ["냥냥"] }
+    },
+    {
+      "name": "냥 반복",
+      "setup": { "variables": { "대답": "냥냥냥" } },
+      "expected": { "say": ["냥냥냥냥"] }
+    },
+    {
+      "name": "영문 대문자",
+      "setup": { "variables": { "대답": "HELLO" } },
+      "expected": { "say": ["HELLO냥"] }
+    },
+    {
+      "name": "한영 혼합",
+      "setup": { "variables": { "대답": "엔트리bot" } },
+      "expected": { "say": ["엔트리bot냥"] }
+    },
+    {
+      "name": "공백 포함",
+      "setup": { "variables": { "대답": "잘 가" } },
+      "expected": { "say": ["잘 가냥"] }
+    },
+    {
+      "name": "특수문자 포함",
+      "setup": { "variables": { "대답": "좋아!" } },
+      "expected": { "say": ["좋아!냥"] }
+    }
+  ]
+}
