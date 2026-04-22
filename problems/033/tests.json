@@ -1,0 +1,71 @@
+{
+  "test": [
+    {
+      "name": "N=5, K=2 → 3",
+      "setup": { "variables": { "N": "5", "K": "2" } },
+      "expected": { "say": ["3"] }
+    },
+    {
+      "name": "N=7, K=3 → 4",
+      "setup": { "variables": { "N": "7", "K": "3" } },
+      "expected": { "say": ["4"] }
+    },
+    {
+      "name": "N=1, K=1 → 1 (단일 생존)",
+      "setup": { "variables": { "N": "1", "K": "1" } },
+      "expected": { "say": ["1"] }
+    }
+  ],
+  "submit": [
+    {
+      "name": "N=3, K=2 → 3",
+      "setup": { "variables": { "N": "3", "K": "2" } },
+      "expected": { "say": ["3"] }
+    },
+    {
+      "name": "N=2, K=1 → 2",
+      "setup": { "variables": { "N": "2", "K": "1" } },
+      "expected": { "say": ["2"] }
+    },
+    {
+      "name": "N=6, K=3 → 1",
+      "setup": { "variables": { "N": "6", "K": "3" } },
+      "expected": { "say": ["1"] }
+    },
+    {
+      "name": "N=10, K=3 → 4",
+      "setup": { "variables": { "N": "10", "K": "3" } },
+      "expected": { "say": ["4"] }
+    },
+    {
+      "name": "N=4, K=2 → 1",
+      "setup": { "variables": { "N": "4", "K": "2" } },
+      "expected": { "say": ["1"] }
+    },
+    {
+      "name": "N=5, K=3 → 4",
+      "setup": { "variables": { "N": "5", "K": "3" } },
+      "expected": { "say": ["4"] }
+    },
+    {
+      "name": "N=8, K=2 → 1",
+      "setup": { "variables": { "N": "8", "K": "2" } },
+      "expected": { "say": ["1"] }
+    },
+    {
+      "name": "N=10, K=1 → 10 (매 첫 번째 제거)",
+      "setup": { "variables": { "N": "10", "K": "1" } },
+      "expected": { "say": ["10"] }
+    },
+    {
+      "name": "N=6, K=5 → 1",
+      "setup": { "variables": { "N": "6", "K": "5" } },
+      "expected": { "say": ["1"] }
+    },
+    {
+      "name": "N=15, K=4 → 13",
+      "setup": { "variables": { "N": "15", "K": "4" } },
+      "expected": { "say": ["13"] }
+    }
+  ]
+}

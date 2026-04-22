@@ -1,0 +1,71 @@
+{
+  "test": [
+    {
+      "name": "0 → \"0\" (특수)",
+      "setup": { "variables": { "N": "0" } },
+      "expected": { "say": ["0"] }
+    },
+    {
+      "name": "5 → \"101\"",
+      "setup": { "variables": { "N": "5" } },
+      "expected": { "say": ["101"] }
+    },
+    {
+      "name": "13 → \"1101\"",
+      "setup": { "variables": { "N": "13" } },
+      "expected": { "say": ["1101"] }
+    }
+  ],
+  "submit": [
+    {
+      "name": "1 → \"1\"",
+      "setup": { "variables": { "N": "1" } },
+      "expected": { "say": ["1"] }
+    },
+    {
+      "name": "2 → \"10\"",
+      "setup": { "variables": { "N": "2" } },
+      "expected": { "say": ["10"] }
+    },
+    {
+      "name": "7 → \"111\"",
+      "setup": { "variables": { "N": "7" } },
+      "expected": { "say": ["111"] }
+    },
+    {
+      "name": "10 → \"1010\"",
+      "setup": { "variables": { "N": "10" } },
+      "expected": { "say": ["1010"] }
+    },
+    {
+      "name": "16 → \"10000\" (2^4)",
+      "setup": { "variables": { "N": "16" } },
+      "expected": { "say": ["10000"] }
+    },
+    {
+      "name": "100 → \"1100100\"",
+      "setup": { "variables": { "N": "100" } },
+      "expected": { "say": ["1100100"] }
+    },
+    {
+      "name": "255 → \"11111111\" (8비트 전부 1)",
+      "setup": { "variables": { "N": "255" } },
+      "expected": { "say": ["11111111"] }
+    },
+    {
+      "name": "256 → \"100000000\" (2^8)",
+      "setup": { "variables": { "N": "256" } },
+      "expected": { "say": ["100000000"] }
+    },
+    {
+      "name": "1023 → \"1111111111\" (10비트 전부 1)",
+      "setup": { "variables": { "N": "1023" } },
+      "expected": { "say": ["1111111111"] }
+    },
+    {
+      "name": "1024 → \"10000000000\" (2^10)",
+      "setup": { "variables": { "N": "1024" } },
+      "expected": { "say": ["10000000000"] }
+    }
+  ]
+}

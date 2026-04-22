@@ -1,0 +1,9 @@
+결과 = ""
+while N > 0:
+    나머지 = N % 2
+    결과 = str(나머지) + 결과
+    N = N // 2
+if 결과 == "":
+    Entry.print("0")
+else:
+    Entry.print(결과)

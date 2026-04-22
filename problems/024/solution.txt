@@ -1,0 +1,6 @@
+i = 2
+while N > 1:
+    while N % i == 0:
+        인수들.append(i)
+        N = N / i
+    i = i + 1

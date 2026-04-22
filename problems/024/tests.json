@@ -1,0 +1,71 @@
+{
+  "test": [
+    {
+      "name": "12 → [2,2,3]",
+      "setup": { "variables": { "N": "12" } },
+      "expected": { "lists": { "인수들": [2, 2, 3] } }
+    },
+    {
+      "name": "17 → [17] (소수)",
+      "setup": { "variables": { "N": "17" } },
+      "expected": { "lists": { "인수들": [17] } }
+    },
+    {
+      "name": "1 → [] (소인수 없음)",
+      "setup": { "variables": { "N": "1" } },
+      "expected": { "lists": { "인수들": [] } }
+    }
+  ],
+  "submit": [
+    {
+      "name": "최소 소수 2",
+      "setup": { "variables": { "N": "2" } },
+      "expected": { "lists": { "인수들": [2] } }
+    },
+    {
+      "name": "2의 제곱 4",
+      "setup": { "variables": { "N": "4" } },
+      "expected": { "lists": { "인수들": [2, 2] } }
+    },
+    {
+      "name": "60 = 2·2·3·5",
+      "setup": { "variables": { "N": "60" } },
+      "expected": { "lists": { "인수들": [2, 2, 3, 5] } }
+    },
+    {
+      "name": "100 = 2·2·5·5",
+      "setup": { "variables": { "N": "100" } },
+      "expected": { "lists": { "인수들": [2, 2, 5, 5] } }
+    },
+    {
+      "name": "작은 소수 7",
+      "setup": { "variables": { "N": "7" } },
+      "expected": { "lists": { "인수들": [7] } }
+    },
+    {
+      "name": "2의 3제곱 8",
+      "setup": { "variables": { "N": "8" } },
+      "expected": { "lists": { "인수들": [2, 2, 2] } }
+    },
+    {
+      "name": "두 소수 곱 35",
+      "setup": { "variables": { "N": "35" } },
+      "expected": { "lists": { "인수들": [5, 7] } }
+    },
+    {
+      "name": "360 = 2³·3²·5",
+      "setup": { "variables": { "N": "360" } },
+      "expected": { "lists": { "인수들": [2, 2, 2, 3, 3, 5] } }
+    },
+    {
+      "name": "큰 소수 97",
+      "setup": { "variables": { "N": "97" } },
+      "expected": { "lists": { "인수들": [97] } }
+    },
+    {
+      "name": "2의 10제곱 1024",
+      "setup": { "variables": { "N": "1024" } },
+      "expected": { "lists": { "인수들": [2, 2, 2, 2, 2, 2, 2, 2, 2, 2] } }
+    }
+  ]
+}

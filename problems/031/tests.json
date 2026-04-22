@@ -1,0 +1,71 @@
+{
+  "test": [
+    {
+      "name": "1 → 행복수 (자명)",
+      "setup": { "variables": { "N": "1" } },
+      "expected": { "say": ["행복수"] }
+    },
+    {
+      "name": "19 → 행복수",
+      "setup": { "variables": { "N": "19" } },
+      "expected": { "say": ["행복수"] }
+    },
+    {
+      "name": "4 → 불행수 (경로 순환)",
+      "setup": { "variables": { "N": "4" } },
+      "expected": { "say": ["불행수"] }
+    }
+  ],
+  "submit": [
+    {
+      "name": "2 → 불행수",
+      "setup": { "variables": { "N": "2" } },
+      "expected": { "say": ["불행수"] }
+    },
+    {
+      "name": "7 → 행복수",
+      "setup": { "variables": { "N": "7" } },
+      "expected": { "say": ["행복수"] }
+    },
+    {
+      "name": "10 → 행복수 (한 단계)",
+      "setup": { "variables": { "N": "10" } },
+      "expected": { "say": ["행복수"] }
+    },
+    {
+      "name": "13 → 행복수",
+      "setup": { "variables": { "N": "13" } },
+      "expected": { "say": ["행복수"] }
+    },
+    {
+      "name": "16 → 불행수 (사이클 내부)",
+      "setup": { "variables": { "N": "16" } },
+      "expected": { "say": ["불행수"] }
+    },
+    {
+      "name": "20 → 불행수",
+      "setup": { "variables": { "N": "20" } },
+      "expected": { "say": ["불행수"] }
+    },
+    {
+      "name": "23 → 행복수",
+      "setup": { "variables": { "N": "23" } },
+      "expected": { "say": ["행복수"] }
+    },
+    {
+      "name": "89 → 불행수 (사이클 내부)",
+      "setup": { "variables": { "N": "89" } },
+      "expected": { "say": ["불행수"] }
+    },
+    {
+      "name": "97 → 행복수",
+      "setup": { "variables": { "N": "97" } },
+      "expected": { "say": ["행복수"] }
+    },
+    {
+      "name": "1000 → 행복수 (한 단계)",
+      "setup": { "variables": { "N": "1000" } },
+      "expected": { "say": ["행복수"] }
+    }
+  ]
+}

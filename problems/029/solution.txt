@@ -1,0 +1,14 @@
+# 1단계: 체를 크기 N의 1로 초기화
+for i in range(N):
+    체.append(1)
+# 2단계: 각 i에 대해 배수 지우기
+for i in range(2, N + 1):
+    if 체[i - 1] == 1:
+        j = i + i
+        while j <= N:
+            체[j - 1] = 0
+            j = j + i
+# 3단계: 남은 1들을 소수로 수집
+for i in range(2, N + 1):
+    if 체[i - 1] == 1:
+        소수들.append(i)

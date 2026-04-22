@@ -1,0 +1,71 @@
+{
+  "test": [
+    {
+      "name": "N=10 → [2,3,5,7]",
+      "setup": { "variables": { "N": "10" } },
+      "expected": { "lists": { "소수들": [2, 3, 5, 7] } }
+    },
+    {
+      "name": "N=2 → [2]",
+      "setup": { "variables": { "N": "2" } },
+      "expected": { "lists": { "소수들": [2] } }
+    },
+    {
+      "name": "N=20 → 8개",
+      "setup": { "variables": { "N": "20" } },
+      "expected": { "lists": { "소수들": [2, 3, 5, 7, 11, 13, 17, 19] } }
+    }
+  ],
+  "submit": [
+    {
+      "name": "N=3",
+      "setup": { "variables": { "N": "3" } },
+      "expected": { "lists": { "소수들": [2, 3] } }
+    },
+    {
+      "name": "N=4 (합성수 경계)",
+      "setup": { "variables": { "N": "4" } },
+      "expected": { "lists": { "소수들": [2, 3] } }
+    },
+    {
+      "name": "N=5",
+      "setup": { "variables": { "N": "5" } },
+      "expected": { "lists": { "소수들": [2, 3, 5] } }
+    },
+    {
+      "name": "N=7",
+      "setup": { "variables": { "N": "7" } },
+      "expected": { "lists": { "소수들": [2, 3, 5, 7] } }
+    },
+    {
+      "name": "N=11",
+      "setup": { "variables": { "N": "11" } },
+      "expected": { "lists": { "소수들": [2, 3, 5, 7, 11] } }
+    },
+    {
+      "name": "N=15",
+      "setup": { "variables": { "N": "15" } },
+      "expected": { "lists": { "소수들": [2, 3, 5, 7, 11, 13] } }
+    },
+    {
+      "name": "N=25",
+      "setup": { "variables": { "N": "25" } },
+      "expected": { "lists": { "소수들": [2, 3, 5, 7, 11, 13, 17, 19, 23] } }
+    },
+    {
+      "name": "N=30",
+      "setup": { "variables": { "N": "30" } },
+      "expected": { "lists": { "소수들": [2, 3, 5, 7, 11, 13, 17, 19, 23, 29] } }
+    },
+    {
+      "name": "N=50",
+      "setup": { "variables": { "N": "50" } },
+      "expected": { "lists": { "소수들": [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47] } }
+    },
+    {
+      "name": "N=100 (소수 25개)",
+      "setup": { "variables": { "N": "100" } },
+      "expected": { "lists": { "소수들": [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97] } }
+    }
+  ]
+}
