@@ -272,6 +272,11 @@ a:hover { text-decoration: underline; }
 .disclaimer a:hover {
     color: #4f80ff;
 }
+.disclaimer .entry-credit {
+    margin-top: 8px;
+    font-size: 10px;
+    opacity: 0.8;
+}
 .disclaimer .tm-notice {
     margin-top: 6px;
     font-size: 10px;
