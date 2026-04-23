@@ -9,3 +9,9 @@ deploy-key
 # Local-only reference docs (Entry official docs mirror — not committed)
 docs/
 .tmp-entrydocs/
+
+# Legacy problems archived locally (old-style, not served)
+old/
+
+# Local scratch/temp directory
+temp/

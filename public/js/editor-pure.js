@@ -15,6 +15,8 @@ function escapeHtml(s) {
 //  - 모든 텍스트는 escape() 통과 → XSS 안전
 //  - 인라인 링크·이미지 미지원 (문제 설명에 불필요)
 //  - 중첩 리스트 미지원 (한 단계만)
+//  - HTML 화이트리스트: <details>·<summary>만 원형 허용 (토글 힌트 UI)
+//    · 반드시 한 줄 전체가 해당 태그여야 허용 — 인라인 혼용은 이스케이프됨
 function renderMarkdown(md) {
     if (!md) return '';
     var escape = function (s) {
@@ -32,6 +34,20 @@ function renderMarkdown(md) {
             continue;
         }
         if (inCode) { html += escape(line) + '\n'; continue; }
+        // Whitelist: <details>, </details> — 블록 경계, 단독 줄만 허용
+        var trimmed = line.trim();
+        if (trimmed === '<details>' || trimmed === '</details>') {
+            if (inList) { html += '</' + listType + '>'; inList = false; }
+            html += trimmed;
+            continue;
+        }
+        // Whitelist: <summary>...</summary> — 한 줄, 내용은 inline markdown 처리
+        var summaryLine = trimmed.match(/^<summary>([\s\S]*?)<\/summary>$/);
+        if (summaryLine) {
+            if (inList) { html += '</' + listType + '>'; inList = false; }
+            html += '<summary>' + inlineMd(summaryLine[1]) + '</summary>';
+            continue;
+        }
         // Headings
         var h = line.match(/^(#{1,3})\s+(.+)/);
         if (h) {
