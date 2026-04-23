@@ -1,0 +1,76 @@
+{
+  "test": [
+    {
+      "name": "hello world → 2",
+      "setup": { "variables": { "문장": "hello world" } },
+      "expected": { "say": ["2"] }
+    },
+    {
+      "name": "연속 공백 → 2",
+      "setup": { "variables": { "문장": "  a  b  " } },
+      "expected": { "say": ["2"] }
+    },
+    {
+      "name": "hello → 1",
+      "setup": { "variables": { "문장": "hello" } },
+      "expected": { "say": ["1"] }
+    }
+  ],
+  "submit": [
+    {
+      "name": "빈 문자열 → 0",
+      "setup": { "variables": { "문장": "" } },
+      "expected": { "say": ["0"] }
+    },
+    {
+      "name": "공백만 → 0",
+      "setup": { "variables": { "문장": "    " } },
+      "expected": { "say": ["0"] }
+    },
+    {
+      "name": "한 글자 → 1",
+      "setup": { "variables": { "문장": "a" } },
+      "expected": { "say": ["1"] }
+    },
+    {
+      "name": "여러 단어",
+      "setup": { "variables": { "문장": "the quick brown fox" } },
+      "expected": { "say": ["4"] }
+    },
+    {
+      "name": "앞 공백",
+      "setup": { "variables": { "문장": "   hello" } },
+      "expected": { "say": ["1"] }
+    },
+    {
+      "name": "뒷 공백",
+      "setup": { "variables": { "문장": "hello   " } },
+      "expected": { "say": ["1"] }
+    },
+    {
+      "name": "5 단어",
+      "setup": { "variables": { "문장": "a b c d e" } },
+      "expected": { "say": ["5"] }
+    },
+    {
+      "name": "한글 섞임",
+      "setup": { "variables": { "문장": "안녕 hello 반가워" } },
+      "expected": { "say": ["3"] }
+    },
+    {
+      "name": "1글자 단어들",
+      "setup": { "variables": { "문장": "1 2 3 4 5 6 7 8 9 10" } },
+      "expected": { "say": ["10"] }
+    },
+    {
+      "name": "단어 6",
+      "setup": { "variables": { "문장": "this is a test of words" } },
+      "expected": { "say": ["6"] }
+    },
+    {
+      "name": "앞뒤 공백 + 연속",
+      "setup": { "variables": { "문장": "   a  b   c   " } },
+      "expected": { "say": ["3"] }
+    }
+  ]
+}

@@ -1,0 +1,66 @@
+{
+  "test": [
+    {
+      "name": "10 - 3 = 7",
+      "setup": { "variables": { "변수1": 10, "변수2": 3 } },
+      "expected": { "say": ["7"] }
+    },
+    {
+      "name": "5 - 8 = -3",
+      "setup": { "variables": { "변수1": 5, "변수2": 8 } },
+      "expected": { "say": ["-3"] }
+    },
+    {
+      "name": "0 - 0 = 0",
+      "setup": { "variables": { "변수1": 0, "변수2": 0 } },
+      "expected": { "say": ["0"] }
+    }
+  ],
+  "submit": [
+    {
+      "name": "100 - 50 = 50",
+      "setup": { "variables": { "변수1": 100, "변수2": 50 } },
+      "expected": { "say": ["50"] }
+    },
+    {
+      "name": "7 - 7 = 0",
+      "setup": { "variables": { "변수1": 7, "변수2": 7 } },
+      "expected": { "say": ["0"] }
+    },
+    {
+      "name": "-5 - 3 = -8",
+      "setup": { "variables": { "변수1": -5, "변수2": 3 } },
+      "expected": { "say": ["-8"] }
+    },
+    {
+      "name": "-10 - -4 = -6",
+      "setup": { "variables": { "변수1": -10, "변수2": -4 } },
+      "expected": { "say": ["-6"] }
+    },
+    {
+      "name": "3 - -5 = 8",
+      "setup": { "variables": { "변수1": 3, "변수2": -5 } },
+      "expected": { "say": ["8"] }
+    },
+    {
+      "name": "1000 - 1 = 999",
+      "setup": { "variables": { "변수1": 1000, "변수2": 1 } },
+      "expected": { "say": ["999"] }
+    },
+    {
+      "name": "0 - 42 = -42",
+      "setup": { "variables": { "변수1": 0, "변수2": 42 } },
+      "expected": { "say": ["-42"] }
+    },
+    {
+      "name": "42 - 0 = 42",
+      "setup": { "variables": { "변수1": 42, "변수2": 0 } },
+      "expected": { "say": ["42"] }
+    },
+    {
+      "name": "123 - 456 = -333",
+      "setup": { "variables": { "변수1": 123, "변수2": 456 } },
+      "expected": { "say": ["-333"] }
+    }
+  ]
+}

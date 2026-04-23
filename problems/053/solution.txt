@@ -1,0 +1,6 @@
+if N > 0:
+    Entry.print("양수")
+elif N < 0:
+    Entry.print("음수")
+else:
+    Entry.print("0")

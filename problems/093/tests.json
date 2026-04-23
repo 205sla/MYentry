@@ -1,0 +1,71 @@
+{
+  "test": [
+    {
+      "name": "K=2 of [10,20,30,40,50] → 40",
+      "setup": { "variables": { "K": 2 }, "lists": { "숫자들": [10, 20, 30, 40, 50] } },
+      "expected": { "say": ["40"] }
+    },
+    {
+      "name": "K=3 of [3,1,4,1,5,9,2,6] → 5",
+      "setup": { "variables": { "K": 3 }, "lists": { "숫자들": [3, 1, 4, 1, 5, 9, 2, 6] } },
+      "expected": { "say": ["5"] }
+    },
+    {
+      "name": "K=2 of [5,5,3] → 5",
+      "setup": { "variables": { "K": 2 }, "lists": { "숫자들": [5, 5, 3] } },
+      "expected": { "say": ["5"] }
+    }
+  ],
+  "submit": [
+    {
+      "name": "K=1 (최댓값)",
+      "setup": { "variables": { "K": 1 }, "lists": { "숫자들": [10, 5, 20] } },
+      "expected": { "say": ["20"] }
+    },
+    {
+      "name": "K=길이 (최솟값)",
+      "setup": { "variables": { "K": 3 }, "lists": { "숫자들": [10, 5, 20] } },
+      "expected": { "say": ["5"] }
+    },
+    {
+      "name": "단일 K=1",
+      "setup": { "variables": { "K": 1 }, "lists": { "숫자들": [42] } },
+      "expected": { "say": ["42"] }
+    },
+    {
+      "name": "K=4 of 7개",
+      "setup": { "variables": { "K": 4 }, "lists": { "숫자들": [1, 2, 3, 4, 5, 6, 7] } },
+      "expected": { "say": ["4"] }
+    },
+    {
+      "name": "음수 포함 K=3",
+      "setup": { "variables": { "K": 3 }, "lists": { "숫자들": [-5, 0, 5, -10] } },
+      "expected": { "say": ["-5"] }
+    },
+    {
+      "name": "중복 K=3",
+      "setup": { "variables": { "K": 3 }, "lists": { "숫자들": [5, 5, 5, 3] } },
+      "expected": { "say": ["5"] }
+    },
+    {
+      "name": "K=5 of 10",
+      "setup": { "variables": { "K": 5 }, "lists": { "숫자들": [10, 20, 30, 40, 50, 60, 70, 80, 90, 100] } },
+      "expected": { "say": ["60"] }
+    },
+    {
+      "name": "K=2 of [7,7,7]",
+      "setup": { "variables": { "K": 2 }, "lists": { "숫자들": [7, 7, 7] } },
+      "expected": { "say": ["7"] }
+    },
+    {
+      "name": "K=3 of [1,2,3]",
+      "setup": { "variables": { "K": 3 }, "lists": { "숫자들": [1, 2, 3] } },
+      "expected": { "say": ["1"] }
+    },
+    {
+      "name": "흩어진 값 K=4",
+      "setup": { "variables": { "K": 4 }, "lists": { "숫자들": [3, 1, 4, 1, 5, 9, 2, 6] } },
+      "expected": { "say": ["4"] }
+    }
+  ]
+}

@@ -1,0 +1,76 @@
+{
+  "test": [
+    {
+      "name": "aaabb → a3b2",
+      "setup": { "variables": { "문장": "aaabb" } },
+      "expected": { "say": ["a3b2"] }
+    },
+    {
+      "name": "aaaa → a4",
+      "setup": { "variables": { "문장": "aaaa" } },
+      "expected": { "say": ["a4"] }
+    },
+    {
+      "name": "abcabc → a1b1c1a1b1c1",
+      "setup": { "variables": { "문장": "abcabc" } },
+      "expected": { "say": ["a1b1c1a1b1c1"] }
+    }
+  ],
+  "submit": [
+    {
+      "name": "한 글자",
+      "setup": { "variables": { "문장": "x" } },
+      "expected": { "say": ["x1"] }
+    },
+    {
+      "name": "두 같은",
+      "setup": { "variables": { "문장": "yy" } },
+      "expected": { "say": ["y2"] }
+    },
+    {
+      "name": "두 다른",
+      "setup": { "variables": { "문장": "ab" } },
+      "expected": { "say": ["a1b1"] }
+    },
+    {
+      "name": "가운데 튐",
+      "setup": { "variables": { "문장": "aabaa" } },
+      "expected": { "say": ["a2b1a2"] }
+    },
+    {
+      "name": "긴 압축",
+      "setup": { "variables": { "문장": "aaabbbcccddd" } },
+      "expected": { "say": ["a3b3c3d3"] }
+    },
+    {
+      "name": "교대",
+      "setup": { "variables": { "문장": "ababab" } },
+      "expected": { "say": ["a1b1a1b1a1b1"] }
+    },
+    {
+      "name": "한글",
+      "setup": { "variables": { "문장": "가가나다다" } },
+      "expected": { "say": ["가2나1다2"] }
+    },
+    {
+      "name": "대소문자 구분",
+      "setup": { "variables": { "문장": "AAaaBB" } },
+      "expected": { "say": ["A2a2B2"] }
+    },
+    {
+      "name": "연속 긴 런",
+      "setup": { "variables": { "문장": "aaaaaaaaaa" } },
+      "expected": { "say": ["a10"] }
+    },
+    {
+      "name": "혼합",
+      "setup": { "variables": { "문장": "aabbccaaa" } },
+      "expected": { "say": ["a2b2c2a3"] }
+    },
+    {
+      "name": "숫자 문자",
+      "setup": { "variables": { "문장": "1122333" } },
+      "expected": { "say": ["122233"] }
+    }
+  ]
+}

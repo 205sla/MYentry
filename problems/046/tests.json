@@ -1,0 +1,71 @@
+{
+  "test": [
+    {
+      "name": "3 * 4 = 12",
+      "setup": { "variables": { "변수1": 3, "변수2": 4 } },
+      "expected": { "say": ["12"] }
+    },
+    {
+      "name": "-5 * 2 = -10",
+      "setup": { "variables": { "변수1": -5, "변수2": 2 } },
+      "expected": { "say": ["-10"] }
+    },
+    {
+      "name": "0 * 100 = 0",
+      "setup": { "variables": { "변수1": 0, "변수2": 100 } },
+      "expected": { "say": ["0"] }
+    }
+  ],
+  "submit": [
+    {
+      "name": "1 * 1 = 1",
+      "setup": { "variables": { "변수1": 1, "변수2": 1 } },
+      "expected": { "say": ["1"] }
+    },
+    {
+      "name": "7 * 8 = 56",
+      "setup": { "variables": { "변수1": 7, "변수2": 8 } },
+      "expected": { "say": ["56"] }
+    },
+    {
+      "name": "12 * 12 = 144",
+      "setup": { "variables": { "변수1": 12, "변수2": 12 } },
+      "expected": { "say": ["144"] }
+    },
+    {
+      "name": "음수 × 음수 = 양수",
+      "setup": { "variables": { "변수1": -6, "변수2": -7 } },
+      "expected": { "say": ["42"] }
+    },
+    {
+      "name": "양수 × 0 = 0",
+      "setup": { "variables": { "변수1": 100, "변수2": 0 } },
+      "expected": { "say": ["0"] }
+    },
+    {
+      "name": "10 * 10 = 100",
+      "setup": { "variables": { "변수1": 10, "변수2": 10 } },
+      "expected": { "say": ["100"] }
+    },
+    {
+      "name": "25 * 4 = 100",
+      "setup": { "variables": { "변수1": 25, "변수2": 4 } },
+      "expected": { "say": ["100"] }
+    },
+    {
+      "name": "-1 * 50 = -50",
+      "setup": { "variables": { "변수1": -1, "변수2": 50 } },
+      "expected": { "say": ["-50"] }
+    },
+    {
+      "name": "11 * 11 = 121",
+      "setup": { "variables": { "변수1": 11, "변수2": 11 } },
+      "expected": { "say": ["121"] }
+    },
+    {
+      "name": "9 * 9 = 81",
+      "setup": { "variables": { "변수1": 9, "변수2": 9 } },
+      "expected": { "say": ["81"] }
+    }
+  ]
+}

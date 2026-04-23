@@ -1,0 +1,76 @@
+{
+  "test": [
+    {
+      "name": "[1,2,5]+11 → 3",
+      "setup": { "variables": { "금액": 11 }, "lists": { "동전들": [1, 2, 5] } },
+      "expected": { "say": ["3"] }
+    },
+    {
+      "name": "[1,3,4]+6 → 2 (DP 필요)",
+      "setup": { "variables": { "금액": 6 }, "lists": { "동전들": [1, 3, 4] } },
+      "expected": { "say": ["2"] }
+    },
+    {
+      "name": "[1]+7 → 7",
+      "setup": { "variables": { "금액": 7 }, "lists": { "동전들": [1] } },
+      "expected": { "say": ["7"] }
+    }
+  ],
+  "submit": [
+    {
+      "name": "금액 0",
+      "setup": { "variables": { "금액": 0 }, "lists": { "동전들": [2, 5] } },
+      "expected": { "say": ["0"] }
+    },
+    {
+      "name": "정확히 하나",
+      "setup": { "variables": { "금액": 5 }, "lists": { "동전들": [1, 5, 10] } },
+      "expected": { "say": ["1"] }
+    },
+    {
+      "name": "500원짜리 2개",
+      "setup": { "variables": { "금액": 1000 }, "lists": { "동전들": [100, 500] } },
+      "expected": { "say": ["2"] }
+    },
+    {
+      "name": "한국 동전 1230",
+      "setup": { "variables": { "금액": 1230 }, "lists": { "동전들": [10, 50, 100, 500] } },
+      "expected": { "say": ["5"] }
+    },
+    {
+      "name": "[1,3,4]+8 → 2",
+      "setup": { "variables": { "금액": 8 }, "lists": { "동전들": [1, 3, 4] } },
+      "expected": { "say": ["2"] }
+    },
+    {
+      "name": "[1,4,6]+8 → 2",
+      "setup": { "variables": { "금액": 8 }, "lists": { "동전들": [1, 4, 6] } },
+      "expected": { "say": ["2"] }
+    },
+    {
+      "name": "[2,5,10]+27 → 5",
+      "setup": { "variables": { "금액": 27 }, "lists": { "동전들": [2, 5, 10] } },
+      "expected": { "say": ["5"] }
+    },
+    {
+      "name": "[1,7,10]+14 → 2",
+      "setup": { "variables": { "금액": 14 }, "lists": { "동전들": [1, 7, 10] } },
+      "expected": { "say": ["2"] }
+    },
+    {
+      "name": "한 단위 정확",
+      "setup": { "variables": { "금액": 3 }, "lists": { "동전들": [3] } },
+      "expected": { "say": ["1"] }
+    },
+    {
+      "name": "[1,2,5]+18 → 5",
+      "setup": { "variables": { "금액": 18 }, "lists": { "동전들": [1, 2, 5] } },
+      "expected": { "say": ["5"] }
+    },
+    {
+      "name": "[1,5,7]+13 → 3",
+      "setup": { "variables": { "금액": 13 }, "lists": { "동전들": [1, 5, 7] } },
+      "expected": { "say": ["3"] }
+    }
+  ]
+}

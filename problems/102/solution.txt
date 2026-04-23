@@ -1,0 +1,12 @@
+최장 = ""
+현재 = ""
+for i in range(len(문장)):
+    if 문장[i] == " ":
+        if len(현재) > len(최장):
+            최장 = 현재
+        현재 = ""
+    else:
+        현재 = 현재 + 문장[i]
+if len(현재) > len(최장):
+    최장 = 현재
+Entry.print(최장)

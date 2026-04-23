@@ -1,0 +1,71 @@
+{
+  "test": [
+    {
+      "name": "N=10 → [6]",
+      "setup": { "variables": { "N": 10 }, "lists": { "완전수들": [] } },
+      "expected": { "lists": { "완전수들": [6] } }
+    },
+    {
+      "name": "N=100 → [6, 28]",
+      "setup": { "variables": { "N": 100 }, "lists": { "완전수들": [] } },
+      "expected": { "lists": { "완전수들": [6, 28] } }
+    },
+    {
+      "name": "N=5 → []",
+      "setup": { "variables": { "N": 5 }, "lists": { "완전수들": [] } },
+      "expected": { "lists": { "완전수들": [] } }
+    }
+  ],
+  "submit": [
+    {
+      "name": "N=1",
+      "setup": { "variables": { "N": 1 }, "lists": { "완전수들": [] } },
+      "expected": { "lists": { "완전수들": [] } }
+    },
+    {
+      "name": "N=6 경계 포함",
+      "setup": { "variables": { "N": 6 }, "lists": { "완전수들": [] } },
+      "expected": { "lists": { "완전수들": [6] } }
+    },
+    {
+      "name": "N=27 완전수 미만",
+      "setup": { "variables": { "N": 27 }, "lists": { "완전수들": [] } },
+      "expected": { "lists": { "완전수들": [6] } }
+    },
+    {
+      "name": "N=28 경계 포함",
+      "setup": { "variables": { "N": 28 }, "lists": { "완전수들": [] } },
+      "expected": { "lists": { "완전수들": [6, 28] } }
+    },
+    {
+      "name": "N=50",
+      "setup": { "variables": { "N": 50 }, "lists": { "완전수들": [] } },
+      "expected": { "lists": { "완전수들": [6, 28] } }
+    },
+    {
+      "name": "N=495 직전",
+      "setup": { "variables": { "N": 495 }, "lists": { "완전수들": [] } },
+      "expected": { "lists": { "완전수들": [6, 28] } }
+    },
+    {
+      "name": "N=496 경계 포함",
+      "setup": { "variables": { "N": 496 }, "lists": { "완전수들": [] } },
+      "expected": { "lists": { "완전수들": [6, 28, 496] } }
+    },
+    {
+      "name": "N=500",
+      "setup": { "variables": { "N": 500 }, "lists": { "완전수들": [] } },
+      "expected": { "lists": { "완전수들": [6, 28, 496] } }
+    },
+    {
+      "name": "N=29",
+      "setup": { "variables": { "N": 29 }, "lists": { "완전수들": [] } },
+      "expected": { "lists": { "완전수들": [6, 28] } }
+    },
+    {
+      "name": "N=200",
+      "setup": { "variables": { "N": 200 }, "lists": { "완전수들": [] } },
+      "expected": { "lists": { "완전수들": [6, 28] } }
+    }
+  ]
+}

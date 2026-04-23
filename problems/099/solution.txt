@@ -1,0 +1,8 @@
+알파벳 = "abcdefghijklmnopqrstuvwxyz"
+for _ in range(26):
+    빈도.append(0)
+for i in range(len(문장)):
+    글자 = 문장[i]
+    for j in range(26):
+        if 알파벳[j] == 글자:
+            빈도[j] = 빈도[j] + 1

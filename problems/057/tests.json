@@ -1,0 +1,71 @@
+{
+  "test": [
+    {
+      "name": "95 → A",
+      "setup": { "variables": { "점수": 95 } },
+      "expected": { "say": ["A"] }
+    },
+    {
+      "name": "72 → C",
+      "setup": { "variables": { "점수": 72 } },
+      "expected": { "say": ["C"] }
+    },
+    {
+      "name": "59 → F",
+      "setup": { "variables": { "점수": 59 } },
+      "expected": { "say": ["F"] }
+    }
+  ],
+  "submit": [
+    {
+      "name": "100 → A",
+      "setup": { "variables": { "점수": 100 } },
+      "expected": { "say": ["A"] }
+    },
+    {
+      "name": "90 경계 → A",
+      "setup": { "variables": { "점수": 90 } },
+      "expected": { "say": ["A"] }
+    },
+    {
+      "name": "89 → B",
+      "setup": { "variables": { "점수": 89 } },
+      "expected": { "say": ["B"] }
+    },
+    {
+      "name": "80 경계 → B",
+      "setup": { "variables": { "점수": 80 } },
+      "expected": { "say": ["B"] }
+    },
+    {
+      "name": "79 → C",
+      "setup": { "variables": { "점수": 79 } },
+      "expected": { "say": ["C"] }
+    },
+    {
+      "name": "70 경계 → C",
+      "setup": { "variables": { "점수": 70 } },
+      "expected": { "say": ["C"] }
+    },
+    {
+      "name": "69 → D",
+      "setup": { "variables": { "점수": 69 } },
+      "expected": { "say": ["D"] }
+    },
+    {
+      "name": "60 경계 → D",
+      "setup": { "variables": { "점수": 60 } },
+      "expected": { "say": ["D"] }
+    },
+    {
+      "name": "0 → F",
+      "setup": { "variables": { "점수": 0 } },
+      "expected": { "say": ["F"] }
+    },
+    {
+      "name": "45 → F",
+      "setup": { "variables": { "점수": 45 } },
+      "expected": { "say": ["F"] }
+    }
+  ]
+}

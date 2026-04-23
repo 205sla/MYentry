@@ -1,0 +1,71 @@
+{
+  "test": [
+    {
+      "name": "10 ÷ 3 = 3",
+      "setup": { "variables": { "변수1": 10, "변수2": 3 } },
+      "expected": { "say": ["3"] }
+    },
+    {
+      "name": "20 ÷ 4 = 5",
+      "setup": { "variables": { "변수1": 20, "변수2": 4 } },
+      "expected": { "say": ["5"] }
+    },
+    {
+      "name": "7 ÷ 2 = 3",
+      "setup": { "variables": { "변수1": 7, "변수2": 2 } },
+      "expected": { "say": ["3"] }
+    }
+  ],
+  "submit": [
+    {
+      "name": "1 ÷ 1 = 1",
+      "setup": { "variables": { "변수1": 1, "변수2": 1 } },
+      "expected": { "say": ["1"] }
+    },
+    {
+      "name": "0 ÷ 5 = 0",
+      "setup": { "variables": { "변수1": 0, "변수2": 5 } },
+      "expected": { "say": ["0"] }
+    },
+    {
+      "name": "5 ÷ 10 = 0 (작은 나뉨수)",
+      "setup": { "variables": { "변수1": 5, "변수2": 10 } },
+      "expected": { "say": ["0"] }
+    },
+    {
+      "name": "100 ÷ 7 = 14",
+      "setup": { "variables": { "변수1": 100, "변수2": 7 } },
+      "expected": { "say": ["14"] }
+    },
+    {
+      "name": "50 ÷ 50 = 1",
+      "setup": { "variables": { "변수1": 50, "변수2": 50 } },
+      "expected": { "say": ["1"] }
+    },
+    {
+      "name": "27 ÷ 3 = 9",
+      "setup": { "variables": { "변수1": 27, "변수2": 3 } },
+      "expected": { "say": ["9"] }
+    },
+    {
+      "name": "1000 ÷ 25 = 40",
+      "setup": { "variables": { "변수1": 1000, "변수2": 25 } },
+      "expected": { "say": ["40"] }
+    },
+    {
+      "name": "9 ÷ 4 = 2",
+      "setup": { "variables": { "변수1": 9, "변수2": 4 } },
+      "expected": { "say": ["2"] }
+    },
+    {
+      "name": "99 ÷ 10 = 9",
+      "setup": { "variables": { "변수1": 99, "변수2": 10 } },
+      "expected": { "say": ["9"] }
+    },
+    {
+      "name": "64 ÷ 8 = 8",
+      "setup": { "variables": { "변수1": 64, "변수2": 8 } },
+      "expected": { "say": ["8"] }
+    }
+  ]
+}

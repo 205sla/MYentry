@@ -1,0 +1,5 @@
+Entry.print_for_sec("사과", 1)
+Entry.print_for_sec("바나나", 1)
+Entry.print_for_sec("포도", 1)
+Entry.print_for_sec("귤", 1)
+Entry.print_for_sec("수박", 1)

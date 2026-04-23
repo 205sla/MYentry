@@ -1,0 +1,8 @@
+x = A
+y = B
+while y != 0:
+    임시 = x % y
+    x = y
+    y = 임시
+gcd = x
+Entry.print(A * B // gcd)

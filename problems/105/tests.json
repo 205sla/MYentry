@@ -1,0 +1,71 @@
+{
+  "test": [
+    {
+      "name": "H=10 A=2 B=1 → 9",
+      "setup": { "variables": { "H": 10, "A": 2, "B": 1 } },
+      "expected": { "say": ["9"] }
+    },
+    {
+      "name": "H=10 A=3 B=1 → 5",
+      "setup": { "variables": { "H": 10, "A": 3, "B": 1 } },
+      "expected": { "say": ["5"] }
+    },
+    {
+      "name": "H=5 A=10 B=1 → 1",
+      "setup": { "variables": { "H": 5, "A": 10, "B": 1 } },
+      "expected": { "say": ["1"] }
+    }
+  ],
+  "submit": [
+    {
+      "name": "H=1 A=1 B=0 → 1",
+      "setup": { "variables": { "H": 1, "A": 1, "B": 0 } },
+      "expected": { "say": ["1"] }
+    },
+    {
+      "name": "H=100 A=5 B=2 → 33",
+      "setup": { "variables": { "H": 100, "A": 5, "B": 2 } },
+      "expected": { "say": ["33"] }
+    },
+    {
+      "name": "H=100 A=10 B=1 → 11",
+      "setup": { "variables": { "H": 100, "A": 10, "B": 1 } },
+      "expected": { "say": ["11"] }
+    },
+    {
+      "name": "H=20 A=3 B=2 → 18",
+      "setup": { "variables": { "H": 20, "A": 3, "B": 2 } },
+      "expected": { "say": ["18"] }
+    },
+    {
+      "name": "H=7 A=3 B=0 → 3",
+      "setup": { "variables": { "H": 7, "A": 3, "B": 0 } },
+      "expected": { "say": ["3"] }
+    },
+    {
+      "name": "H=6 A=3 B=1 → 3",
+      "setup": { "variables": { "H": 6, "A": 3, "B": 1 } },
+      "expected": { "say": ["3"] }
+    },
+    {
+      "name": "H=50 A=5 B=3 → 24",
+      "setup": { "variables": { "H": 50, "A": 5, "B": 3 } },
+      "expected": { "say": ["24"] }
+    },
+    {
+      "name": "H=2 A=2 B=1 → 1",
+      "setup": { "variables": { "H": 2, "A": 2, "B": 1 } },
+      "expected": { "say": ["1"] }
+    },
+    {
+      "name": "H=3 A=2 B=1 → 2",
+      "setup": { "variables": { "H": 3, "A": 2, "B": 1 } },
+      "expected": { "say": ["2"] }
+    },
+    {
+      "name": "H=1000 A=100 B=50 → 19",
+      "setup": { "variables": { "H": 1000, "A": 100, "B": 50 } },
+      "expected": { "say": ["19"] }
+    }
+  ]
+}

@@ -1,0 +1,3 @@
+for i in range(len(숫자들)):
+    if 숫자들[i] % 2 != 0:
+        홀수들.append(숫자들[i])

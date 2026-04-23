@@ -1,0 +1,4 @@
+위치 = len(숫자들)
+for _ in range(len(숫자들)):
+    Entry.print_for_sec(숫자들[위치 - 1], 1)
+    위치 = 위치 - 1

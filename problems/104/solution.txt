@@ -1,0 +1,5 @@
+for _ in range(11):
+    빈도.append(0)
+for i in range(len(주사위1)):
+    합 = 주사위1[i] + 주사위2[i]
+    빈도[합 - 2] = 빈도[합 - 2] + 1

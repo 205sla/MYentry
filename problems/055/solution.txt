@@ -1,0 +1,6 @@
+최대 = A
+if B > 최대:
+    최대 = B
+if C > 최대:
+    최대 = C
+Entry.print(최대)

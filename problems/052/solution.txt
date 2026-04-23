@@ -1,0 +1,4 @@
+if N % 2 == 0:
+    Entry.print("짝수")
+else:
+    Entry.print("홀수")

@@ -1,0 +1,71 @@
+{
+  "test": [
+    {
+      "name": "가운데가 최대",
+      "setup": { "variables": { "A": 3, "B": 7, "C": 5 } },
+      "expected": { "say": ["7"] }
+    },
+    {
+      "name": "앞두개 동률",
+      "setup": { "variables": { "A": 9, "B": 9, "C": 1 } },
+      "expected": { "say": ["9"] }
+    },
+    {
+      "name": "세번째가 최대",
+      "setup": { "variables": { "A": 1, "B": 2, "C": 3 } },
+      "expected": { "say": ["3"] }
+    }
+  ],
+  "submit": [
+    {
+      "name": "첫번째가 최대",
+      "setup": { "variables": { "A": 10, "B": 3, "C": 5 } },
+      "expected": { "say": ["10"] }
+    },
+    {
+      "name": "세 값 동일",
+      "setup": { "variables": { "A": 7, "B": 7, "C": 7 } },
+      "expected": { "say": ["7"] }
+    },
+    {
+      "name": "모두 0",
+      "setup": { "variables": { "A": 0, "B": 0, "C": 0 } },
+      "expected": { "say": ["0"] }
+    },
+    {
+      "name": "전부 음수",
+      "setup": { "variables": { "A": -5, "B": -2, "C": -8 } },
+      "expected": { "say": ["-2"] }
+    },
+    {
+      "name": "음수+양수",
+      "setup": { "variables": { "A": -1, "B": 0, "C": 1 } },
+      "expected": { "say": ["1"] }
+    },
+    {
+      "name": "큰 수 비교",
+      "setup": { "variables": { "A": 100, "B": 200, "C": 150 } },
+      "expected": { "say": ["200"] }
+    },
+    {
+      "name": "AB 동률보다 C 큰",
+      "setup": { "variables": { "A": 5, "B": 5, "C": 10 } },
+      "expected": { "say": ["10"] }
+    },
+    {
+      "name": "AC 동률",
+      "setup": { "variables": { "A": 3, "B": 1, "C": 3 } },
+      "expected": { "say": ["3"] }
+    },
+    {
+      "name": "BC 동률 최대",
+      "setup": { "variables": { "A": 2, "B": 9, "C": 9 } },
+      "expected": { "say": ["9"] }
+    },
+    {
+      "name": "999 > 나머지",
+      "setup": { "variables": { "A": 999, "B": 1, "C": 1 } },
+      "expected": { "say": ["999"] }
+    }
+  ]
+}

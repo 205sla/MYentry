@@ -1,0 +1,15 @@
+단어들 = []
+현재 = ""
+for i in range(len(문장)):
+    if 문장[i] == " ":
+        단어들.append(현재)
+        현재 = ""
+    else:
+        현재 = 현재 + 문장[i]
+단어들.append(현재)
+결과 = ""
+for i in range(len(단어들) - 1, -1, -1):
+    if 결과 != "":
+        결과 = 결과 + " "
+    결과 = 결과 + 단어들[i]
+Entry.print(결과)

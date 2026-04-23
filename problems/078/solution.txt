@@ -1,0 +1,5 @@
+개수 = 0
+for i in range(len(문장)):
+    if 문장[i] == 찾을값:
+        개수 = 개수 + 1
+Entry.print(개수)

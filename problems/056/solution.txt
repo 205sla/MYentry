@@ -1,0 +1,4 @@
+if 점수 >= 60:
+    Entry.print("합격")
+else:
+    Entry.print("불합격")

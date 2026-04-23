@@ -1,0 +1,76 @@
+{
+  "test": [
+    {
+      "name": "banana의 a → 3",
+      "setup": { "variables": { "문장": "banana", "찾을값": "a" } },
+      "expected": { "say": ["3"] }
+    },
+    {
+      "name": "hello world의 o → 2",
+      "setup": { "variables": { "문장": "hello world", "찾을값": "o" } },
+      "expected": { "say": ["2"] }
+    },
+    {
+      "name": "abc의 z → 0",
+      "setup": { "variables": { "문장": "abc", "찾을값": "z" } },
+      "expected": { "say": ["0"] }
+    }
+  ],
+  "submit": [
+    {
+      "name": "한 글자 일치",
+      "setup": { "variables": { "문장": "a", "찾을값": "a" } },
+      "expected": { "say": ["1"] }
+    },
+    {
+      "name": "한 글자 불일치",
+      "setup": { "variables": { "문장": "a", "찾을값": "b" } },
+      "expected": { "say": ["0"] }
+    },
+    {
+      "name": "전부 일치",
+      "setup": { "variables": { "문장": "aaaa", "찾을값": "a" } },
+      "expected": { "say": ["4"] }
+    },
+    {
+      "name": "대소문자 구분",
+      "setup": { "variables": { "문장": "AaAa", "찾을값": "a" } },
+      "expected": { "say": ["2"] }
+    },
+    {
+      "name": "mississippi의 s",
+      "setup": { "variables": { "문장": "mississippi", "찾을값": "s" } },
+      "expected": { "say": ["4"] }
+    },
+    {
+      "name": "한글",
+      "setup": { "variables": { "문장": "안녕안녕안녕", "찾을값": "안" } },
+      "expected": { "say": ["3"] }
+    },
+    {
+      "name": "공백 찾기",
+      "setup": { "variables": { "문장": "hello world how are you", "찾을값": " " } },
+      "expected": { "say": ["4"] }
+    },
+    {
+      "name": "숫자 찾기",
+      "setup": { "variables": { "문장": "1010101", "찾을값": "0" } },
+      "expected": { "say": ["3"] }
+    },
+    {
+      "name": "특수문자",
+      "setup": { "variables": { "문장": "!@#!@#!", "찾을값": "!" } },
+      "expected": { "say": ["3"] }
+    },
+    {
+      "name": "긴 문자열",
+      "setup": { "variables": { "문장": "programming", "찾을값": "g" } },
+      "expected": { "say": ["2"] }
+    },
+    {
+      "name": "한번도 없음",
+      "setup": { "variables": { "문장": "hello", "찾을값": "x" } },
+      "expected": { "say": ["0"] }
+    }
+  ]
+}

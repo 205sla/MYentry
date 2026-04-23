@@ -1,0 +1,76 @@
+{
+  "test": [
+    {
+      "name": "N=0 → 0",
+      "setup": { "variables": { "N": 0 } },
+      "expected": { "say": ["0"] }
+    },
+    {
+      "name": "N=123 → 6",
+      "setup": { "variables": { "N": 123 } },
+      "expected": { "say": ["6"] }
+    },
+    {
+      "name": "N=999 → 27",
+      "setup": { "variables": { "N": 999 } },
+      "expected": { "say": ["27"] }
+    }
+  ],
+  "submit": [
+    {
+      "name": "N=1 → 1",
+      "setup": { "variables": { "N": 1 } },
+      "expected": { "say": ["1"] }
+    },
+    {
+      "name": "N=7 → 7",
+      "setup": { "variables": { "N": 7 } },
+      "expected": { "say": ["7"] }
+    },
+    {
+      "name": "N=10 → 1",
+      "setup": { "variables": { "N": 10 } },
+      "expected": { "say": ["1"] }
+    },
+    {
+      "name": "N=100 → 1",
+      "setup": { "variables": { "N": 100 } },
+      "expected": { "say": ["1"] }
+    },
+    {
+      "name": "N=45 → 9",
+      "setup": { "variables": { "N": 45 } },
+      "expected": { "say": ["9"] }
+    },
+    {
+      "name": "N=205 → 7",
+      "setup": { "variables": { "N": 205 } },
+      "expected": { "say": ["7"] }
+    },
+    {
+      "name": "N=9999 → 36",
+      "setup": { "variables": { "N": 9999 } },
+      "expected": { "say": ["36"] }
+    },
+    {
+      "name": "N=12345 → 15",
+      "setup": { "variables": { "N": 12345 } },
+      "expected": { "say": ["15"] }
+    },
+    {
+      "name": "N=1001 → 2",
+      "setup": { "variables": { "N": 1001 } },
+      "expected": { "say": ["2"] }
+    },
+    {
+      "name": "N=808 → 16",
+      "setup": { "variables": { "N": 808 } },
+      "expected": { "say": ["16"] }
+    },
+    {
+      "name": "N=1000 → 1",
+      "setup": { "variables": { "N": 1000 } },
+      "expected": { "say": ["1"] }
+    }
+  ]
+}

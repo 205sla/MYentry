@@ -1,0 +1,4 @@
+Entry.print_for_sec("봄", 1)
+Entry.print_for_sec("여름", 1)
+Entry.print_for_sec("가을", 1)
+Entry.print_for_sec("겨울", 1)

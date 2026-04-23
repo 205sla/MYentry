@@ -1,0 +1,71 @@
+{
+  "test": [
+    {
+      "name": "0! = 1 (특수)",
+      "setup": { "variables": { "N": 0 } },
+      "expected": { "say": ["1"] }
+    },
+    {
+      "name": "5! = 120",
+      "setup": { "variables": { "N": 5 } },
+      "expected": { "say": ["120"] }
+    },
+    {
+      "name": "7! = 5040",
+      "setup": { "variables": { "N": 7 } },
+      "expected": { "say": ["5040"] }
+    }
+  ],
+  "submit": [
+    {
+      "name": "1! = 1",
+      "setup": { "variables": { "N": 1 } },
+      "expected": { "say": ["1"] }
+    },
+    {
+      "name": "2! = 2",
+      "setup": { "variables": { "N": 2 } },
+      "expected": { "say": ["2"] }
+    },
+    {
+      "name": "3! = 6",
+      "setup": { "variables": { "N": 3 } },
+      "expected": { "say": ["6"] }
+    },
+    {
+      "name": "4! = 24",
+      "setup": { "variables": { "N": 4 } },
+      "expected": { "say": ["24"] }
+    },
+    {
+      "name": "6! = 720",
+      "setup": { "variables": { "N": 6 } },
+      "expected": { "say": ["720"] }
+    },
+    {
+      "name": "8! = 40320",
+      "setup": { "variables": { "N": 8 } },
+      "expected": { "say": ["40320"] }
+    },
+    {
+      "name": "9! = 362880",
+      "setup": { "variables": { "N": 9 } },
+      "expected": { "say": ["362880"] }
+    },
+    {
+      "name": "10! = 3628800",
+      "setup": { "variables": { "N": 10 } },
+      "expected": { "say": ["3628800"] }
+    },
+    {
+      "name": "11! = 39916800",
+      "setup": { "variables": { "N": 11 } },
+      "expected": { "say": ["39916800"] }
+    },
+    {
+      "name": "12! = 479001600",
+      "setup": { "variables": { "N": 12 } },
+      "expected": { "say": ["479001600"] }
+    }
+  ]
+}

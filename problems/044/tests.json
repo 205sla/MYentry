@@ -1,0 +1,51 @@
+{
+  "test": [
+    {
+      "name": "엔트리",
+      "setup": { "variables": { "대답": "엔트리" } },
+      "expected": { "say": ["안녕 엔트리님"] }
+    },
+    {
+      "name": "지민",
+      "setup": { "variables": { "대답": "지민" } },
+      "expected": { "say": ["안녕 지민님"] }
+    }
+  ],
+  "submit": [
+    {
+      "name": "짧은 이름",
+      "setup": { "variables": { "대답": "가" } },
+      "expected": { "say": ["안녕 가님"] }
+    },
+    {
+      "name": "세 글자",
+      "setup": { "variables": { "대답": "홍길동" } },
+      "expected": { "say": ["안녕 홍길동님"] }
+    },
+    {
+      "name": "영문 이름",
+      "setup": { "variables": { "대답": "Alex" } },
+      "expected": { "say": ["안녕 Alex님"] }
+    },
+    {
+      "name": "숫자 이름",
+      "setup": { "variables": { "대답": "205" } },
+      "expected": { "say": ["안녕 205님"] }
+    },
+    {
+      "name": "한영 혼합",
+      "setup": { "variables": { "대답": "Claude박사" } },
+      "expected": { "say": ["안녕 Claude박사님"] }
+    },
+    {
+      "name": "긴 이름",
+      "setup": { "variables": { "대답": "코딩좋아하는아이" } },
+      "expected": { "say": ["안녕 코딩좋아하는아이님"] }
+    },
+    {
+      "name": "공백 포함",
+      "setup": { "variables": { "대답": "엔트리 봇" } },
+      "expected": { "say": ["안녕 엔트리 봇님"] }
+    }
+  ]
+}

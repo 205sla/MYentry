@@ -1,0 +1,14 @@
+복사 = []
+for i in range(len(숫자들)):
+    복사.append(숫자들[i])
+for _ in range(K - 1):
+    최대위치 = 0
+    for i in range(1, len(복사)):
+        if 복사[i] > 복사[최대위치]:
+            최대위치 = i
+    del 복사[최대위치]
+답 = 복사[0]
+for i in range(1, len(복사)):
+    if 복사[i] > 답:
+        답 = 복사[i]
+Entry.print(답)

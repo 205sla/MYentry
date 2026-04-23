@@ -1,0 +1,76 @@
+{
+  "test": [
+    {
+      "name": "안녕 엔트리 반가워",
+      "setup": { "variables": { "문장": "안녕 엔트리 반가워" } },
+      "expected": { "say": ["반가워 엔트리 안녕"] }
+    },
+    {
+      "name": "hello world",
+      "setup": { "variables": { "문장": "hello world" } },
+      "expected": { "say": ["world hello"] }
+    },
+    {
+      "name": "단일 단어",
+      "setup": { "variables": { "문장": "one" } },
+      "expected": { "say": ["one"] }
+    }
+  ],
+  "submit": [
+    {
+      "name": "두 글자 단어들",
+      "setup": { "variables": { "문장": "a b c" } },
+      "expected": { "say": ["c b a"] }
+    },
+    {
+      "name": "4 단어",
+      "setup": { "variables": { "문장": "the quick brown fox" } },
+      "expected": { "say": ["fox brown quick the"] }
+    },
+    {
+      "name": "5 단어",
+      "setup": { "variables": { "문장": "1 2 3 4 5" } },
+      "expected": { "say": ["5 4 3 2 1"] }
+    },
+    {
+      "name": "길이 다른 단어들",
+      "setup": { "variables": { "문장": "ab cde f ghij" } },
+      "expected": { "say": ["ghij f cde ab"] }
+    },
+    {
+      "name": "팰린드롬 문장",
+      "setup": { "variables": { "문장": "aa bb aa" } },
+      "expected": { "say": ["aa bb aa"] }
+    },
+    {
+      "name": "두 단어 다름",
+      "setup": { "variables": { "문장": "cat dog" } },
+      "expected": { "say": ["dog cat"] }
+    },
+    {
+      "name": "한글 2어절",
+      "setup": { "variables": { "문장": "반갑다 친구" } },
+      "expected": { "say": ["친구 반갑다"] }
+    },
+    {
+      "name": "혼합 한영",
+      "setup": { "variables": { "문장": "Entry 봇 hello" } },
+      "expected": { "say": ["hello 봇 Entry"] }
+    },
+    {
+      "name": "6 단어",
+      "setup": { "variables": { "문장": "a bb ccc dd e fff" } },
+      "expected": { "say": ["fff e dd ccc bb a"] }
+    },
+    {
+      "name": "같은 단어 반복",
+      "setup": { "variables": { "문장": "hi hi hi" } },
+      "expected": { "say": ["hi hi hi"] }
+    },
+    {
+      "name": "긴 문장",
+      "setup": { "variables": { "문장": "one two three four five" } },
+      "expected": { "say": ["five four three two one"] }
+    }
+  ]
+}

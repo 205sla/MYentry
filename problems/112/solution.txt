@@ -1,0 +1,22 @@
+스택 = []
+토큰 = ""
+i = 0
+while i <= len(식):
+    if i == len(식) or 식[i] == " ":
+        if 토큰 != "":
+            if 토큰 == "+" or 토큰 == "-" or 토큰 == "*":
+                b = 스택.pop()
+                a = 스택.pop()
+                if 토큰 == "+":
+                    스택.append(a + b)
+                elif 토큰 == "-":
+                    스택.append(a - b)
+                else:
+                    스택.append(a * b)
+            else:
+                스택.append(int(토큰))
+            토큰 = ""
+    else:
+        토큰 = 토큰 + 식[i]
+    i = i + 1
+Entry.print(스택[0])

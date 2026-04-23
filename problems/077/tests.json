@@ -1,0 +1,76 @@
+{
+  "test": [
+    {
+      "name": "aba → 회문",
+      "setup": { "variables": { "문장": "aba" } },
+      "expected": { "say": ["회문"] }
+    },
+    {
+      "name": "hello → 회문 아님",
+      "setup": { "variables": { "문장": "hello" } },
+      "expected": { "say": ["회문 아님"] }
+    },
+    {
+      "name": "기러기 → 회문",
+      "setup": { "variables": { "문장": "기러기" } },
+      "expected": { "say": ["회문"] }
+    }
+  ],
+  "submit": [
+    {
+      "name": "한 글자 a",
+      "setup": { "variables": { "문장": "a" } },
+      "expected": { "say": ["회문"] }
+    },
+    {
+      "name": "두 글자 같음",
+      "setup": { "variables": { "문장": "aa" } },
+      "expected": { "say": ["회문"] }
+    },
+    {
+      "name": "두 글자 다름",
+      "setup": { "variables": { "문장": "ab" } },
+      "expected": { "say": ["회문 아님"] }
+    },
+    {
+      "name": "짝수 회문 abba",
+      "setup": { "variables": { "문장": "abba" } },
+      "expected": { "say": ["회문"] }
+    },
+    {
+      "name": "홀수 비회문 abc",
+      "setup": { "variables": { "문장": "abc" } },
+      "expected": { "say": ["회문 아님"] }
+    },
+    {
+      "name": "숫자 회문 12321",
+      "setup": { "variables": { "문장": "12321" } },
+      "expected": { "say": ["회문"] }
+    },
+    {
+      "name": "한글 회문 다가가다",
+      "setup": { "variables": { "문장": "다가가다" } },
+      "expected": { "say": ["회문"] }
+    },
+    {
+      "name": "긴 회문 racecar",
+      "setup": { "variables": { "문장": "racecar" } },
+      "expected": { "say": ["회문"] }
+    },
+    {
+      "name": "긴 비회문 algorithm",
+      "setup": { "variables": { "문장": "algorithm" } },
+      "expected": { "say": ["회문 아님"] }
+    },
+    {
+      "name": "가운데만 다름",
+      "setup": { "variables": { "문장": "abcba" } },
+      "expected": { "say": ["회문"] }
+    },
+    {
+      "name": "마지막만 다름",
+      "setup": { "variables": { "문장": "abcbc" } },
+      "expected": { "say": ["회문 아님"] }
+    }
+  ]
+}

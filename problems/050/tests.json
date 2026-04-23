@@ -1,0 +1,66 @@
+{
+  "test": [
+    {
+      "name": "사과바나나",
+      "setup": { "variables": { "단어1": "사과", "단어2": "바나나" } },
+      "expected": { "say": ["사과바나나"] }
+    },
+    {
+      "name": "HelloWorld",
+      "setup": { "variables": { "단어1": "Hello", "단어2": "World" } },
+      "expected": { "say": ["HelloWorld"] }
+    }
+  ],
+  "submit": [
+    {
+      "name": "한 글자씩",
+      "setup": { "variables": { "단어1": "가", "단어2": "나" } },
+      "expected": { "say": ["가나"] }
+    },
+    {
+      "name": "빈 문자열 뒤",
+      "setup": { "variables": { "단어1": "안녕", "단어2": "" } },
+      "expected": { "say": ["안녕"] }
+    },
+    {
+      "name": "빈 문자열 앞",
+      "setup": { "variables": { "단어1": "", "단어2": "엔트리" } },
+      "expected": { "say": ["엔트리"] }
+    },
+    {
+      "name": "둘 다 빈",
+      "setup": { "variables": { "단어1": "", "단어2": "" } },
+      "expected": { "say": [""] }
+    },
+    {
+      "name": "숫자 문자열",
+      "setup": { "variables": { "단어1": "12", "단어2": "34" } },
+      "expected": { "say": ["1234"] }
+    },
+    {
+      "name": "한영 혼합",
+      "setup": { "variables": { "단어1": "엔트리", "단어2": "Bot" } },
+      "expected": { "say": ["엔트리Bot"] }
+    },
+    {
+      "name": "공백 포함",
+      "setup": { "variables": { "단어1": "안녕 ", "단어2": "세계" } },
+      "expected": { "say": ["안녕 세계"] }
+    },
+    {
+      "name": "특수문자",
+      "setup": { "variables": { "단어1": "!@", "단어2": "#$" } },
+      "expected": { "say": ["!@#$"] }
+    },
+    {
+      "name": "같은 단어 두 번",
+      "setup": { "variables": { "단어1": "가", "단어2": "가" } },
+      "expected": { "say": ["가가"] }
+    },
+    {
+      "name": "긴 단어",
+      "setup": { "variables": { "단어1": "코딩공부", "단어2": "재밌다" } },
+      "expected": { "say": ["코딩공부재밌다"] }
+    }
+  ]
+}

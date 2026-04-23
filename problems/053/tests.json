@@ -1,0 +1,61 @@
+{
+  "test": [
+    {
+      "name": "5 → 양수",
+      "setup": { "variables": { "N": 5 } },
+      "expected": { "say": ["양수"] }
+    },
+    {
+      "name": "-3 → 음수",
+      "setup": { "variables": { "N": -3 } },
+      "expected": { "say": ["음수"] }
+    },
+    {
+      "name": "0 → 0",
+      "setup": { "variables": { "N": 0 } },
+      "expected": { "say": ["0"] }
+    }
+  ],
+  "submit": [
+    {
+      "name": "1 → 양수",
+      "setup": { "variables": { "N": 1 } },
+      "expected": { "say": ["양수"] }
+    },
+    {
+      "name": "-1 → 음수",
+      "setup": { "variables": { "N": -1 } },
+      "expected": { "say": ["음수"] }
+    },
+    {
+      "name": "100 → 양수",
+      "setup": { "variables": { "N": 100 } },
+      "expected": { "say": ["양수"] }
+    },
+    {
+      "name": "-100 → 음수",
+      "setup": { "variables": { "N": -100 } },
+      "expected": { "say": ["음수"] }
+    },
+    {
+      "name": "9999 → 양수",
+      "setup": { "variables": { "N": 9999 } },
+      "expected": { "say": ["양수"] }
+    },
+    {
+      "name": "-9999 → 음수",
+      "setup": { "variables": { "N": -9999 } },
+      "expected": { "say": ["음수"] }
+    },
+    {
+      "name": "50 → 양수",
+      "setup": { "variables": { "N": 50 } },
+      "expected": { "say": ["양수"] }
+    },
+    {
+      "name": "-50 → 음수",
+      "setup": { "variables": { "N": -50 } },
+      "expected": { "say": ["음수"] }
+    }
+  ]
+}

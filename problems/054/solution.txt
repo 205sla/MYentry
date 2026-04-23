@@ -1,0 +1,6 @@
+if A > B:
+    Entry.print("A가 큼")
+elif A < B:
+    Entry.print("B가 큼")
+else:
+    Entry.print("같음")

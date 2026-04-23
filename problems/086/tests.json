@@ -1,0 +1,76 @@
+{
+  "test": [
+    {
+      "name": "12345 → 54321",
+      "setup": { "variables": { "N": 12345 } },
+      "expected": { "say": ["54321"] }
+    },
+    {
+      "name": "100 → 1 (앞 0 소거)",
+      "setup": { "variables": { "N": 100 } },
+      "expected": { "say": ["1"] }
+    },
+    {
+      "name": "7 → 7",
+      "setup": { "variables": { "N": 7 } },
+      "expected": { "say": ["7"] }
+    }
+  ],
+  "submit": [
+    {
+      "name": "10 → 1",
+      "setup": { "variables": { "N": 10 } },
+      "expected": { "say": ["1"] }
+    },
+    {
+      "name": "1 → 1",
+      "setup": { "variables": { "N": 1 } },
+      "expected": { "say": ["1"] }
+    },
+    {
+      "name": "99 → 99",
+      "setup": { "variables": { "N": 99 } },
+      "expected": { "say": ["99"] }
+    },
+    {
+      "name": "12 → 21",
+      "setup": { "variables": { "N": 12 } },
+      "expected": { "say": ["21"] }
+    },
+    {
+      "name": "1200 → 21",
+      "setup": { "variables": { "N": 1200 } },
+      "expected": { "say": ["21"] }
+    },
+    {
+      "name": "54321 → 12345",
+      "setup": { "variables": { "N": 54321 } },
+      "expected": { "say": ["12345"] }
+    },
+    {
+      "name": "205 → 502",
+      "setup": { "variables": { "N": 205 } },
+      "expected": { "say": ["502"] }
+    },
+    {
+      "name": "1001 → 1001",
+      "setup": { "variables": { "N": 1001 } },
+      "expected": { "say": ["1001"] }
+    },
+    {
+      "name": "9876543210 역순",
+      "setup": { "variables": { "N": 9876543210 } },
+      "expected": { "say": ["123456789"] }
+    },
+    {
+      "name": "팰린드롬 121 → 121",
+      "setup": { "variables": { "N": 121 } },
+      "expected": { "say": ["121"] }
+    },
+    {
+      "name": "1000 → 1",
+      "setup": { "variables": { "N": 1000 } },
+      "expected": { "say": ["1"] }
+    }
+  ]
+}

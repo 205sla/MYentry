@@ -1,0 +1,12 @@
+합 = 0
+for i in range(len(학점들)):
+    g = 학점들[i]
+    if g == "A":
+        합 = 합 + 4
+    elif g == "B":
+        합 = 합 + 3
+    elif g == "C":
+        합 = 합 + 2
+    elif g == "D":
+        합 = 합 + 1
+Entry.print(합)

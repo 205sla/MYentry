@@ -1,0 +1,76 @@
+{
+  "test": [
+    {
+      "name": "85 → 합격",
+      "setup": { "variables": { "점수": 85 } },
+      "expected": { "say": ["합격"] }
+    },
+    {
+      "name": "59 → 불합격",
+      "setup": { "variables": { "점수": 59 } },
+      "expected": { "say": ["불합격"] }
+    },
+    {
+      "name": "60 → 합격 (경계)",
+      "setup": { "variables": { "점수": 60 } },
+      "expected": { "say": ["합격"] }
+    }
+  ],
+  "submit": [
+    {
+      "name": "0 → 불합격",
+      "setup": { "variables": { "점수": 0 } },
+      "expected": { "say": ["불합격"] }
+    },
+    {
+      "name": "100 → 합격",
+      "setup": { "variables": { "점수": 100 } },
+      "expected": { "say": ["합격"] }
+    },
+    {
+      "name": "1 → 불합격",
+      "setup": { "variables": { "점수": 1 } },
+      "expected": { "say": ["불합격"] }
+    },
+    {
+      "name": "61 → 합격",
+      "setup": { "variables": { "점수": 61 } },
+      "expected": { "say": ["합격"] }
+    },
+    {
+      "name": "99 → 합격",
+      "setup": { "variables": { "점수": 99 } },
+      "expected": { "say": ["합격"] }
+    },
+    {
+      "name": "50 → 불합격",
+      "setup": { "variables": { "점수": 50 } },
+      "expected": { "say": ["불합격"] }
+    },
+    {
+      "name": "75 → 합격",
+      "setup": { "variables": { "점수": 75 } },
+      "expected": { "say": ["합격"] }
+    },
+    {
+      "name": "30 → 불합격",
+      "setup": { "variables": { "점수": 30 } },
+      "expected": { "say": ["불합격"] }
+    },
+    {
+      "name": "80 → 합격",
+      "setup": { "variables": { "점수": 80 } },
+      "expected": { "say": ["합격"] }
+    },
+    {
+      "name": "59.9 경계 직전 (59)",
+      "setup": { "variables": { "점수": 59 } },
+      "expected": { "say": ["불합격"] }
+    },
+    {
+      "name": "70 → 합격",
+      "setup": { "variables": { "점수": 70 } },
+      "expected": { "say": ["합격"] }
+    }
+  ]
+}

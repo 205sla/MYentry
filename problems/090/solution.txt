@@ -1,0 +1,7 @@
+for i in range(1, N + 1):
+    진약수합 = 0
+    for j in range(1, i):
+        if i % j == 0:
+            진약수합 = 진약수합 + j
+    if 진약수합 == i:
+        완전수들.append(i)

@@ -1,0 +1,6 @@
+if A == B:
+    Entry.print("무승부")
+elif (A == "가위" and B == "보") or (A == "바위" and B == "가위") or (A == "보" and B == "바위"):
+    Entry.print("A 승")
+else:
+    Entry.print("B 승")

@@ -1,0 +1,10 @@
+if 점수 >= 90:
+    Entry.print("A")
+elif 점수 >= 80:
+    Entry.print("B")
+elif 점수 >= 70:
+    Entry.print("C")
+elif 점수 >= 60:
+    Entry.print("D")
+else:
+    Entry.print("F")

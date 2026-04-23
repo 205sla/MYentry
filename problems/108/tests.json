@@ -1,0 +1,76 @@
+{
+  "test": [
+    {
+      "name": "N=1 → 0",
+      "setup": { "variables": { "N": 1 } },
+      "expected": { "say": ["0"] }
+    },
+    {
+      "name": "N=10 → 3",
+      "setup": { "variables": { "N": 10 } },
+      "expected": { "say": ["3"] }
+    },
+    {
+      "name": "N=6 → 2",
+      "setup": { "variables": { "N": 6 } },
+      "expected": { "say": ["2"] }
+    }
+  ],
+  "submit": [
+    {
+      "name": "N=2 → 1",
+      "setup": { "variables": { "N": 2 } },
+      "expected": { "say": ["1"] }
+    },
+    {
+      "name": "N=3 → 1",
+      "setup": { "variables": { "N": 3 } },
+      "expected": { "say": ["1"] }
+    },
+    {
+      "name": "N=4 → 2",
+      "setup": { "variables": { "N": 4 } },
+      "expected": { "say": ["2"] }
+    },
+    {
+      "name": "N=5 → 3",
+      "setup": { "variables": { "N": 5 } },
+      "expected": { "say": ["3"] }
+    },
+    {
+      "name": "N=7 → 3",
+      "setup": { "variables": { "N": 7 } },
+      "expected": { "say": ["3"] }
+    },
+    {
+      "name": "N=27 → 3 (3→3→3→1)",
+      "setup": { "variables": { "N": 27 } },
+      "expected": { "say": ["3"] }
+    },
+    {
+      "name": "N=100 → 7",
+      "setup": { "variables": { "N": 100 } },
+      "expected": { "say": ["7"] }
+    },
+    {
+      "name": "N=15 → 4",
+      "setup": { "variables": { "N": 15 } },
+      "expected": { "say": ["4"] }
+    },
+    {
+      "name": "N=11 → 4",
+      "setup": { "variables": { "N": 11 } },
+      "expected": { "say": ["4"] }
+    },
+    {
+      "name": "N=50 → 6",
+      "setup": { "variables": { "N": 50 } },
+      "expected": { "say": ["6"] }
+    },
+    {
+      "name": "N=200 → 7",
+      "setup": { "variables": { "N": 200 } },
+      "expected": { "say": ["7"] }
+    }
+  ]
+}

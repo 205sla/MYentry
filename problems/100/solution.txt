@@ -1,0 +1,11 @@
+알파벳 = "abcdefghijklmnopqrstuvwxyz"
+결과 = ""
+for i in range(len(문장)):
+    글자 = 문장[i]
+    p = 0
+    for j in range(26):
+        if 알파벳[j] == 글자:
+            p = j
+    새위치 = (p + N) % 26
+    결과 = 결과 + 알파벳[새위치]
+Entry.print(결과)

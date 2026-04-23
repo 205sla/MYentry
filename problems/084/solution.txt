@@ -1,0 +1,9 @@
+합 = 0
+for i in range(len(숫자들)):
+    합 = 합 + 숫자들[i]
+평균 = 합 / len(숫자들)
+개수 = 0
+for i in range(len(숫자들)):
+    if 숫자들[i] > 평균:
+        개수 = 개수 + 1
+Entry.print(개수)

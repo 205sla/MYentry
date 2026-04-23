@@ -1,0 +1,7 @@
+Entry.print_for_sec("월", 1)
+Entry.print_for_sec("화", 1)
+Entry.print_for_sec("수", 1)
+Entry.print_for_sec("목", 1)
+Entry.print_for_sec("금", 1)
+Entry.print_for_sec("토", 1)
+Entry.print_for_sec("일", 1)

@@ -1,0 +1,61 @@
+{
+  "test": [
+    {
+      "name": "안녕 3번",
+      "setup": { "variables": { "문장": "안녕", "N": 3 } },
+      "expected": { "say": ["안녕", "안녕", "안녕"] }
+    },
+    {
+      "name": "엔트리 1번",
+      "setup": { "variables": { "문장": "엔트리", "N": 1 } },
+      "expected": { "say": ["엔트리"] }
+    },
+    {
+      "name": "가 5번",
+      "setup": { "variables": { "문장": "가", "N": 5 } },
+      "expected": { "say": ["가", "가", "가", "가", "가"] }
+    }
+  ],
+  "submit": [
+    {
+      "name": "Hi 2번",
+      "setup": { "variables": { "문장": "Hi", "N": 2 } },
+      "expected": { "say": ["Hi", "Hi"] }
+    },
+    {
+      "name": "만세 4번",
+      "setup": { "variables": { "문장": "만세", "N": 4 } },
+      "expected": { "say": ["만세", "만세", "만세", "만세"] }
+    },
+    {
+      "name": "숫자 문자열 3번",
+      "setup": { "variables": { "문장": "205", "N": 3 } },
+      "expected": { "say": ["205", "205", "205"] }
+    },
+    {
+      "name": "긴 문장 2번",
+      "setup": { "variables": { "문장": "안녕하세요 여러분", "N": 2 } },
+      "expected": { "say": ["안녕하세요 여러분", "안녕하세요 여러분"] }
+    },
+    {
+      "name": "공백 5번",
+      "setup": { "variables": { "문장": " ", "N": 5 } },
+      "expected": { "say": [" ", " ", " ", " ", " "] }
+    },
+    {
+      "name": "특수문자 3번",
+      "setup": { "variables": { "문장": "!?@", "N": 3 } },
+      "expected": { "say": ["!?@", "!?@", "!?@"] }
+    },
+    {
+      "name": "A 1번",
+      "setup": { "variables": { "문장": "A", "N": 1 } },
+      "expected": { "say": ["A"] }
+    },
+    {
+      "name": "엔트리봇 6번",
+      "setup": { "variables": { "문장": "엔트리봇", "N": 6 } },
+      "expected": { "say": ["엔트리봇", "엔트리봇", "엔트리봇", "엔트리봇", "엔트리봇", "엔트리봇"] }
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+for i in range(len(A)):
+    결과.append(A[i])
+for i in range(len(B)):
+    결과.append(B[i])

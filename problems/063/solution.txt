@@ -1,0 +1,4 @@
+카운터 = N
+for _ in range(N):
+    Entry.print_for_sec(카운터, 1)
+    카운터 = 카운터 - 1

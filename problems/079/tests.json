@@ -1,0 +1,71 @@
+{
+  "test": [
+    {
+      "name": "HelloWorld → 2, 8",
+      "setup": { "variables": { "문장": "HelloWorld" } },
+      "expected": { "say": ["2", "8"] }
+    },
+    {
+      "name": "HELLO → 5, 0",
+      "setup": { "variables": { "문장": "HELLO" } },
+      "expected": { "say": ["5", "0"] }
+    },
+    {
+      "name": "abc123 → 0, 3",
+      "setup": { "variables": { "문장": "abc123" } },
+      "expected": { "say": ["0", "3"] }
+    }
+  ],
+  "submit": [
+    {
+      "name": "한 글자 대문자",
+      "setup": { "variables": { "문장": "A" } },
+      "expected": { "say": ["1", "0"] }
+    },
+    {
+      "name": "한 글자 소문자",
+      "setup": { "variables": { "문장": "z" } },
+      "expected": { "say": ["0", "1"] }
+    },
+    {
+      "name": "알파벳 아님",
+      "setup": { "variables": { "문장": "12345" } },
+      "expected": { "say": ["0", "0"] }
+    },
+    {
+      "name": "특수문자만",
+      "setup": { "variables": { "문장": "!@#$%" } },
+      "expected": { "say": ["0", "0"] }
+    },
+    {
+      "name": "공백만",
+      "setup": { "variables": { "문장": "     " } },
+      "expected": { "say": ["0", "0"] }
+    },
+    {
+      "name": "혼합 문장",
+      "setup": { "variables": { "문장": "Hello, World! 123" } },
+      "expected": { "say": ["2", "8"] }
+    },
+    {
+      "name": "대문자 많은",
+      "setup": { "variables": { "문장": "ABCDefg" } },
+      "expected": { "say": ["4", "3"] }
+    },
+    {
+      "name": "소문자 많은",
+      "setup": { "variables": { "문장": "programming" } },
+      "expected": { "say": ["0", "11"] }
+    },
+    {
+      "name": "알파벳 전체 대문자",
+      "setup": { "variables": { "문장": "ABCDEFGHIJKLMNOPQRSTUVWXYZ" } },
+      "expected": { "say": ["26", "0"] }
+    },
+    {
+      "name": "알파벳 전체 소문자",
+      "setup": { "variables": { "문장": "abcdefghijklmnopqrstuvwxyz" } },
+      "expected": { "say": ["0", "26"] }
+    }
+  ]
+}

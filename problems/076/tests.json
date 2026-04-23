@@ -1,0 +1,71 @@
+{
+  "test": [
+    {
+      "name": "hello → olleh",
+      "setup": { "variables": { "문장": "hello" } },
+      "expected": { "say": ["olleh"] }
+    },
+    {
+      "name": "엔트리 → 리트엔",
+      "setup": { "variables": { "문장": "엔트리" } },
+      "expected": { "say": ["리트엔"] }
+    },
+    {
+      "name": "12345 → 54321",
+      "setup": { "variables": { "문장": "12345" } },
+      "expected": { "say": ["54321"] }
+    }
+  ],
+  "submit": [
+    {
+      "name": "한 글자",
+      "setup": { "variables": { "문장": "a" } },
+      "expected": { "say": ["a"] }
+    },
+    {
+      "name": "두 글자",
+      "setup": { "variables": { "문장": "ab" } },
+      "expected": { "say": ["ba"] }
+    },
+    {
+      "name": "palindrome은 동일",
+      "setup": { "variables": { "문장": "aba" } },
+      "expected": { "say": ["aba"] }
+    },
+    {
+      "name": "긴 영문",
+      "setup": { "variables": { "문장": "abcdefgh" } },
+      "expected": { "say": ["hgfedcba"] }
+    },
+    {
+      "name": "한글 5자",
+      "setup": { "variables": { "문장": "안녕하세요" } },
+      "expected": { "say": ["요세하녕안"] }
+    },
+    {
+      "name": "숫자 6자",
+      "setup": { "variables": { "문장": "123456" } },
+      "expected": { "say": ["654321"] }
+    },
+    {
+      "name": "한영 혼합",
+      "setup": { "variables": { "문장": "abc가나" } },
+      "expected": { "say": ["나가cba"] }
+    },
+    {
+      "name": "공백 포함",
+      "setup": { "variables": { "문장": "ab cd" } },
+      "expected": { "say": ["dc ba"] }
+    },
+    {
+      "name": "특수문자",
+      "setup": { "variables": { "문장": "!@#$" } },
+      "expected": { "say": ["$#@!"] }
+    },
+    {
+      "name": "10자",
+      "setup": { "variables": { "문장": "0123456789" } },
+      "expected": { "say": ["9876543210"] }
+    }
+  ]
+}

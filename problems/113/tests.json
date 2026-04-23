@@ -1,0 +1,76 @@
+{
+  "test": [
+    {
+      "name": "N=1 → 1",
+      "setup": { "variables": { "N": 1 } },
+      "expected": { "say": ["1"] }
+    },
+    {
+      "name": "N=9 → 3",
+      "setup": { "variables": { "N": 9 } },
+      "expected": { "say": ["3"] }
+    },
+    {
+      "name": "N=15 → 4",
+      "setup": { "variables": { "N": 15 } },
+      "expected": { "say": ["4"] }
+    }
+  ],
+  "submit": [
+    {
+      "name": "N=2 → 1 (2만)",
+      "setup": { "variables": { "N": 2 } },
+      "expected": { "say": ["1"] }
+    },
+    {
+      "name": "N=3 → 2 (3, 1+2)",
+      "setup": { "variables": { "N": 3 } },
+      "expected": { "say": ["2"] }
+    },
+    {
+      "name": "N=5 → 2",
+      "setup": { "variables": { "N": 5 } },
+      "expected": { "say": ["2"] }
+    },
+    {
+      "name": "N=6 → 2 (6, 1+2+3)",
+      "setup": { "variables": { "N": 6 } },
+      "expected": { "say": ["2"] }
+    },
+    {
+      "name": "N=10 → 2",
+      "setup": { "variables": { "N": 10 } },
+      "expected": { "say": ["2"] }
+    },
+    {
+      "name": "N=16 → 1 (2의 제곱)",
+      "setup": { "variables": { "N": 16 } },
+      "expected": { "say": ["1"] }
+    },
+    {
+      "name": "N=21 → 4",
+      "setup": { "variables": { "N": 21 } },
+      "expected": { "say": ["4"] }
+    },
+    {
+      "name": "N=45 → 6",
+      "setup": { "variables": { "N": 45 } },
+      "expected": { "say": ["6"] }
+    },
+    {
+      "name": "N=100 → 3",
+      "setup": { "variables": { "N": 100 } },
+      "expected": { "say": ["3"] }
+    },
+    {
+      "name": "N=8 → 1",
+      "setup": { "variables": { "N": 8 } },
+      "expected": { "say": ["1"] }
+    },
+    {
+      "name": "N=105 → 8",
+      "setup": { "variables": { "N": 105 } },
+      "expected": { "say": ["8"] }
+    }
+  ]
+}

@@ -1,0 +1,76 @@
+{
+  "test": [
+    {
+      "name": "hello world → hello (동률)",
+      "setup": { "variables": { "문장": "hello world" } },
+      "expected": { "say": ["hello"] }
+    },
+    {
+      "name": "a bb ccc → ccc",
+      "setup": { "variables": { "문장": "a bb ccc" } },
+      "expected": { "say": ["ccc"] }
+    },
+    {
+      "name": "quick 최장",
+      "setup": { "variables": { "문장": "the quick brown fox" } },
+      "expected": { "say": ["quick"] }
+    }
+  ],
+  "submit": [
+    {
+      "name": "단일 단어",
+      "setup": { "variables": { "문장": "programming" } },
+      "expected": { "say": ["programming"] }
+    },
+    {
+      "name": "한 글자들",
+      "setup": { "variables": { "문장": "a b c" } },
+      "expected": { "say": ["a"] }
+    },
+    {
+      "name": "가운데 최장",
+      "setup": { "variables": { "문장": "hi algorithm no" } },
+      "expected": { "say": ["algorithm"] }
+    },
+    {
+      "name": "마지막 최장",
+      "setup": { "variables": { "문장": "ab cd efgh" } },
+      "expected": { "say": ["efgh"] }
+    },
+    {
+      "name": "앞 공백",
+      "setup": { "variables": { "문장": "  a bb" } },
+      "expected": { "say": ["bb"] }
+    },
+    {
+      "name": "뒷 공백",
+      "setup": { "variables": { "문장": "bb a  " } },
+      "expected": { "say": ["bb"] }
+    },
+    {
+      "name": "연속 공백",
+      "setup": { "variables": { "문장": "aa   bbbb  c" } },
+      "expected": { "say": ["bbbb"] }
+    },
+    {
+      "name": "모두 같은 길이",
+      "setup": { "variables": { "문장": "ab cd ef" } },
+      "expected": { "say": ["ab"] }
+    },
+    {
+      "name": "한글 단어",
+      "setup": { "variables": { "문장": "안녕 엔트리 반갑다" } },
+      "expected": { "say": ["엔트리"] }
+    },
+    {
+      "name": "10단어",
+      "setup": { "variables": { "문장": "a bb ccc dddd eeeee ff ggg h iiii jj" } },
+      "expected": { "say": ["eeeee"] }
+    },
+    {
+      "name": "긴 한 단어",
+      "setup": { "variables": { "문장": "supercalifragilisticexpialidocious word" } },
+      "expected": { "say": ["supercalifragilisticexpialidocious"] }
+    }
+  ]
+}

@@ -1,0 +1,76 @@
+{
+  "test": [
+    {
+      "name": "N=1 → 1",
+      "setup": { "variables": { "N": 1 } },
+      "expected": { "say": ["1"] }
+    },
+    {
+      "name": "N=6 → 3",
+      "setup": { "variables": { "N": 6 } },
+      "expected": { "say": ["3"] }
+    },
+    {
+      "name": "N=12 → 16",
+      "setup": { "variables": { "N": 12 } },
+      "expected": { "say": ["16"] }
+    }
+  ],
+  "submit": [
+    {
+      "name": "N=2 → 1",
+      "setup": { "variables": { "N": 2 } },
+      "expected": { "say": ["1"] }
+    },
+    {
+      "name": "N=3 → 1",
+      "setup": { "variables": { "N": 3 } },
+      "expected": { "say": ["1"] }
+    },
+    {
+      "name": "N=4 → 2",
+      "setup": { "variables": { "N": 4 } },
+      "expected": { "say": ["2"] }
+    },
+    {
+      "name": "N=5 → 2",
+      "setup": { "variables": { "N": 5 } },
+      "expected": { "say": ["2"] }
+    },
+    {
+      "name": "N=7 → 4",
+      "setup": { "variables": { "N": 7 } },
+      "expected": { "say": ["4"] }
+    },
+    {
+      "name": "N=10 → 9",
+      "setup": { "variables": { "N": 10 } },
+      "expected": { "say": ["9"] }
+    },
+    {
+      "name": "N=15 → 37",
+      "setup": { "variables": { "N": 15 } },
+      "expected": { "say": ["37"] }
+    },
+    {
+      "name": "N=20 → 151",
+      "setup": { "variables": { "N": 20 } },
+      "expected": { "say": ["151"] }
+    },
+    {
+      "name": "N=8 → 5",
+      "setup": { "variables": { "N": 8 } },
+      "expected": { "say": ["5"] }
+    },
+    {
+      "name": "N=9 → 7",
+      "setup": { "variables": { "N": 9 } },
+      "expected": { "say": ["7"] }
+    },
+    {
+      "name": "N=30 → 2513",
+      "setup": { "variables": { "N": 30 } },
+      "expected": { "say": ["2513"] }
+    }
+  ]
+}

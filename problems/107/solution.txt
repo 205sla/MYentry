@@ -1,0 +1,10 @@
+dp = []
+for _ in range(금액 + 1):
+    dp.append(99999)
+dp[0] = 0
+for i in range(1, 금액 + 1):
+    for j in range(len(동전들)):
+        c = 동전들[j]
+        if i - c >= 0 and dp[i - c] + 1 < dp[i]:
+            dp[i] = dp[i - c] + 1
+Entry.print(dp[금액])

@@ -1,0 +1,71 @@
+{
+  "test": [
+    {
+      "name": "abc+3 → def",
+      "setup": { "variables": { "문장": "abc", "N": 3 } },
+      "expected": { "say": ["def"] }
+    },
+    {
+      "name": "xyz+3 → abc (순환)",
+      "setup": { "variables": { "문장": "xyz", "N": 3 } },
+      "expected": { "say": ["abc"] }
+    },
+    {
+      "name": "hello+1 → ifmmp",
+      "setup": { "variables": { "문장": "hello", "N": 1 } },
+      "expected": { "say": ["ifmmp"] }
+    }
+  ],
+  "submit": [
+    {
+      "name": "N=0 변화 없음",
+      "setup": { "variables": { "문장": "abc", "N": 0 } },
+      "expected": { "say": ["abc"] }
+    },
+    {
+      "name": "N=25 (a → z)",
+      "setup": { "variables": { "문장": "a", "N": 25 } },
+      "expected": { "say": ["z"] }
+    },
+    {
+      "name": "N=13 ROT13",
+      "setup": { "variables": { "문장": "hello", "N": 13 } },
+      "expected": { "say": ["uryyb"] }
+    },
+    {
+      "name": "a+1 → b",
+      "setup": { "variables": { "문장": "a", "N": 1 } },
+      "expected": { "say": ["b"] }
+    },
+    {
+      "name": "z+1 → a",
+      "setup": { "variables": { "문장": "z", "N": 1 } },
+      "expected": { "say": ["a"] }
+    },
+    {
+      "name": "긴 문장",
+      "setup": { "variables": { "문장": "programming", "N": 2 } },
+      "expected": { "say": ["rtqitcookpi"] }
+    },
+    {
+      "name": "전체 알파벳+5",
+      "setup": { "variables": { "문장": "abcdefghijklmnopqrstuvwxyz", "N": 5 } },
+      "expected": { "say": ["fghijklmnopqrstuvwxyzabcde"] }
+    },
+    {
+      "name": "code+7",
+      "setup": { "variables": { "문장": "code", "N": 7 } },
+      "expected": { "say": ["jvkl"] }
+    },
+    {
+      "name": "얼리 순환 wxyz+5",
+      "setup": { "variables": { "문장": "wxyz", "N": 5 } },
+      "expected": { "say": ["bcde"] }
+    },
+    {
+      "name": "반복 aaa+10",
+      "setup": { "variables": { "문장": "aaa", "N": 10 } },
+      "expected": { "say": ["kkk"] }
+    }
+  ]
+}

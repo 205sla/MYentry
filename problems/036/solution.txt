@@ -1,0 +1,3 @@
+Entry.print_for_sec("이름: 엔트리봇", 1)
+Entry.print_for_sec("나이: 10살", 1)
+Entry.print_for_sec("취미: 코딩", 1)

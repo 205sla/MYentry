@@ -1,0 +1,5 @@
+최댓값 = 숫자들[0]
+for i in range(1, len(숫자들)):
+    if 숫자들[i] > 최댓값:
+        최댓값 = 숫자들[i]
+Entry.print(최댓값)

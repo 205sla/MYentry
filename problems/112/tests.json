@@ -1,0 +1,76 @@
+{
+  "test": [
+    {
+      "name": "3 4 + → 7",
+      "setup": { "variables": { "식": "3 4 +" } },
+      "expected": { "say": ["7"] }
+    },
+    {
+      "name": "3 4 + 2 * → 14",
+      "setup": { "variables": { "식": "3 4 + 2 *" } },
+      "expected": { "say": ["14"] }
+    },
+    {
+      "name": "5 1 2 + 4 * + 3 - → 14",
+      "setup": { "variables": { "식": "5 1 2 + 4 * + 3 -" } },
+      "expected": { "say": ["14"] }
+    }
+  ],
+  "submit": [
+    {
+      "name": "단일 숫자",
+      "setup": { "variables": { "식": "42" } },
+      "expected": { "say": ["42"] }
+    },
+    {
+      "name": "뺄셈 순서",
+      "setup": { "variables": { "식": "10 3 -" } },
+      "expected": { "say": ["7"] }
+    },
+    {
+      "name": "곱셈",
+      "setup": { "variables": { "식": "6 7 *" } },
+      "expected": { "say": ["42"] }
+    },
+    {
+      "name": "두자릿수",
+      "setup": { "variables": { "식": "12 34 +" } },
+      "expected": { "say": ["46"] }
+    },
+    {
+      "name": "연속 연산",
+      "setup": { "variables": { "식": "1 2 + 3 + 4 +" } },
+      "expected": { "say": ["10"] }
+    },
+    {
+      "name": "곱셈 먼저",
+      "setup": { "variables": { "식": "2 3 * 4 +" } },
+      "expected": { "say": ["10"] }
+    },
+    {
+      "name": "괄호식 (2+3)*(4-1)",
+      "setup": { "variables": { "식": "2 3 + 4 1 - *" } },
+      "expected": { "say": ["15"] }
+    },
+    {
+      "name": "계단식",
+      "setup": { "variables": { "식": "100 50 - 20 - 5 -" } },
+      "expected": { "say": ["25"] }
+    },
+    {
+      "name": "혼합",
+      "setup": { "variables": { "식": "10 5 + 2 * 3 -" } },
+      "expected": { "say": ["27"] }
+    },
+    {
+      "name": "긴 식",
+      "setup": { "variables": { "식": "5 5 + 5 + 5 + 5 +" } },
+      "expected": { "say": ["25"] }
+    },
+    {
+      "name": "세 자리",
+      "setup": { "variables": { "식": "100 200 +" } },
+      "expected": { "say": ["300"] }
+    }
+  ]
+}

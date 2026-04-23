@@ -1,0 +1,71 @@
+{
+  "test": [
+    {
+      "name": "10 mod 3 = 1",
+      "setup": { "variables": { "변수1": 10, "변수2": 3 } },
+      "expected": { "say": ["1"] }
+    },
+    {
+      "name": "20 mod 4 = 0 (딱 나누어짐)",
+      "setup": { "variables": { "변수1": 20, "변수2": 4 } },
+      "expected": { "say": ["0"] }
+    },
+    {
+      "name": "7 mod 5 = 2",
+      "setup": { "variables": { "변수1": 7, "변수2": 5 } },
+      "expected": { "say": ["2"] }
+    }
+  ],
+  "submit": [
+    {
+      "name": "1 mod 1 = 0",
+      "setup": { "variables": { "변수1": 1, "변수2": 1 } },
+      "expected": { "say": ["0"] }
+    },
+    {
+      "name": "0 mod 5 = 0",
+      "setup": { "variables": { "변수1": 0, "변수2": 5 } },
+      "expected": { "say": ["0"] }
+    },
+    {
+      "name": "5 mod 10 = 5 (나뉨수 작음)",
+      "setup": { "variables": { "변수1": 5, "변수2": 10 } },
+      "expected": { "say": ["5"] }
+    },
+    {
+      "name": "100 mod 7 = 2",
+      "setup": { "variables": { "변수1": 100, "변수2": 7 } },
+      "expected": { "say": ["2"] }
+    },
+    {
+      "name": "99 mod 10 = 9",
+      "setup": { "variables": { "변수1": 99, "변수2": 10 } },
+      "expected": { "say": ["9"] }
+    },
+    {
+      "name": "27 mod 3 = 0",
+      "setup": { "variables": { "변수1": 27, "변수2": 3 } },
+      "expected": { "say": ["0"] }
+    },
+    {
+      "name": "13 mod 5 = 3",
+      "setup": { "variables": { "변수1": 13, "변수2": 5 } },
+      "expected": { "say": ["3"] }
+    },
+    {
+      "name": "50 mod 50 = 0",
+      "setup": { "variables": { "변수1": 50, "변수2": 50 } },
+      "expected": { "say": ["0"] }
+    },
+    {
+      "name": "1000 mod 3 = 1",
+      "setup": { "variables": { "변수1": 1000, "변수2": 3 } },
+      "expected": { "say": ["1"] }
+    },
+    {
+      "name": "17 mod 6 = 5",
+      "setup": { "variables": { "변수1": 17, "변수2": 6 } },
+      "expected": { "say": ["5"] }
+    }
+  ]
+}

@@ -1,0 +1,5 @@
+개수 = 0
+for i in range(1, N + 1):
+    if N % i == 0:
+        개수 = 개수 + 1
+Entry.print(개수)

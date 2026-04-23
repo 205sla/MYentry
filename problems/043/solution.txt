@@ -1,0 +1,3 @@
+Entry.print_for_sec("만세!", 1)
+Entry.print_for_sec("만세!", 1)
+Entry.print_for_sec("만세!", 1)

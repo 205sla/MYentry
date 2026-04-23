@@ -1,0 +1,26 @@
+MAX = 201
+visited = []
+for _ in range(MAX):
+    visited.append(0)
+pos_q = []
+dist_q = []
+visited[N] = 1
+pos_q.append(N)
+dist_q.append(0)
+답 = -1
+while len(pos_q) > 0 and 답 == -1:
+    현재 = pos_q[0]
+    거리 = dist_q[0]
+    del pos_q[0]
+    del dist_q[0]
+    if 현재 == K:
+        답 = 거리
+    else:
+        nexts = [현재 + 1, 현재 - 1, 현재 * 2]
+        for i in range(3):
+            nx = nexts[i]
+            if 0 <= nx and nx < MAX and visited[nx] == 0:
+                visited[nx] = 1
+                pos_q.append(nx)
+                dist_q.append(거리 + 1)
+Entry.print(답)

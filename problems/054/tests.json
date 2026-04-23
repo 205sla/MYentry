@@ -1,0 +1,71 @@
+{
+  "test": [
+    {
+      "name": "5 > 3",
+      "setup": { "variables": { "A": 5, "B": 3 } },
+      "expected": { "say": ["A가 큼"] }
+    },
+    {
+      "name": "2 < 7",
+      "setup": { "variables": { "A": 2, "B": 7 } },
+      "expected": { "say": ["B가 큼"] }
+    },
+    {
+      "name": "4 = 4",
+      "setup": { "variables": { "A": 4, "B": 4 } },
+      "expected": { "say": ["같음"] }
+    }
+  ],
+  "submit": [
+    {
+      "name": "0 = 0",
+      "setup": { "variables": { "A": 0, "B": 0 } },
+      "expected": { "say": ["같음"] }
+    },
+    {
+      "name": "1 > 0",
+      "setup": { "variables": { "A": 1, "B": 0 } },
+      "expected": { "say": ["A가 큼"] }
+    },
+    {
+      "name": "0 < 1",
+      "setup": { "variables": { "A": 0, "B": 1 } },
+      "expected": { "say": ["B가 큼"] }
+    },
+    {
+      "name": "음수 대소",
+      "setup": { "variables": { "A": -3, "B": -5 } },
+      "expected": { "say": ["A가 큼"] }
+    },
+    {
+      "name": "양수·음수",
+      "setup": { "variables": { "A": 1, "B": -1 } },
+      "expected": { "say": ["A가 큼"] }
+    },
+    {
+      "name": "음수·양수",
+      "setup": { "variables": { "A": -1, "B": 1 } },
+      "expected": { "say": ["B가 큼"] }
+    },
+    {
+      "name": "100 = 100",
+      "setup": { "variables": { "A": 100, "B": 100 } },
+      "expected": { "say": ["같음"] }
+    },
+    {
+      "name": "999 > 99",
+      "setup": { "variables": { "A": 999, "B": 99 } },
+      "expected": { "say": ["A가 큼"] }
+    },
+    {
+      "name": "-10 = -10",
+      "setup": { "variables": { "A": -10, "B": -10 } },
+      "expected": { "say": ["같음"] }
+    },
+    {
+      "name": "50 < 51",
+      "setup": { "variables": { "A": 50, "B": 51 } },
+      "expected": { "say": ["B가 큼"] }
+    }
+  ]
+}

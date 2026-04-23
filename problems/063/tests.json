@@ -1,0 +1,51 @@
+{
+  "test": [
+    {
+      "name": "N=3 → 3,2,1",
+      "setup": { "variables": { "N": 3 } },
+      "expected": { "say": ["3", "2", "1"] }
+    },
+    {
+      "name": "N=5 → 5..1",
+      "setup": { "variables": { "N": 5 } },
+      "expected": { "say": ["5", "4", "3", "2", "1"] }
+    },
+    {
+      "name": "N=1 → 1",
+      "setup": { "variables": { "N": 1 } },
+      "expected": { "say": ["1"] }
+    }
+  ],
+  "submit": [
+    {
+      "name": "N=2 → 2,1",
+      "setup": { "variables": { "N": 2 } },
+      "expected": { "say": ["2", "1"] }
+    },
+    {
+      "name": "N=4 → 4..1",
+      "setup": { "variables": { "N": 4 } },
+      "expected": { "say": ["4", "3", "2", "1"] }
+    },
+    {
+      "name": "N=6 → 6..1",
+      "setup": { "variables": { "N": 6 } },
+      "expected": { "say": ["6", "5", "4", "3", "2", "1"] }
+    },
+    {
+      "name": "N=7 → 7..1",
+      "setup": { "variables": { "N": 7 } },
+      "expected": { "say": ["7", "6", "5", "4", "3", "2", "1"] }
+    },
+    {
+      "name": "N=8 → 8..1",
+      "setup": { "variables": { "N": 8 } },
+      "expected": { "say": ["8", "7", "6", "5", "4", "3", "2", "1"] }
+    },
+    {
+      "name": "N=10 → 10..1",
+      "setup": { "variables": { "N": 10 } },
+      "expected": { "say": ["10", "9", "8", "7", "6", "5", "4", "3", "2", "1"] }
+    }
+  ]
+}

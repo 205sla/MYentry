@@ -1,0 +1,81 @@
+{
+  "test": [
+    {
+      "name": "2024/2 → 29 (윤년)",
+      "setup": { "variables": { "Y": 2024, "M": 2 } },
+      "expected": { "say": ["29"] }
+    },
+    {
+      "name": "2023/2 → 28 (평년)",
+      "setup": { "variables": { "Y": 2023, "M": 2 } },
+      "expected": { "say": ["28"] }
+    },
+    {
+      "name": "2024/7 → 31",
+      "setup": { "variables": { "Y": 2024, "M": 7 } },
+      "expected": { "say": ["31"] }
+    }
+  ],
+  "submit": [
+    {
+      "name": "2000/2 → 29 (400 배수 윤년)",
+      "setup": { "variables": { "Y": 2000, "M": 2 } },
+      "expected": { "say": ["29"] }
+    },
+    {
+      "name": "1900/2 → 28 (100 배수 평년)",
+      "setup": { "variables": { "Y": 1900, "M": 2 } },
+      "expected": { "say": ["28"] }
+    },
+    {
+      "name": "2025/1 → 31",
+      "setup": { "variables": { "Y": 2025, "M": 1 } },
+      "expected": { "say": ["31"] }
+    },
+    {
+      "name": "2025/4 → 30",
+      "setup": { "variables": { "Y": 2025, "M": 4 } },
+      "expected": { "say": ["30"] }
+    },
+    {
+      "name": "2025/6 → 30",
+      "setup": { "variables": { "Y": 2025, "M": 6 } },
+      "expected": { "say": ["30"] }
+    },
+    {
+      "name": "2025/9 → 30",
+      "setup": { "variables": { "Y": 2025, "M": 9 } },
+      "expected": { "say": ["30"] }
+    },
+    {
+      "name": "2025/11 → 30",
+      "setup": { "variables": { "Y": 2025, "M": 11 } },
+      "expected": { "say": ["30"] }
+    },
+    {
+      "name": "2025/12 → 31",
+      "setup": { "variables": { "Y": 2025, "M": 12 } },
+      "expected": { "say": ["31"] }
+    },
+    {
+      "name": "2020/2 → 29",
+      "setup": { "variables": { "Y": 2020, "M": 2 } },
+      "expected": { "say": ["29"] }
+    },
+    {
+      "name": "2100/2 → 28 (100 배수)",
+      "setup": { "variables": { "Y": 2100, "M": 2 } },
+      "expected": { "say": ["28"] }
+    },
+    {
+      "name": "2400/2 → 29 (400 배수)",
+      "setup": { "variables": { "Y": 2400, "M": 2 } },
+      "expected": { "say": ["29"] }
+    },
+    {
+      "name": "2025/8 → 31",
+      "setup": { "variables": { "Y": 2025, "M": 8 } },
+      "expected": { "say": ["31"] }
+    }
+  ]
+}

@@ -1,0 +1,76 @@
+{
+  "test": [
+    {
+      "name": "N=1 → 1",
+      "setup": { "variables": { "N": 1 } },
+      "expected": { "say": ["1"] }
+    },
+    {
+      "name": "N=6 → 4",
+      "setup": { "variables": { "N": 6 } },
+      "expected": { "say": ["4"] }
+    },
+    {
+      "name": "N=13 → 2 (소수)",
+      "setup": { "variables": { "N": 13 } },
+      "expected": { "say": ["2"] }
+    }
+  ],
+  "submit": [
+    {
+      "name": "N=2 → 2",
+      "setup": { "variables": { "N": 2 } },
+      "expected": { "say": ["2"] }
+    },
+    {
+      "name": "N=4 → 3 (제곱수)",
+      "setup": { "variables": { "N": 4 } },
+      "expected": { "say": ["3"] }
+    },
+    {
+      "name": "N=9 → 3",
+      "setup": { "variables": { "N": 9 } },
+      "expected": { "say": ["3"] }
+    },
+    {
+      "name": "N=12 → 6",
+      "setup": { "variables": { "N": 12 } },
+      "expected": { "say": ["6"] }
+    },
+    {
+      "name": "N=16 → 5",
+      "setup": { "variables": { "N": 16 } },
+      "expected": { "say": ["5"] }
+    },
+    {
+      "name": "N=24 → 8",
+      "setup": { "variables": { "N": 24 } },
+      "expected": { "say": ["8"] }
+    },
+    {
+      "name": "N=36 → 9 (제곱수)",
+      "setup": { "variables": { "N": 36 } },
+      "expected": { "say": ["9"] }
+    },
+    {
+      "name": "N=100 → 9",
+      "setup": { "variables": { "N": 100 } },
+      "expected": { "say": ["9"] }
+    },
+    {
+      "name": "N=17 → 2 (소수)",
+      "setup": { "variables": { "N": 17 } },
+      "expected": { "say": ["2"] }
+    },
+    {
+      "name": "N=60 → 12",
+      "setup": { "variables": { "N": 60 } },
+      "expected": { "say": ["12"] }
+    },
+    {
+      "name": "N=48 → 10",
+      "setup": { "variables": { "N": 48 } },
+      "expected": { "say": ["10"] }
+    }
+  ]
+}

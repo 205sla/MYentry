@@ -1,0 +1,10 @@
+이전 = 1
+현재 = 1
+if N <= 2:
+    Entry.print(1)
+else:
+    for _ in range(N - 2):
+        임시 = 현재
+        현재 = 이전 + 현재
+        이전 = 임시
+    Entry.print(현재)

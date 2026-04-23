@@ -1,0 +1,7 @@
+for i in range(len(숫자들)):
+    n = 숫자들[i]
+    약수합 = 0
+    for j in range(1, n + 1):
+        if n % j == 0:
+            약수합 = 약수합 + j
+    합들.append(약수합)

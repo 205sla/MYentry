@@ -1,0 +1,76 @@
+{
+  "test": [
+    {
+      "name": "[A,B,C] → 9",
+      "setup": { "lists": { "학점들": ["A", "B", "C"] } },
+      "expected": { "say": ["9"] }
+    },
+    {
+      "name": "[F,F,F] → 0",
+      "setup": { "lists": { "학점들": ["F", "F", "F"] } },
+      "expected": { "say": ["0"] }
+    },
+    {
+      "name": "[A] → 4",
+      "setup": { "lists": { "학점들": ["A"] } },
+      "expected": { "say": ["4"] }
+    }
+  ],
+  "submit": [
+    {
+      "name": "빈 리스트",
+      "setup": { "lists": { "학점들": [] } },
+      "expected": { "say": ["0"] }
+    },
+    {
+      "name": "올 A (5개)",
+      "setup": { "lists": { "학점들": ["A", "A", "A", "A", "A"] } },
+      "expected": { "say": ["20"] }
+    },
+    {
+      "name": "A 반 + F 반",
+      "setup": { "lists": { "학점들": ["A", "F", "A", "F"] } },
+      "expected": { "say": ["8"] }
+    },
+    {
+      "name": "모든 학점",
+      "setup": { "lists": { "학점들": ["A", "B", "C", "D", "F"] } },
+      "expected": { "say": ["10"] }
+    },
+    {
+      "name": "[D]",
+      "setup": { "lists": { "학점들": ["D"] } },
+      "expected": { "say": ["1"] }
+    },
+    {
+      "name": "[B,B,B,B]",
+      "setup": { "lists": { "학점들": ["B", "B", "B", "B"] } },
+      "expected": { "say": ["12"] }
+    },
+    {
+      "name": "혼합 7개",
+      "setup": { "lists": { "학점들": ["A", "B", "A", "C", "B", "A", "D"] } },
+      "expected": { "say": ["19"] }
+    },
+    {
+      "name": "[C,D,C,D]",
+      "setup": { "lists": { "학점들": ["C", "D", "C", "D"] } },
+      "expected": { "say": ["6"] }
+    },
+    {
+      "name": "[F,A]",
+      "setup": { "lists": { "학점들": ["F", "A"] } },
+      "expected": { "say": ["4"] }
+    },
+    {
+      "name": "10개 올 B",
+      "setup": { "lists": { "학점들": ["B", "B", "B", "B", "B", "B", "B", "B", "B", "B"] } },
+      "expected": { "say": ["30"] }
+    },
+    {
+      "name": "[A,A,B,C,D,F]",
+      "setup": { "lists": { "학점들": ["A", "A", "B", "C", "D", "F"] } },
+      "expected": { "say": ["14"] }
+    }
+  ]
+}

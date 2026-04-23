@@ -1,0 +1,4 @@
+합 = 0
+for i in range(len(숫자들)):
+    합 = 합 + 숫자들[i]
+Entry.print(합 / len(숫자들))

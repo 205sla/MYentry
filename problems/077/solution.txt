@@ -1,0 +1,9 @@
+길이 = len(문장)
+회문 = 1
+for i in range(길이 // 2):
+    if 문장[i] != 문장[길이 - 1 - i]:
+        회문 = 0
+if 회문 == 1:
+    Entry.print("회문")
+else:
+    Entry.print("회문 아님")

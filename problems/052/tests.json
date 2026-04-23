@@ -1,0 +1,71 @@
+{
+  "test": [
+    {
+      "name": "3 → 홀수",
+      "setup": { "variables": { "N": 3 } },
+      "expected": { "say": ["홀수"] }
+    },
+    {
+      "name": "8 → 짝수",
+      "setup": { "variables": { "N": 8 } },
+      "expected": { "say": ["짝수"] }
+    },
+    {
+      "name": "0 → 짝수",
+      "setup": { "variables": { "N": 0 } },
+      "expected": { "say": ["짝수"] }
+    }
+  ],
+  "submit": [
+    {
+      "name": "1 → 홀수",
+      "setup": { "variables": { "N": 1 } },
+      "expected": { "say": ["홀수"] }
+    },
+    {
+      "name": "2 → 짝수",
+      "setup": { "variables": { "N": 2 } },
+      "expected": { "say": ["짝수"] }
+    },
+    {
+      "name": "-3 → 홀수",
+      "setup": { "variables": { "N": -3 } },
+      "expected": { "say": ["홀수"] }
+    },
+    {
+      "name": "-4 → 짝수",
+      "setup": { "variables": { "N": -4 } },
+      "expected": { "say": ["짝수"] }
+    },
+    {
+      "name": "99 → 홀수",
+      "setup": { "variables": { "N": 99 } },
+      "expected": { "say": ["홀수"] }
+    },
+    {
+      "name": "100 → 짝수",
+      "setup": { "variables": { "N": 100 } },
+      "expected": { "say": ["짝수"] }
+    },
+    {
+      "name": "1001 → 홀수",
+      "setup": { "variables": { "N": 1001 } },
+      "expected": { "say": ["홀수"] }
+    },
+    {
+      "name": "1000 → 짝수",
+      "setup": { "variables": { "N": 1000 } },
+      "expected": { "say": ["짝수"] }
+    },
+    {
+      "name": "-1 → 홀수",
+      "setup": { "variables": { "N": -1 } },
+      "expected": { "say": ["홀수"] }
+    },
+    {
+      "name": "-100 → 짝수",
+      "setup": { "variables": { "N": -100 } },
+      "expected": { "say": ["짝수"] }
+    }
+  ]
+}

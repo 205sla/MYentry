@@ -1,0 +1,9 @@
+개수 = 0
+for i in range(len(숫자들)):
+    중복 = 0
+    for j in range(i):
+        if 숫자들[j] == 숫자들[i]:
+            중복 = 1
+    if 중복 == 0:
+        개수 = 개수 + 1
+Entry.print(개수)

@@ -1,0 +1,4 @@
+if N < 0:
+    Entry.print(-N)
+else:
+    Entry.print(N)

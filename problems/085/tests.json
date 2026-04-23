@@ -1,0 +1,61 @@
+{
+  "test": [
+    {
+      "name": "가위 vs 보 → A 승",
+      "setup": { "variables": { "A": "가위", "B": "보" } },
+      "expected": { "say": ["A 승"] }
+    },
+    {
+      "name": "바위 vs 가위 → A 승",
+      "setup": { "variables": { "A": "바위", "B": "가위" } },
+      "expected": { "say": ["A 승"] }
+    },
+    {
+      "name": "보 vs 보 → 무승부",
+      "setup": { "variables": { "A": "보", "B": "보" } },
+      "expected": { "say": ["무승부"] }
+    }
+  ],
+  "submit": [
+    {
+      "name": "가위 vs 가위",
+      "setup": { "variables": { "A": "가위", "B": "가위" } },
+      "expected": { "say": ["무승부"] }
+    },
+    {
+      "name": "바위 vs 바위",
+      "setup": { "variables": { "A": "바위", "B": "바위" } },
+      "expected": { "say": ["무승부"] }
+    },
+    {
+      "name": "가위 vs 바위 → B 승",
+      "setup": { "variables": { "A": "가위", "B": "바위" } },
+      "expected": { "say": ["B 승"] }
+    },
+    {
+      "name": "바위 vs 보 → B 승",
+      "setup": { "variables": { "A": "바위", "B": "보" } },
+      "expected": { "say": ["B 승"] }
+    },
+    {
+      "name": "보 vs 가위 → B 승",
+      "setup": { "variables": { "A": "보", "B": "가위" } },
+      "expected": { "say": ["B 승"] }
+    },
+    {
+      "name": "보 vs 바위 → A 승",
+      "setup": { "variables": { "A": "보", "B": "바위" } },
+      "expected": { "say": ["A 승"] }
+    },
+    {
+      "name": "A 가위, B 보 반복",
+      "setup": { "variables": { "A": "가위", "B": "보" } },
+      "expected": { "say": ["A 승"] }
+    },
+    {
+      "name": "A 보, B 보",
+      "setup": { "variables": { "A": "보", "B": "보" } },
+      "expected": { "say": ["무승부"] }
+    }
+  ]
+}

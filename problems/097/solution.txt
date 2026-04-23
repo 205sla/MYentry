@@ -1,0 +1,12 @@
+for i in range(len(A)):
+    값 = A[i]
+    B에있음 = 0
+    for j in range(len(B)):
+        if B[j] == 값:
+            B에있음 = 1
+    이미있음 = 0
+    for j in range(len(차집합)):
+        if 차집합[j] == 값:
+            이미있음 = 1
+    if B에있음 == 0 and 이미있음 == 0:
+        차집합.append(값)
