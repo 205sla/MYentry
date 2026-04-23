@@ -1,10 +1,10 @@
 최빈값 = 숫자들[0]
 최대빈도 = 0
-for 현위치 in range(len(숫자들)):
-    값 = 숫자들[현위치]
+for i in range(len(숫자들)):
+    값 = 숫자들[i]
     빈도 = 0
-    for 내부위치 in range(len(숫자들)):
-        if 숫자들[내부위치] == 값:
+    for j in range(len(숫자들)):
+        if 숫자들[j] == 값:
             빈도 = 빈도 + 1
     if 빈도 > 최대빈도:
         최빈값 = 값

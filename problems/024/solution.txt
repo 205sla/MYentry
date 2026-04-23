@@ -1,6 +1,6 @@
-i = 2
+후보 = 2
 while N > 1:
-    while N % i == 0:
-        인수들.append(i)
-        N = N / i
-    i = i + 1
+    while N % 후보 == 0:
+        인수들.append(후보)
+        N = N / 후보
+    후보 = 후보 + 1

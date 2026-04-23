@@ -2,69 +2,69 @@
   "test": [
     {
       "name": "N=10 → [2,3,5,7]",
-      "setup": { "variables": { "N": "10" } },
+      "setup": { "variables": { "N": "10" }, "lists": { "소수들": [] } },
       "expected": { "lists": { "소수들": [2, 3, 5, 7] } }
     },
     {
       "name": "N=2 → [2]",
-      "setup": { "variables": { "N": "2" } },
+      "setup": { "variables": { "N": "2" }, "lists": { "소수들": [] } },
       "expected": { "lists": { "소수들": [2] } }
     },
     {
       "name": "N=20 → 8개",
-      "setup": { "variables": { "N": "20" } },
+      "setup": { "variables": { "N": "20" }, "lists": { "소수들": [] } },
       "expected": { "lists": { "소수들": [2, 3, 5, 7, 11, 13, 17, 19] } }
     }
   ],
   "submit": [
     {
       "name": "N=3",
-      "setup": { "variables": { "N": "3" } },
+      "setup": { "variables": { "N": "3" }, "lists": { "소수들": [] } },
       "expected": { "lists": { "소수들": [2, 3] } }
     },
     {
       "name": "N=4 (합성수 경계)",
-      "setup": { "variables": { "N": "4" } },
+      "setup": { "variables": { "N": "4" }, "lists": { "소수들": [] } },
       "expected": { "lists": { "소수들": [2, 3] } }
     },
     {
       "name": "N=5",
-      "setup": { "variables": { "N": "5" } },
+      "setup": { "variables": { "N": "5" }, "lists": { "소수들": [] } },
       "expected": { "lists": { "소수들": [2, 3, 5] } }
     },
     {
       "name": "N=7",
-      "setup": { "variables": { "N": "7" } },
+      "setup": { "variables": { "N": "7" }, "lists": { "소수들": [] } },
       "expected": { "lists": { "소수들": [2, 3, 5, 7] } }
     },
     {
       "name": "N=11",
-      "setup": { "variables": { "N": "11" } },
+      "setup": { "variables": { "N": "11" }, "lists": { "소수들": [] } },
       "expected": { "lists": { "소수들": [2, 3, 5, 7, 11] } }
     },
     {
       "name": "N=15",
-      "setup": { "variables": { "N": "15" } },
+      "setup": { "variables": { "N": "15" }, "lists": { "소수들": [] } },
       "expected": { "lists": { "소수들": [2, 3, 5, 7, 11, 13] } }
     },
     {
       "name": "N=25",
-      "setup": { "variables": { "N": "25" } },
+      "setup": { "variables": { "N": "25" }, "lists": { "소수들": [] } },
       "expected": { "lists": { "소수들": [2, 3, 5, 7, 11, 13, 17, 19, 23] } }
     },
     {
       "name": "N=30",
-      "setup": { "variables": { "N": "30" } },
+      "setup": { "variables": { "N": "30" }, "lists": { "소수들": [] } },
       "expected": { "lists": { "소수들": [2, 3, 5, 7, 11, 13, 17, 19, 23, 29] } }
     },
     {
       "name": "N=50",
-      "setup": { "variables": { "N": "50" } },
+      "setup": { "variables": { "N": "50" }, "lists": { "소수들": [] } },
       "expected": { "lists": { "소수들": [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47] } }
     },
     {
       "name": "N=100 (소수 25개)",
-      "setup": { "variables": { "N": "100" } },
+      "setup": { "variables": { "N": "100" }, "lists": { "소수들": [] } },
       "expected": { "lists": { "소수들": [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97] } }
     }
   ]
