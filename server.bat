@@ -22,7 +22,7 @@ if not exist "node_modules" (
     )
 )
 
-node server.js
+node src/server.js
 
 echo.
 echo Server stopped.
