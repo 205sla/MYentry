@@ -15,3 +15,11 @@ old/
 
 # Local scratch/temp directory
 temp/
+
+# Environment secrets (use .env.template as reference)
+.env
+.env.local
+
+# Runtime data: SQLite DB, user uploads 등 (db/ 구조는 .gitkeep로 유지)
+db/*
+!db/.gitkeep

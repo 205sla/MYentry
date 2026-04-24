@@ -4,6 +4,7 @@ const path = require('path');
 const zlib = require('zlib');
 const crypto = require('crypto');
 const sharp = require('sharp');
+const helmet = require('helmet');
 
 // Thumbnail resolution used when rasterizing for .ent export (matches the
 // compact PNGs Entry's own export produces — ~100px long edge).
@@ -15,6 +16,24 @@ const PROBLEMS_DIR = path.join(__dirname, 'problems');
 const SPRITES_CATALOG = path.join(__dirname, 'public', 'sprites', 'catalog.json');
 
 const SITE_URL = process.env.SITE_URL || 'https://code.205.kr';
+
+// ========== 보안 미들웨어 ==========
+// helmet: 기본 보안 헤더(X-Frame-Options, X-Content-Type-Options 등).
+//   - CSP는 Entry 런타임이 inline script·style을 대량 사용하므로 비활성
+//   - COEP도 iframe/외부 리소스와 충돌 우려가 있어 비활성
+//   둘 다 회원 기능 구현 후 필요에 따라 점진적으로 켤 예정
+app.use(helmet({
+    contentSecurityPolicy: false,
+    crossOriginEmbedderPolicy: false
+}));
+
+// 전역 JSON 바디 크기 제한 30KB.
+// `/api/export`는 .ent(썸네일·스프라이트 포함)를 실어 보내므로 개별 25MB 설정을
+// 라우트 단에서 유지 — 전역 파서가 먼저 소비하지 않도록 우회.
+app.use((req, res, next) => {
+    if (req.path === '/api/export') return next();
+    express.json({ limit: '30kb' })(req, res, next);
+});
 
 app.use(express.static(path.join(__dirname, 'public')));
 
