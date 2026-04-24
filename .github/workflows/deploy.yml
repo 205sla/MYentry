@@ -49,8 +49,11 @@ jobs:
             git pull --ff-only origin main
             echo "== npm install (if needed) =="
             npm install --omit=dev --no-audit --no-fund
-            echo "== pm2 reload =="
-            pm2 reload entry --update-env
+            echo "== pm2 startOrReload =="
+            # ecosystem.config.js로 진입점·env를 선언해 관리.
+            # 기존에 'pm2 start server.js'로 등록된 경우 한 번 delete해서 최신 script 경로로 재등록.
+            pm2 describe entry >/dev/null 2>&1 && pm2 delete entry || true
+            pm2 start ecosystem.config.js --update-env
             pm2 save
             echo "== health check =="
             sleep 2
