@@ -289,7 +289,8 @@ app.get('/api/problems', (req, res) => {
                 title: meta.title || ('문제 ' + id),
                 difficulty: meta.difficulty || 0,
                 author: meta.author || null,
-                contributors: Array.isArray(meta.contributors) ? meta.contributors : []
+                contributors: Array.isArray(meta.contributors) ? meta.contributors : [],
+                category: (meta.category === 'sample' || meta.category === 'tutorial') ? meta.category : null
             });
         });
     } catch (e) {}

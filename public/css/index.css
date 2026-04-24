@@ -74,6 +74,83 @@ h2 {
     letter-spacing: -0.3px;
 }
 
+/* ---------- Learning section (sample · tutorial) ---------- */
+.learning-section {
+    margin-bottom: 28px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid #d6e9f4;
+}
+.learning-title {
+    font-size: 18px;
+    margin-bottom: 6px;
+    color: #2c313d;
+}
+.learning-desc {
+    font-size: 12px;
+    color: #6b7c87;
+    margin-bottom: 14px;
+    letter-spacing: -0.3px;
+}
+.learning-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 14px;
+}
+
+/* ---------- Problems section header + filter ---------- */
+.problems-header {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+.problems-count {
+    font-size: 12px;
+    color: #8ba4b3;
+    letter-spacing: -0.2px;
+}
+.filter-panel {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    padding: 12px 14px;
+    background: #fff;
+    border: 1px solid #d6e9f4;
+    border-radius: 6px;
+    margin-bottom: 14px;
+}
+.filter-group {
+    border: 0;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px 10px;
+}
+.filter-group legend {
+    font-size: 11px;
+    color: #8ba4b3;
+    font-weight: bold;
+    padding-right: 8px;
+    letter-spacing: -0.2px;
+}
+.filter-group label {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: #2c313d;
+    cursor: pointer;
+    user-select: none;
+    padding: 3px 4px;
+    letter-spacing: -0.2px;
+}
+.filter-group input[type="checkbox"],
+.filter-group input[type="radio"] {
+    margin: 0;
+    cursor: pointer;
+}
+
 /* ---------- Problem grid / cards ---------- */
 .grid {
     display: grid;
@@ -83,7 +160,7 @@ h2 {
 .card {
     background: #fff;
     border-radius: 6px;
-    padding: 20px 16px;
+    padding: 26px 14px 14px;
     text-align: center;
     border: 1px solid #d6e9f4;
     transition: border-color 0.15s, box-shadow 0.15s, transform 0.1s;
@@ -118,18 +195,22 @@ h2 {
     letter-spacing: -0.2px;
 }
 .card-number {
-    font-size: 30px;
-    font-weight: bold;
-    color: #4f80ff;
-    margin-bottom: 6px;
-    letter-spacing: -0.5px;
+    position: absolute;
+    top: 8px;
+    left: 10px;
+    font-size: 11px;
+    color: #8ba4b3;
+    font-weight: normal;
+    letter-spacing: -0.2px;
 }
-.card.solved .card-number { color: #28b36a; }
+.card.solved .card-number { color: #64b98d; }
 .card-title {
-    font-size: 13px;
-    color: #555;
+    font-size: 16px;
+    color: #2c313d;
     font-weight: bold;
     letter-spacing: -0.3px;
+    line-height: 1.3;
+    margin-top: 2px;
 }
 .card-difficulty {
     margin-top: 10px;
@@ -138,6 +219,36 @@ h2 {
 }
 .card-difficulty .star-filled { color: #ffcf5f; }
 .card-difficulty .star-empty  { color: #e2e2e2; }
+
+/* Feature card (학습 섹션 대형 카드) */
+.card--feature {
+    padding: 30px 18px 18px;
+}
+.card--feature .card-title {
+    font-size: 19px;
+    margin-top: 4px;
+}
+.card--feature .card-difficulty {
+    font-size: 15px;
+    margin-top: 12px;
+}
+.card-cat-badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: bold;
+    padding: 3px 10px;
+    border-radius: 3px;
+    letter-spacing: -0.2px;
+    margin-bottom: 6px;
+}
+.cat-sample {
+    background: #eaf1ff;
+    color: #4f80ff;
+}
+.cat-tutorial {
+    background: #fff3e0;
+    color: #d98218;
+}
 
 /* ---------- Card credits (author / contributors) ---------- */
 .card-author,
@@ -151,7 +262,7 @@ h2 {
     text-overflow: ellipsis;
     white-space: nowrap;
 }
-.card-author { margin-top: 8px; }
+.card-author { margin-top: 10px; }
 .card-contributors { margin-top: 2px; }
 
 /* ---------- Empty state ---------- */

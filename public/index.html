@@ -45,8 +45,37 @@
         현재 베타 버전입니다. 예고 없이 문제 · 채점 · 기능이 변경될 수 있으며, 해결한 문제 정보는 이 브라우저에만 저장됩니다.
     </div>
     <div class="container">
-        <h2>문제 목록</h2>
-        <div class="grid" id="problem-list"></div>
+        <section class="learning-section" id="learning-section" hidden>
+            <h2 class="learning-title">학습 시작하기</h2>
+            <p class="learning-desc">처음이라면 여기부터. 샘플은 이미 풀이가 들어있고, 튜토리얼은 필요한 블록이 미리 놓여 있어요.</p>
+            <div class="learning-grid" id="learning-list"></div>
+        </section>
+
+        <section class="problems-section">
+            <div class="problems-header">
+                <h2>전체 문제</h2>
+                <div class="problems-count" id="problems-count"></div>
+            </div>
+            <div class="filter-panel" id="filter-panel">
+                <fieldset class="filter-group filter-difficulty">
+                    <legend>난이도</legend>
+                    <label><input type="checkbox" data-diff="0" checked> <span>L0</span></label>
+                    <label><input type="checkbox" data-diff="1" checked> <span>L1</span></label>
+                    <label><input type="checkbox" data-diff="2" checked> <span>L2</span></label>
+                    <label><input type="checkbox" data-diff="3" checked> <span>L3</span></label>
+                    <label><input type="checkbox" data-diff="4" checked> <span>L4</span></label>
+                    <label><input type="checkbox" data-diff="5" checked> <span>L5</span></label>
+                </fieldset>
+                <fieldset class="filter-group filter-solved">
+                    <legend>해결 여부</legend>
+                    <label><input type="radio" name="solved" value="all" checked> <span>전체</span></label>
+                    <label><input type="radio" name="solved" value="unsolved"> <span>미해결</span></label>
+                    <label><input type="radio" name="solved" value="solved"> <span>해결됨</span></label>
+                </fieldset>
+            </div>
+            <div class="grid" id="problem-list"></div>
+        </section>
+
         <div class="free-section">
             <a href="/editor.html" class="free-link">자유 모드로 시작</a>
             <a href="/contribute.html" class="contribute-link">문제 기여하기</a>
