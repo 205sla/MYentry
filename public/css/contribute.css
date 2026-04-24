@@ -1,50 +1,11 @@
 /* ============================================================
-   contribute.css — 문제 기여 가이드 페이지
+   contribute.css — 문제 기여 가이드 및 정적 문서 페이지 전용
+   (privacy.html·terms.html도 이 CSS를 로드함)
+   공통(reset·body·header·footer)은 common.css에서 로드.
    ============================================================ */
 
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body {
-    font-family: NanumGothic, 'Nanum Gothic', 'Malgun Gothic', sans-serif;
-    background: #f9f8f7;
-    color: #2c313d;
-    min-height: 100vh;
-    letter-spacing: -0.3px;
-    line-height: 1.6;
-}
-
-/* ---------- Header ---------- */
-header {
-    background: #2c313d;
-    color: #fff;
-    padding: 14px 24px;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    letter-spacing: -0.3px;
-}
-.back-link {
-    color: #8ba4b3;
-    font-size: 13px;
-    text-decoration: none;
-    transition: color 0.15s;
-}
-.back-link:hover { color: #fff; }
-.header-title {
-    font-size: 16px;
-    font-weight: bold;
-}
-.beta-badge {
-    display: inline-block;
-    margin-left: 8px;
-    padding: 2px 8px;
-    background: #fa5536;
-    color: #fff;
-    font-size: 10px;
-    font-weight: bold;
-    border-radius: 3px;
-    letter-spacing: 1px;
-    vertical-align: middle;
-}
+/* 문서 페이지 전용 body 확장 — 긴 본문 가독성 */
+body { line-height: 1.6; }
 
 /* ---------- Container ---------- */
 .container {
@@ -253,35 +214,3 @@ a:hover { text-decoration: underline; }
     color: #555;
 }
 
-/* ---------- Disclaimer footer ---------- */
-.disclaimer {
-    max-width: 960px;
-    margin: 32px auto;
-    padding: 0 16px;
-    text-align: center;
-    font-size: 11px;
-    line-height: 1.6;
-    color: #8ba4b3;
-    letter-spacing: -0.2px;
-}
-.disclaimer a {
-    color: #8ba4b3;
-    text-decoration: underline;
-    text-underline-offset: 2px;
-}
-.disclaimer a:hover {
-    color: #4f80ff;
-}
-.disclaimer .entry-credit {
-    margin-top: 8px;
-    font-size: 10px;
-    opacity: 0.8;
-}
-.disclaimer .tm-notice {
-    margin-top: 6px;
-    font-size: 10px;
-    opacity: 0.7;
-}
-.disclaimer .tm-notice sup {
-    font-size: 8px;
-}
