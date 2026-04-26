@@ -55,9 +55,15 @@ function createApp(opts = {}) {
         crossOriginEmbedderPolicy: false,
     }));
 
-    // 바디 파서 (JSON 30KB 전역, /api/export만 별도)
+    // 바디 파서 분기:
+    //   - /api/export        : 별도 (라우트가 자체 처리, 25MB)
+    //   - /api/me/submissions: 100KB (Entry.exportProject JSON 수용)
+    //   - 그 외              : 30KB (기본 안전선)
     app.use((req, res, next) => {
         if (req.path === '/api/export') return next();
+        if (req.path.startsWith('/api/me/submissions')) {
+            return express.json({ limit: '100kb' })(req, res, next);
+        }
         express.json({ limit: '30kb' })(req, res, next);
     });
 

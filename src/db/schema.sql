@@ -1,4 +1,4 @@
--- CODE 205 SQLite 스키마 (v2)
+-- CODE 205 SQLite 스키마 (v3)
 -- src/db/init.js가 첫 부트 때 멱등 적용한다 (CREATE TABLE IF NOT EXISTS).
 -- 컬럼 추가/제약 변경은 새 마이그레이션 단계로 분리 (단순 테이블 추가는 여기에).
 
@@ -36,6 +36,19 @@ CREATE TABLE IF NOT EXISTS solutions (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
+-- ─────── submissions (v3) ───────
+-- 정답 통과 시 자동 저장된 코드 (Entry.exportProject 결과를 JSON.stringify).
+-- 문제당 1행만 (PRIMARY KEY로 자동 덮어쓰기 — INSERT OR REPLACE 사용).
+-- 코드 한도는 라우트 레벨에서 100KB로 강제. ON DELETE CASCADE로 사용자 삭제 시 자동 정리.
+CREATE TABLE IF NOT EXISTS submissions (
+    user_id      INTEGER NOT NULL,
+    problem_id   TEXT    NOT NULL,
+    code         TEXT    NOT NULL,
+    submitted_at INTEGER NOT NULL,
+    PRIMARY KEY (user_id, problem_id),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
 -- ─────── schema_version ───────
 -- 마이그레이션 추적용. 스키마 변경 시 새 버전을 INSERT하고 애플리케이션이 대응.
 CREATE TABLE IF NOT EXISTS schema_version (
@@ -47,3 +60,5 @@ INSERT OR IGNORE INTO schema_version (version, applied_at)
 VALUES (1, strftime('%s', 'now'));
 INSERT OR IGNORE INTO schema_version (version, applied_at)
 VALUES (2, strftime('%s', 'now'));
+INSERT OR IGNORE INTO schema_version (version, applied_at)
+VALUES (3, strftime('%s', 'now'));

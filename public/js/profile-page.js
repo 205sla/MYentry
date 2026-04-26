@@ -112,13 +112,121 @@
             fetch('/api/problems').then(function (r) { return r.ok ? r.json() : []; }),
         ]).then(function (results) {
             renderStats(results[1] || [], (results[0] && results[0].problems) || []);
+            // 통계 끝나면 같은 problems 데이터 재사용해 submissions 렌더
+            loadSubmissions(results[1] || []);
         }).catch(function () {
             $('statsBody').innerHTML = '<div class="stats-loading">통계를 불러올 수 없습니다.</div>';
         });
     }
 
+    // ─────── 내가 푼 코드 목록 ───────
+    function escapeHtml(s) {
+        return String(s).replace(/[&<>"']/g, function (m) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m];
+        });
+    }
+
+    function fmtDate(epochSec) {
+        var d = new Date(epochSec * 1000);
+        var pad = function (n) { return n < 10 ? '0' + n : '' + n; };
+        return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+    }
+
+    function fmtSize(bytes) {
+        if (bytes < 1024) return bytes + ' B';
+        return Math.round(bytes / 1024 * 10) / 10 + ' KB';
+    }
+
+    function loadSubmissions(problems) {
+        // problems: 통계 단계에서 받은 [{id, title, difficulty, ...}, ...]
+        var titleByPad = {};
+        problems.forEach(function (p) {
+            var pad = String(parseInt(p.id, 10)).padStart(3, '0');
+            titleByPad[pad] = p.title || '';
+        });
+
+        fetch('/api/me/submissions', { credentials: 'same-origin' })
+            .then(function (r) { return r.ok ? r.json() : { submissions: [] }; })
+            .then(function (data) {
+                renderSubmissions(data.submissions || [], titleByPad);
+            })
+            .catch(function () {
+                $('submissionsBody').innerHTML = '<div class="submissions-empty">목록을 불러올 수 없습니다.</div>';
+            });
+    }
+
+    function renderSubmissions(list, titleByPad) {
+        var box = $('submissionsBody');
+        if (!list.length) {
+            box.innerHTML = '<div class="submissions-empty">아직 저장된 코드가 없습니다. 정답을 통과하면 자동 저장돼요.</div>';
+            return;
+        }
+        var html = '';
+        list.forEach(function (s) {
+            var title = titleByPad[s.problem_id] || '(삭제된 문제)';
+            html +=
+                '<div class="submission-row" data-pid="' + escapeHtml(s.problem_id) + '">' +
+                    '<span class="submission-pid">' + escapeHtml(s.problem_id) + '</span>' +
+                    '<span class="submission-title">' + escapeHtml(title) + '</span>' +
+                    '<span class="submission-meta">' + fmtDate(s.submitted_at) + ' · ' + fmtSize(s.code_size) + '</span>' +
+                '</div>';
+        });
+        box.innerHTML = html;
+
+        // 클릭 → 모달
+        Array.prototype.forEach.call(box.querySelectorAll('.submission-row'), function (row) {
+            row.addEventListener('click', function () {
+                var pid = row.getAttribute('data-pid');
+                showCodeModal(pid, titleByPad[pid] || '');
+            });
+        });
+    }
+
+    // ─────── 코드 모달 ───────
+    function showCodeModal(problemId, title) {
+        var modal = $('codeModal');
+        var body = $('codeModalBody');
+        var meta = $('codeModalMeta');
+        $('codeModalTitle').textContent = problemId + (title ? ' · ' + title : '');
+        body.textContent = '불러오는 중…';
+        meta.textContent = '';
+        modal.hidden = false;
+
+        fetch('/api/me/submissions/' + encodeURIComponent(problemId), { credentials: 'same-origin' })
+            .then(function (r) {
+                if (r.status === 404) throw new Error('NOT_FOUND');
+                if (!r.ok) throw new Error('HTTP ' + r.status);
+                return r.json();
+            })
+            .then(function (data) {
+                meta.textContent = '저장: ' + fmtDate(data.submitted_at) + ' · 크기: ' + fmtSize((data.code || '').length);
+                // raw JSON pretty-print 시도
+                var pretty = data.code;
+                try { pretty = JSON.stringify(JSON.parse(data.code), null, 2); } catch (_) { /* 원본 유지 */ }
+                body.textContent = pretty;
+            })
+            .catch(function () {
+                body.textContent = '코드를 불러올 수 없습니다.';
+            });
+    }
+
+    function hideCodeModal() {
+        var modal = $('codeModal');
+        if (modal) modal.hidden = true;
+    }
+
     // ─────── 부트 ───────
     document.addEventListener('DOMContentLoaded', function () {
+        // 모달 닫기 핸들러 (한 번만 등록)
+        var modal = $('codeModal');
+        if (modal) {
+            modal.querySelector('.code-modal-close').addEventListener('click', hideCodeModal);
+            modal.querySelector('.code-modal-backdrop').addEventListener('click', hideCodeModal);
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape' && !modal.hidden) hideCodeModal();
+            });
+        }
+
         // me 호출 → 비로그인이면 redirect
         fetch('/api/me', { credentials: 'same-origin' })
             .then(function (r) {

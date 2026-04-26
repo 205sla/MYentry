@@ -691,6 +691,10 @@ function runAllTests(cases, title, mode) {
         if (mode === 'submit' && GradingState.problemId && allPass) {
             footer.classList.add('show-home');
             markProblemSolved(GradingState.problemId);
+            // 정답 코드도 서버에 자동 저장 (로그인 사용자만, 실패 silent)
+            if (window.SubmissionSync) {
+                window.SubmissionSync.saveSubmission(GradingState.problemId);
+            }
         }
     });
 }

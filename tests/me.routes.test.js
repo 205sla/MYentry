@@ -308,6 +308,168 @@ describe('POST /api/me/password', () => {
 // ═══════════════════════════════════════════
 //   DELETE /api/me
 // ═══════════════════════════════════════════
+// ═══════════════════════════════════════════
+//   /api/me/submissions/* (Phase 3.3)
+// ═══════════════════════════════════════════
+describe('POST /api/me/submissions/:problemId', () => {
+    it('비로그인: 401', async () => {
+        const r = await callJson('POST', '/api/me/submissions/001', { code: '{}' });
+        assert.equal(r.status, 401);
+    });
+
+    it('첫 저장: 201 created:true', async () => {
+        const c = await signupAndGetCookie('subu1');
+        const r = await callJson('POST', '/api/me/submissions/001', { code: '{"hello":1}' }, c);
+        assert.equal(r.status, 201);
+        assert.equal(r.body.created, true);
+    });
+
+    it('재저장: 200 created:false (덮어쓰기)', async () => {
+        const c = await signupAndGetCookie('subu2');
+        await callJson('POST', '/api/me/submissions/001', { code: 'old' }, c);
+        const r = await callJson('POST', '/api/me/submissions/001', { code: 'new' }, c);
+        assert.equal(r.status, 200);
+        assert.equal(r.body.created, false);
+
+        // 실제 덮어쓰기 확인
+        const get = await callJson('GET', '/api/me/submissions/001', undefined, c);
+        assert.equal(get.body.code, 'new');
+    });
+
+    it('잘못된 problem_id (영문): 404', async () => {
+        const c = await signupAndGetCookie('subu3');
+        const r = await callJson('POST', '/api/me/submissions/abc', { code: 'x' }, c);
+        assert.equal(r.status, 404);
+    });
+
+    it('존재하지 않는 problem_id: 404', async () => {
+        const c = await signupAndGetCookie('subu4');
+        const r = await callJson('POST', '/api/me/submissions/9999', { code: 'x' }, c);
+        assert.equal(r.status, 404);
+    });
+
+    it('빈 code: 400 VALIDATION', async () => {
+        const c = await signupAndGetCookie('subu5');
+        const r = await callJson('POST', '/api/me/submissions/001', { code: '' }, c);
+        assert.equal(r.status, 400);
+        assert.equal(r.body.error, 'VALIDATION');
+    });
+
+    it('code 누락: 400', async () => {
+        const c = await signupAndGetCookie('subu6');
+        const r = await callJson('POST', '/api/me/submissions/001', {}, c);
+        assert.equal(r.status, 400);
+    });
+
+    it('100KB 초과: 413 PAYLOAD_TOO_LARGE', async () => {
+        const c = await signupAndGetCookie('subu7');
+        const big = 'a'.repeat(110 * 1024); // 110KB
+        const r = await callJson('POST', '/api/me/submissions/001', { code: big }, c);
+        // body parser가 먼저 차단하면 413 with 'PayloadTooLarge', 라우트가 차단하면 우리 형식
+        // 둘 다 status 413이어야 함
+        assert.equal(r.status, 413);
+    });
+});
+
+describe('GET /api/me/submissions', () => {
+    it('비로그인: 401', async () => {
+        const r = await call('GET', '/api/me/submissions');
+        assert.equal(r.status, 401);
+    });
+
+    it('빈 사용자: { submissions: [] }', async () => {
+        const c = await signupAndGetCookie('subu8');
+        const r = await call('GET', '/api/me/submissions', c);
+        assert.equal(r.status, 200);
+        assert.deepEqual(r.body, { submissions: [] });
+    });
+
+    it('저장 후 목록: code 본문 제외, code_size만', async () => {
+        const c = await signupAndGetCookie('subu9');
+        await callJson('POST', '/api/me/submissions/001', { code: 'hello world' }, c);
+        await callJson('POST', '/api/me/submissions/3', { code: '{"a":1}' }, c); // padId → "003"
+
+        const r = await call('GET', '/api/me/submissions', c);
+        assert.equal(r.status, 200);
+        assert.equal(r.body.submissions.length, 2);
+        r.body.submissions.forEach((s) => {
+            assert.equal(s.code, undefined);
+            assert.ok(typeof s.problem_id === 'string');
+            assert.ok(s.code_size >= 1);
+        });
+    });
+});
+
+describe('GET /api/me/submissions/:problemId', () => {
+    it('없음: 404', async () => {
+        const c = await signupAndGetCookie('subu10');
+        const r = await call('GET', '/api/me/submissions/001', c);
+        assert.equal(r.status, 404);
+    });
+
+    it('있음: 전체 코드 + 메타 반환', async () => {
+        const c = await signupAndGetCookie('subu11');
+        await callJson('POST', '/api/me/submissions/001', { code: '{"foo":42}' }, c);
+        const r = await call('GET', '/api/me/submissions/001', c);
+        assert.equal(r.status, 200);
+        assert.equal(r.body.problem_id, '001');
+        assert.equal(r.body.code, '{"foo":42}');
+        assert.ok(r.body.submitted_at > 0);
+    });
+
+    it('잘못된 형식 (영문): 404', async () => {
+        const c = await signupAndGetCookie('subu12');
+        const r = await call('GET', '/api/me/submissions/abc', c);
+        assert.equal(r.status, 404);
+    });
+});
+
+describe('DELETE /api/me/submissions/:problemId', () => {
+    it('등록된 항목 제거: ok + removed:true', async () => {
+        const c = await signupAndGetCookie('subu13');
+        await callJson('POST', '/api/me/submissions/001', { code: 'x' }, c);
+        const del = await call('DELETE', '/api/me/submissions/001', c);
+        assert.equal(del.status, 200);
+        assert.equal(del.body.removed, true);
+
+        const get = await call('GET', '/api/me/submissions/001', c);
+        assert.equal(get.status, 404);
+    });
+
+    it('없는 항목 제거: removed:false (멱등)', async () => {
+        const c = await signupAndGetCookie('subu14');
+        const r = await call('DELETE', '/api/me/submissions/999', c);
+        assert.equal(r.status, 200);
+        assert.equal(r.body.removed, false);
+    });
+});
+
+describe('submissions 사용자 간 격리', () => {
+    it('A의 제출은 B에게 안 보임', async () => {
+        const a = await signupAndGetCookie('subuA');
+        const b = await signupAndGetCookie('subuB');
+        await callJson('POST', '/api/me/submissions/001', { code: 'a-code' }, a);
+
+        const aGet = await call('GET', '/api/me/submissions/001', a);
+        const bGet = await call('GET', '/api/me/submissions/001', b);
+        assert.equal(aGet.body.code, 'a-code');
+        assert.equal(bGet.status, 404);
+    });
+});
+
+describe('계정 삭제 시 submissions 자동 정리 (CASCADE)', () => {
+    it('DELETE /api/me 후 같은 username 재가입 → submissions 비어있음', async () => {
+        const c = await signupAndGetCookie('subuDel');
+        await callJson('POST', '/api/me/submissions/001', { code: 'will-be-deleted' }, c);
+        await callJson('DELETE', '/api/me', { password: 'abcd1234' }, c);
+
+        // 같은 username 재가입
+        const c2 = await signupAndGetCookie('subuDel');
+        const list = await call('GET', '/api/me/submissions', c2);
+        assert.deepEqual(list.body.submissions, []);
+    });
+});
+
 describe('DELETE /api/me', () => {
     it('정상 삭제 + solutions 자동 정리 + 세션 종료', async () => {
         const c = await signupAndGetCookie('delu1');

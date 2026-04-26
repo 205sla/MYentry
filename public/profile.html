@@ -68,6 +68,15 @@
             </div>
         </section>
 
+        <!-- ─────── 2.5. 내가 푼 코드 ─────── -->
+        <section class="profile-card">
+            <h2 class="card-title">내가 푼 코드</h2>
+            <p class="card-lead">정답 통과 시 자동으로 저장된 프로젝트 데이터입니다. 다시 풀고 싶은 문제가 있으면 보고 참고하세요.</p>
+            <div id="submissionsBody">
+                <div class="stats-loading">불러오는 중…</div>
+            </div>
+        </section>
+
         <!-- ─────── 3. 비밀번호 변경 ─────── -->
         <section class="profile-card">
             <h2 class="card-title">비밀번호 변경</h2>
@@ -118,6 +127,19 @@
             </form>
         </section>
     </main>
+
+    <!-- 코드 미리보기 모달 (profile-page.js가 토글) -->
+    <div id="codeModal" class="code-modal" hidden>
+        <div class="code-modal-backdrop"></div>
+        <div class="code-modal-dialog">
+            <div class="code-modal-header">
+                <strong id="codeModalTitle">코드 미리보기</strong>
+                <button type="button" class="code-modal-close" aria-label="닫기">&times;</button>
+            </div>
+            <div class="code-modal-meta" id="codeModalMeta"></div>
+            <pre id="codeModalBody" class="code-modal-body"></pre>
+        </div>
+    </div>
 
     <script src="js/common-header.js"></script>
     <script src="js/profile-page.js"></script>

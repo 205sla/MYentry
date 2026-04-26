@@ -10,7 +10,10 @@ const { requireAuth } = require('../middleware/auth');
 const problemService = require('../services/problemService');
 const solutionService = require('../services/solutionService');
 const userService = require('../services/userService');
+const submissionService = require('../services/submissionService');
 const auth = require('../services/authService');
+
+const CODE_MAX_BYTES = 100 * 1024; // 100KB — body parser 분기와 일치
 
 const router = express.Router();
 
@@ -70,6 +73,53 @@ router.post('/password', async (req, res) => {
         console.error('[POST /api/me/password]', e);
         res.status(500).json({ error: 'INTERNAL', message: '서버 오류' });
     }
+});
+
+// ─────── POST /api/me/submissions/:problemId ───────
+// body: { code: string }, max 100KB (body parser가 한도 강제)
+// 응답: 새로 추가됐으면 201, 덮어쓰기였으면 200
+router.post('/submissions/:problemId', (req, res) => {
+    const id = problemService.padId(req.params.problemId);
+    if (!problemService.isValidId(req.params.problemId) || !problemService.exists(id)) {
+        return res.status(404).json({ error: 'NOT_FOUND', message: '존재하지 않는 문제입니다.' });
+    }
+    const code = req.body?.code;
+    if (typeof code !== 'string' || code.length === 0) {
+        return res.status(400).json({ error: 'VALIDATION', message: 'code: 비어있을 수 없습니다.' });
+    }
+    if (Buffer.byteLength(code, 'utf8') > CODE_MAX_BYTES) {
+        return res.status(413).json({ error: 'PAYLOAD_TOO_LARGE', message: '코드가 100KB를 초과합니다.' });
+    }
+    const created = submissionService.saveSubmission(req.user.id, id, code);
+    res.status(created ? 201 : 200).json({ ok: true, created });
+});
+
+// ─────── GET /api/me/submissions ───────
+// 응답: { submissions: [{ problem_id, submitted_at, code_size }, ...] } — 코드 본문 제외
+router.get('/submissions', (req, res) => {
+    const list = submissionService.listSubmissions(req.user.id);
+    res.json({ submissions: list });
+});
+
+// ─────── GET /api/me/submissions/:problemId ───────
+// 응답: { problem_id, code, submitted_at } 또는 404
+router.get('/submissions/:problemId', (req, res) => {
+    const id = problemService.padId(req.params.problemId);
+    if (!problemService.isValidId(req.params.problemId)) {
+        return res.status(404).json({ error: 'NOT_FOUND', message: '잘못된 문제 번호입니다.' });
+    }
+    const row = submissionService.getSubmission(req.user.id, id);
+    if (!row) {
+        return res.status(404).json({ error: 'NOT_FOUND', message: '저장된 코드가 없습니다.' });
+    }
+    res.json(row);
+});
+
+// ─────── DELETE /api/me/submissions/:problemId ───────
+router.delete('/submissions/:problemId', (req, res) => {
+    const id = problemService.padId(req.params.problemId);
+    const removed = submissionService.deleteSubmission(req.user.id, id);
+    res.json({ ok: true, removed });
 });
 
 // ─────── DELETE /api/me ───────
