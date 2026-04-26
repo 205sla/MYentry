@@ -5,7 +5,7 @@
   "description": "CODE 205 — 블록 코딩 기반 알고리즘 문제 풀이 플랫폼 (code.205.kr)",
   "license": "UNLICENSED",
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "scripts": {
     "start": "node src/server.js",
@@ -13,13 +13,11 @@
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
+    "better-sqlite3": "^12.9.0",
     "express": "^4",
     "express-rate-limit": "^8.4.0",
     "express-session": "^1.19.0",
     "helmet": "^8.1.0",
     "sharp": "^0.34.5"
-  },
-  "optionalDependencies": {
-    "better-sqlite3": "^12.9.0"
   }
 }
