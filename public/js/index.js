@@ -211,6 +211,18 @@ fetch('/api/problems')
             saveFilter();
             renderGrid(state.problems, state.solved, state.filter);
         });
+
+        // 로그인 사용자라면 서버와 양방향 동기화 후 grid 재렌더.
+        // 비로그인이거나 SolvedSync 미로드면 no-op (위 렌더가 기준).
+        if (window.SolvedSync) {
+            window.SolvedSync.syncWithServer().then(function (result) {
+                if (result.added > 0 || result.uploaded > 0) {
+                    state.solved = getSolvedSet();
+                    renderTopSection(state.problems, state.solved);
+                    renderGrid(state.problems, state.solved, state.filter);
+                }
+            });
+        }
     })
     .catch(function (err) {
         console.error('[/api/problems]', err);

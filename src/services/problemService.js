@@ -17,6 +17,13 @@ function isValidId(raw) {
     return /^\d+$/.test(String(raw));
 }
 
+// 실제로 problems/NNN/meta.json까지 있는 유효한 문제인지.
+// /api/me/solved 라우트에서 잘못된 problem_id를 차단하는 용도.
+function exists(id) {
+    if (!isValidId(id)) return false;
+    return readMeta(id) !== null;
+}
+
 function tryRead(fn, fallback) {
     try { return fn(); } catch (e) { return fallback; }
 }
@@ -45,6 +52,7 @@ module.exports = {
     padId,
     problemDir,
     isValidId,
+    exists,
     tryRead,
     readJsonFile,
     readMeta,

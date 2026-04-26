@@ -22,6 +22,7 @@ const problemsRouter = require('./routes/problems');
 const spritesRouter = require('./routes/sprites');
 const exportRouter = require('./routes/export');
 const authRouter = require('./routes/auth');
+const meRouter = require('./routes/me');
 
 function defaultSessionStore() {
     return new SQLiteStore({
@@ -84,6 +85,7 @@ function createApp(opts = {}) {
     app.use('/api/sprites', spritesRouter);
     app.use('/api/export', exportRouter);
     app.use('/api/auth', authRouter);
+    app.use('/api/me', meRouter);
 
     return app;
 }
