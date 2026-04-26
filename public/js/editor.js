@@ -200,6 +200,10 @@ function checkAndOfferRestore(problemId, onAfterLoad) {
         showRestoreOverlay(function (yes) {
             if (yes) {
                 try {
+                    // 이전 problem.ent로 로드된 객체·블록을 먼저 깨끗이 정리해야
+                    // Entry.loadProject가 기존 상태에 누적하지 않고 깨끗이 교체.
+                    // (reset 버튼도 같은 패턴: clearProject → loadProblemProject)
+                    if (typeof Entry.clearProject === 'function') Entry.clearProject();
                     Entry.loadProject(project);
                     if (typeof onAfterLoad === 'function') onAfterLoad();
                 } catch (e) {
