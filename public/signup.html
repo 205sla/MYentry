@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>회원가입 · CODE 205</title>
+    <meta name="description" content="CODE 205 회원가입. 14세 이상부터 가입할 수 있어요.">
+    <meta name="theme-color" content="#2c313d">
+    <meta name="robots" content="noindex">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+
+    <link href="css/common.css" rel="stylesheet">
+    <link href="css/auth.css" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <a href="/" class="back-link">← 메인</a>
+        <span class="header-title">CODE 205 <span class="beta-badge">BETA</span></span>
+    </header>
+
+    <main class="auth-container">
+        <h1 class="auth-title">회원가입</h1>
+        <p class="auth-lead">14세 이상부터 가입할 수 있어요.<br>아이디·비밀번호만으로 시작합니다.</p>
+
+        <div id="formError" class="auth-error" hidden></div>
+
+        <form id="signupForm" class="auth-form" novalidate>
+            <label class="field">
+                <span class="field-label">아이디</span>
+                <input type="text" name="username" required autocomplete="username"
+                       minlength="3" maxlength="20" pattern="[a-zA-Z0-9_]+"
+                       placeholder="영문·숫자·_ 3~20자" autofocus>
+            </label>
+
+            <label class="field">
+                <span class="field-label">비밀번호</span>
+                <input type="password" name="password" required autocomplete="new-password"
+                       minlength="8" maxlength="128"
+                       placeholder="8자 이상, 영문 + 숫자 포함">
+            </label>
+
+            <label class="field">
+                <span class="field-label">비밀번호 확인</span>
+                <input type="password" name="passwordConfirm" required autocomplete="new-password"
+                       placeholder="다시 한 번 입력">
+            </label>
+
+            <label class="field">
+                <span class="field-label">출생연도</span>
+                <input type="number" name="birthYear" required
+                       min="1900" placeholder="예: 2008" inputmode="numeric">
+            </label>
+
+            <label class="field">
+                <span class="field-label">이메일 <span class="field-optional">(선택)</span></span>
+                <input type="email" name="email" autocomplete="email"
+                       placeholder="비밀번호 분실 시 복구용">
+                <span class="field-hint">비워둬도 가입할 수 있어요. 나중에 추가할 수 있습니다.</span>
+            </label>
+
+            <label class="field">
+                <span class="field-label">표시 이름 <span class="field-optional">(선택)</span></span>
+                <input type="text" name="displayName" maxlength="30"
+                       placeholder="비워두면 아이디로 표시">
+            </label>
+
+            <button type="submit" class="auth-button" id="submitBtn">가입하기</button>
+        </form>
+
+        <p class="auth-alt">이미 계정이 있나요? <a href="/login.html">로그인</a></p>
+
+        <div class="auth-policy">
+            가입하면 <strong>이용약관</strong>과 <strong>개인정보처리방침</strong>에 동의한 것으로 간주합니다.
+            <a href="/terms.html" target="_blank" rel="noopener">약관</a> ·
+            <a href="/privacy.html" target="_blank" rel="noopener">개인정보</a>
+        </div>
+    </main>
+
+    <script src="js/common-footer.js"></script>
+    <script src="js/auth-page.js"></script>
+</body>
+</html>
