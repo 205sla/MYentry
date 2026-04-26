@@ -78,17 +78,21 @@
     }
 
     document.addEventListener('DOMContentLoaded', function () {
-        var header = document.querySelector('header');
+        // 정적 페이지: <header>, editor.html: <div id="header">. 둘 다 지원.
+        var header = document.querySelector('header, #header');
         if (!header) return;
 
         var path = location.pathname;
         // 로그인/가입 페이지에서는 메뉴 자체를 안 그림 (자기 자신 링크 무의미)
         if (path === '/login.html' || path === '/signup.html') return;
 
-        // spacer + 빈 메뉴 컨테이너
-        var spacer = document.createElement('span');
-        spacer.className = 'header-spacer';
-        header.appendChild(spacer);
+        // editor의 #header는 h1에 flex:1이 이미 있어 자체 spacer 역할.
+        // 일반 <header>는 별도 spacer 추가.
+        if (header.tagName === 'HEADER') {
+            var spacer = document.createElement('span');
+            spacer.className = 'header-spacer';
+            header.appendChild(spacer);
+        }
 
         var menu = document.createElement('div');
         menu.className = 'user-menu';
