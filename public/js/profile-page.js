@@ -166,72 +166,24 @@
             box.innerHTML = '<div class="submissions-empty">아직 저장된 코드가 없습니다. 정답을 통과하면 자동 저장돼요.</div>';
             return;
         }
+        // 행을 <a>로 만들어 Ctrl/가운데 클릭 새 탭, Tab/Enter 표준 동작 지원.
+        // editor 진입 후 자동으로 복원 모달이 떠서 코드를 불러올지 묻는다.
         var html = '';
         list.forEach(function (s) {
             var title = titleByPad[s.problem_id] || '(삭제된 문제)';
+            var href = '/editor.html?problem=' + encodeURIComponent(s.problem_id);
             html +=
-                '<div class="submission-row" data-pid="' + escapeHtml(s.problem_id) + '">' +
+                '<a class="submission-row" href="' + href + '">' +
                     '<span class="submission-pid">' + escapeHtml(s.problem_id) + '</span>' +
                     '<span class="submission-title">' + escapeHtml(title) + '</span>' +
                     '<span class="submission-meta">' + fmtDate(s.submitted_at) + ' · ' + fmtSize(s.code_size) + '</span>' +
-                '</div>';
+                '</a>';
         });
         box.innerHTML = html;
-
-        // 클릭 → 모달
-        Array.prototype.forEach.call(box.querySelectorAll('.submission-row'), function (row) {
-            row.addEventListener('click', function () {
-                var pid = row.getAttribute('data-pid');
-                showCodeModal(pid, titleByPad[pid] || '');
-            });
-        });
-    }
-
-    // ─────── 코드 모달 ───────
-    function showCodeModal(problemId, title) {
-        var modal = $('codeModal');
-        var body = $('codeModalBody');
-        var meta = $('codeModalMeta');
-        $('codeModalTitle').textContent = problemId + (title ? ' · ' + title : '');
-        body.textContent = '불러오는 중…';
-        meta.textContent = '';
-        modal.hidden = false;
-
-        fetch('/api/me/submissions/' + encodeURIComponent(problemId), { credentials: 'same-origin' })
-            .then(function (r) {
-                if (r.status === 404) throw new Error('NOT_FOUND');
-                if (!r.ok) throw new Error('HTTP ' + r.status);
-                return r.json();
-            })
-            .then(function (data) {
-                meta.textContent = '저장: ' + fmtDate(data.submitted_at) + ' · 크기: ' + fmtSize((data.code || '').length);
-                // raw JSON pretty-print 시도
-                var pretty = data.code;
-                try { pretty = JSON.stringify(JSON.parse(data.code), null, 2); } catch (_) { /* 원본 유지 */ }
-                body.textContent = pretty;
-            })
-            .catch(function () {
-                body.textContent = '코드를 불러올 수 없습니다.';
-            });
-    }
-
-    function hideCodeModal() {
-        var modal = $('codeModal');
-        if (modal) modal.hidden = true;
     }
 
     // ─────── 부트 ───────
     document.addEventListener('DOMContentLoaded', function () {
-        // 모달 닫기 핸들러 (한 번만 등록)
-        var modal = $('codeModal');
-        if (modal) {
-            modal.querySelector('.code-modal-close').addEventListener('click', hideCodeModal);
-            modal.querySelector('.code-modal-backdrop').addEventListener('click', hideCodeModal);
-            document.addEventListener('keydown', function (e) {
-                if (e.key === 'Escape' && !modal.hidden) hideCodeModal();
-            });
-        }
-
         // me 호출 → 비로그인이면 redirect
         fetch('/api/me', { credentials: 'same-origin' })
             .then(function (r) {

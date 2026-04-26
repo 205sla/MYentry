@@ -56,5 +56,39 @@
         }).catch(function () { return false; });
     }
 
-    window.SubmissionSync = { saveSubmission: saveSubmission };
+    // ─────── 로드 (이전 정답 코드 복원용) ───────
+    // GET /api/me/submissions/{padId(idNum)} → project 객체(JSON.parse) 또는 null.
+    //   401 (비로그인) / 404 (없음) → null  (정상 흐름, silent)
+    //   5xx / network / parse 실패  → null + console.warn  (사용자에겐 silent)
+    function loadMySubmission(idNum) {
+        var n = parseInt(idNum, 10);
+        if (!n) return Promise.resolve(null);
+
+        return fetch('/api/me/submissions/' + padId(n), {
+            credentials: 'same-origin',
+        }).then(function (r) {
+            if (r.status === 401 || r.status === 404) return null;
+            if (!r.ok) {
+                console.warn('[SubmissionSync.loadMySubmission] HTTP', r.status);
+                return null;
+            }
+            return r.json().then(function (data) {
+                if (!data || typeof data.code !== 'string') return null;
+                try {
+                    return JSON.parse(data.code);
+                } catch (e) {
+                    console.warn('[SubmissionSync.loadMySubmission] JSON parse failed', e);
+                    return null;
+                }
+            });
+        }).catch(function (err) {
+            console.warn('[SubmissionSync.loadMySubmission] fetch failed', err);
+            return null;
+        });
+    }
+
+    window.SubmissionSync = {
+        saveSubmission: saveSubmission,
+        loadMySubmission: loadMySubmission,
+    };
 })();

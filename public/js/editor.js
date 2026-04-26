@@ -141,7 +141,9 @@ $(document).ready(function () {
     };
 
     if (problemId) {
-        loadProblemProject(problemId).finally(banUnusedCategories);
+        loadProblemProject(problemId)
+            .finally(banUnusedCategories)
+            .then(function () { return checkAndOfferRestore(problemId, banUnusedCategories); });
         loadProblemMeta(problemId);
         loadProblemTests(problemId);
     } else {
@@ -184,6 +186,52 @@ function loadProblemProject(problemId) {
         .then(function (r) { if (r.ok) return r.json(); throw r; })
         .then(function (project) { Entry.loadProject(project); })
         .catch(function () { Entry.loadProject(bot205DefaultProject()); });
+}
+
+// 로그인 사용자가 이전에 풀어 저장된 코드가 있으면 복원 모달을 띄우고,
+// "내 풀이 불러오기" 선택 시 Entry에 덮어쓰기 로드한다. 비로그인·미저장·실패는 silent.
+// 모달 표시 시점은 loadProblemProject가 끝난 뒤이므로 화면에는 기본 problem.ent가 이미 보임.
+function checkAndOfferRestore(problemId, onAfterLoad) {
+    if (!window.SubmissionSync || typeof window.SubmissionSync.loadMySubmission !== 'function') {
+        return Promise.resolve();
+    }
+    return window.SubmissionSync.loadMySubmission(problemId).then(function (project) {
+        if (!project) return; // 비로그인·미저장·파싱 실패 — 정상 흐름
+        showRestoreOverlay(function (yes) {
+            if (yes) {
+                try {
+                    Entry.loadProject(project);
+                    if (typeof onAfterLoad === 'function') onAfterLoad();
+                } catch (e) {
+                    console.warn('[checkAndOfferRestore] Entry.loadProject failed', e);
+                }
+            }
+        });
+    });
+}
+
+// 복원 모달 표시·핸들러 1회 바인딩. ESC = 처음부터 시작.
+function showRestoreOverlay(onChoice) {
+    var overlay = document.getElementById('restore-overlay');
+    var yesBtn = document.getElementById('restore-yes');
+    var noBtn = document.getElementById('restore-no');
+    if (!overlay || !yesBtn || !noBtn) return;
+
+    function close(yes) {
+        overlay.hidden = true;
+        yesBtn.removeEventListener('click', onYes);
+        noBtn.removeEventListener('click', onNo);
+        document.removeEventListener('keydown', onKey);
+        if (typeof onChoice === 'function') onChoice(yes);
+    }
+    function onYes() { close(true); }
+    function onNo() { close(false); }
+    function onKey(e) { if (e.key === 'Escape') close(false); }
+
+    yesBtn.addEventListener('click', onYes);
+    noBtn.addEventListener('click', onNo);
+    document.addEventListener('keydown', onKey);
+    overlay.hidden = false;
 }
 
 // Build a starter project with CODE 205's mascot (205봇 / bot205) instead

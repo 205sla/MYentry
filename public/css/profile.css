@@ -116,6 +116,7 @@
     font-size: 13px;
     padding: 16px 0;
 }
+/* <a> 태그 행: link 기본 스타일(밑줄·파란색)을 무력화하고 카드 행처럼 표시 */
 .submission-row {
     display: flex;
     align-items: center;
@@ -124,9 +125,16 @@
     border-bottom: 1px solid #f0f1f2;
     cursor: pointer;
     transition: background 0.12s;
+    color: inherit;
+    text-decoration: none;
 }
 .submission-row:last-child { border-bottom: none; }
 .submission-row:hover { background: #f3f6fa; }
+.submission-row:focus-visible {
+    outline: 2px solid #4f80ff;
+    outline-offset: -2px;
+    background: #f3f6fa;
+}
 .submission-pid {
     font-weight: bold;
     color: #2c313d;
@@ -147,74 +155,6 @@
     font-size: 11px;
     margin-left: 8px;
     white-space: nowrap;
-}
-
-/* ─────── 코드 미리보기 모달 ─────── */
-.code-modal {
-    position: fixed;
-    inset: 0;
-    z-index: 9999;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-.code-modal[hidden] { display: none; }
-.code-modal-backdrop {
-    position: absolute;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.5);
-}
-.code-modal-dialog {
-    position: relative;
-    background: #fff;
-    border-radius: 6px;
-    width: min(720px, 92vw);
-    max-height: 86vh;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
-}
-.code-modal-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 14px 18px;
-    border-bottom: 1px solid #e6e7e8;
-}
-.code-modal-header strong {
-    font-size: 15px;
-    color: #2c313d;
-}
-.code-modal-close {
-    background: none;
-    border: none;
-    font-size: 24px;
-    line-height: 1;
-    cursor: pointer;
-    color: #8ba4b3;
-    padding: 0 4px;
-}
-.code-modal-close:hover { color: #2c313d; }
-.code-modal-meta {
-    padding: 8px 18px;
-    background: #f9f8f7;
-    color: #8ba4b3;
-    font-size: 11px;
-    border-bottom: 1px solid #e6e7e8;
-}
-.code-modal-body {
-    flex: 1;
-    overflow: auto;
-    padding: 16px 18px;
-    margin: 0;
-    font-family: 'Consolas', 'Menlo', 'Monaco', monospace;
-    font-size: 12px;
-    line-height: 1.5;
-    background: #fafbfc;
-    color: #2c313d;
-    white-space: pre-wrap;
-    word-break: break-all;
 }
 
 /* ─────── 위험 영역 ─────── */
