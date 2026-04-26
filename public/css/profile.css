@@ -1,0 +1,149 @@
+/* ============================================================
+   profile.css — 프로필 페이지 카드 레이아웃
+   common.css + auth.css(폼 입력) 위에 카드·통계·위험영역만 추가.
+   ============================================================ */
+
+.profile-container {
+    max-width: 560px;
+    margin: 32px auto;
+    padding: 0 16px;
+}
+
+.profile-title {
+    font-size: 22px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    letter-spacing: -0.5px;
+}
+
+/* ─────── 카드 공통 ─────── */
+.profile-card {
+    background: #fff;
+    border: 1px solid #e6e7e8;
+    border-radius: 6px;
+    padding: 24px;
+    margin-bottom: 20px;
+}
+.card-title {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 16px;
+    color: #2c313d;
+    letter-spacing: -0.3px;
+}
+
+/* ─────── 성공 알림 (auth-error의 초록 변형) ─────── */
+.profile-success {
+    background: #ecf8ff;
+    border: 1px solid #4f80ff;
+    color: #3a6dec;
+    border-radius: 4px;
+    padding: 10px 12px;
+    font-size: 13px;
+    margin-bottom: 16px;
+    line-height: 1.4;
+}
+
+/* ─────── 풀이 통계 ─────── */
+.stats-loading {
+    color: #8ba4b3;
+    font-size: 13px;
+    text-align: center;
+    padding: 16px 0;
+}
+.stats-summary {
+    font-size: 14px;
+    color: #2c313d;
+    margin-bottom: 16px;
+    line-height: 1.5;
+}
+.stats-summary strong {
+    font-size: 22px;
+    color: #4f80ff;
+    margin-right: 4px;
+}
+.stats-bar {
+    display: flex;
+    height: 6px;
+    border-radius: 3px;
+    overflow: hidden;
+    background: #f3f6fa;
+    margin-bottom: 16px;
+}
+.stats-bar-fill {
+    background: #4f80ff;
+    transition: width 0.3s;
+}
+.stats-difficulty {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 8px;
+}
+.stats-diff-item {
+    text-align: center;
+    padding: 8px 4px;
+    background: #f9f8f7;
+    border-radius: 4px;
+}
+.stats-diff-stars {
+    color: #ffb400;
+    font-size: 12px;
+    margin-bottom: 2px;
+}
+.stats-diff-stars .star-empty { color: #d6dee5; }
+.stats-diff-count {
+    font-size: 13px;
+    font-weight: bold;
+    color: #2c313d;
+}
+.stats-diff-total {
+    font-size: 10px;
+    color: #8ba4b3;
+}
+
+/* ─────── 위험 영역 ─────── */
+.profile-danger {
+    border-color: #fa5536;
+    background: #fff8f7;
+}
+.profile-danger .card-title {
+    color: #c33020;
+}
+.danger-warning {
+    background: #ffeeed;
+    border-radius: 4px;
+    padding: 10px 12px;
+    font-size: 13px;
+    color: #c33020;
+    margin-bottom: 16px;
+    line-height: 1.5;
+}
+.danger-button {
+    background: #fa5536;
+}
+.danger-button:hover {
+    background: #d63f24;
+}
+.danger-button:disabled {
+    background: #b8c1cc;
+}
+
+/* ─────── disabled input 스타일 보강 ─────── */
+.field input:disabled {
+    background: #f3f3f3;
+    color: #586676;
+    cursor: not-allowed;
+}
+
+/* ─────── 모바일 ─────── */
+@media (max-width: 480px) {
+    .profile-container {
+        margin: 16px auto;
+    }
+    .profile-card {
+        padding: 18px 14px;
+    }
+    .stats-difficulty {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}

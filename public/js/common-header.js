@@ -36,6 +36,7 @@
                 '<span class="caret">▾</span>' +
             '</button>' +
             '<div class="user-dropdown" role="menu" hidden>' +
+                '<a href="/profile.html" role="menuitem">프로필</a>' +
                 '<button type="button" data-action="logout" role="menuitem">로그아웃</button>' +
             '</div>';
 

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>내 프로필 · CODE 205</title>
+    <meta name="robots" content="noindex">
+    <meta name="theme-color" content="#2c313d">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+
+    <link href="css/common.css" rel="stylesheet">
+    <link href="css/auth.css" rel="stylesheet">
+    <link href="css/profile.css" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <a href="/" class="back-link">← 메인</a>
+        <span class="header-title">CODE 205 <span class="beta-badge">BETA</span></span>
+    </header>
+
+    <main class="profile-container">
+        <!-- 비로그인이면 JS가 /login.html?next=/profile.html로 redirect -->
+
+        <h1 class="profile-title">내 프로필</h1>
+
+        <!-- ─────── 1. 기본 정보 ─────── -->
+        <section class="profile-card">
+            <h2 class="card-title">기본 정보</h2>
+
+            <div id="infoError" class="auth-error" hidden></div>
+            <div id="infoSuccess" class="profile-success" hidden></div>
+
+            <form id="infoForm" class="auth-form" novalidate>
+                <label class="field">
+                    <span class="field-label">아이디</span>
+                    <input type="text" name="username" disabled>
+                    <span class="field-hint">아이디는 변경할 수 없어요.</span>
+                </label>
+
+                <label class="field">
+                    <span class="field-label">출생연도</span>
+                    <input type="number" name="birthYear" disabled>
+                    <span class="field-hint">출생연도는 변경할 수 없어요.</span>
+                </label>
+
+                <label class="field">
+                    <span class="field-label">표시 이름 <span class="field-optional">(선택)</span></span>
+                    <input type="text" name="displayName" maxlength="30"
+                           placeholder="비워두면 아이디로 표시">
+                </label>
+
+                <label class="field">
+                    <span class="field-label">이메일 <span class="field-optional">(선택)</span></span>
+                    <input type="email" name="email" autocomplete="email"
+                           placeholder="비밀번호 분실 시 복구용">
+                    <span class="field-hint">비워두면 이메일을 사용하지 않아요.</span>
+                </label>
+
+                <button type="submit" class="auth-button" id="infoSubmit">정보 저장</button>
+            </form>
+        </section>
+
+        <!-- ─────── 2. 풀이 통계 ─────── -->
+        <section class="profile-card">
+            <h2 class="card-title">풀이 통계</h2>
+            <div id="statsBody" class="stats-body">
+                <div class="stats-loading">불러오는 중…</div>
+            </div>
+        </section>
+
+        <!-- ─────── 3. 비밀번호 변경 ─────── -->
+        <section class="profile-card">
+            <h2 class="card-title">비밀번호 변경</h2>
+
+            <div id="pwError" class="auth-error" hidden></div>
+            <div id="pwSuccess" class="profile-success" hidden></div>
+
+            <form id="pwForm" class="auth-form" novalidate>
+                <label class="field">
+                    <span class="field-label">현재 비밀번호</span>
+                    <input type="password" name="currentPassword" required autocomplete="current-password">
+                </label>
+                <label class="field">
+                    <span class="field-label">새 비밀번호</span>
+                    <input type="password" name="newPassword" required autocomplete="new-password"
+                           minlength="8" placeholder="8자 이상, 영문 + 숫자 포함">
+                </label>
+                <label class="field">
+                    <span class="field-label">새 비밀번호 확인</span>
+                    <input type="password" name="newPasswordConfirm" required autocomplete="new-password">
+                </label>
+                <button type="submit" class="auth-button" id="pwSubmit">비밀번호 변경</button>
+            </form>
+        </section>
+
+        <!-- ─────── 4. 위험 영역 ─────── -->
+        <section class="profile-card profile-danger">
+            <h2 class="card-title">계정 삭제</h2>
+            <p class="danger-warning">
+                <strong>주의:</strong> 계정을 삭제하면 모든 풀이 기록이 영구적으로 사라집니다. 되돌릴 수 없어요.
+            </p>
+
+            <div id="delError" class="auth-error" hidden></div>
+
+            <form id="delForm" class="auth-form" novalidate>
+                <label class="field">
+                    <span class="field-label">비밀번호 확인</span>
+                    <input type="password" name="password" required autocomplete="current-password"
+                           placeholder="삭제하려면 비밀번호 입력">
+                </label>
+                <label class="field">
+                    <span class="field-label">확인 문구</span>
+                    <input type="text" name="confirm" required
+                           placeholder="DELETE 입력" autocomplete="off">
+                    <span class="field-hint">정확히 <code>DELETE</code>를 입력해야 활성화됩니다.</span>
+                </label>
+                <button type="submit" class="auth-button danger-button" id="delSubmit">계정 영구 삭제</button>
+            </form>
+        </section>
+    </main>
+
+    <script src="js/common-header.js"></script>
+    <script src="js/profile-page.js"></script>
+    <script src="js/common-footer.js"></script>
+</body>
+</html>

@@ -9,11 +9,89 @@ const express = require('express');
 const { requireAuth } = require('../middleware/auth');
 const problemService = require('../services/problemService');
 const solutionService = require('../services/solutionService');
+const userService = require('../services/userService');
+const auth = require('../services/authService');
 
 const router = express.Router();
 
 // 모든 /api/me/* 는 인증 강제
 router.use(requireAuth);
+
+// ─────── GET /api/me ───────
+// /api/auth/me와 동일 응답 (점진적 마이그레이션 alias).
+router.get('/', (req, res) => {
+    res.json({ user: req.user });
+});
+
+// ─────── PATCH /api/me ───────
+// body: { email?, displayName? } — 키가 있으면 갱신, 빈 문자열은 NULL.
+// username·birth_year는 불변.
+router.patch('/', (req, res) => {
+    const patch = {};
+    if ('email' in (req.body || {})) {
+        const err = auth.validateEmail(req.body.email);
+        if (err) return res.status(400).json({ error: 'VALIDATION', message: 'email: ' + err });
+        patch.email = req.body.email;
+    }
+    if ('displayName' in (req.body || {})) {
+        const err = auth.validateDisplayName(req.body.displayName);
+        if (err) return res.status(400).json({ error: 'VALIDATION', message: 'displayName: ' + err });
+        patch.displayName = req.body.displayName;
+    }
+    if (Object.keys(patch).length === 0) {
+        return res.status(400).json({ error: 'VALIDATION', message: '변경할 필드가 없습니다.' });
+    }
+    try {
+        const updated = userService.updateUser(req.user.id, patch);
+        res.json({ user: userService.stripSecret(updated) });
+    } catch (e) {
+        if (/UNIQUE constraint failed/.test(e.message)) {
+            return res.status(409).json({ error: 'CONFLICT', message: '이미 사용 중인 이메일입니다.' });
+        }
+        console.error('[PATCH /api/me]', e);
+        res.status(500).json({ error: 'INTERNAL', message: '서버 오류' });
+    }
+});
+
+// ─────── POST /api/me/password ───────
+// body: { currentPassword, newPassword }
+router.post('/password', async (req, res) => {
+    try {
+        await auth.changePassword(req.user.id, {
+            currentPassword: req.body?.currentPassword,
+            newPassword: req.body?.newPassword,
+        });
+        res.json({ ok: true });
+    } catch (e) {
+        if (e instanceof auth.AuthError) {
+            const status = e.code === 'VALIDATION' ? 400 : 401;
+            return res.status(status).json({ error: e.code, message: e.message });
+        }
+        console.error('[POST /api/me/password]', e);
+        res.status(500).json({ error: 'INTERNAL', message: '서버 오류' });
+    }
+});
+
+// ─────── DELETE /api/me ───────
+// body: { password } — 비밀번호 재확인 후 삭제.
+// 성공 시 세션 destroy + 쿠키 정리.
+router.delete('/', async (req, res) => {
+    try {
+        const ok = await auth.verifyPassword(req.user.id, req.body?.password || '');
+        if (!ok) {
+            return res.status(401).json({ error: 'INVALID_CREDENTIALS', message: '비밀번호가 일치하지 않습니다.' });
+        }
+        userService.deleteUser(req.user.id);
+        req.session.destroy((err) => {
+            if (err) console.error('[DELETE /api/me] session destroy', err);
+            res.clearCookie('code205.sid');
+            res.json({ ok: true });
+        });
+    } catch (e) {
+        console.error('[DELETE /api/me]', e);
+        res.status(500).json({ error: 'INTERNAL', message: '서버 오류' });
+    }
+});
 
 // ─────── GET /api/me/solved ───────
 // 응답: { problems: ["001", "003", ...] } — solved_at ASC + ROWID ASC 순

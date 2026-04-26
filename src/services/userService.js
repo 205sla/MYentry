@@ -86,6 +86,49 @@ function updateLastLogin(id, opts = {}) {
 }
 
 /**
+ * 부분 업데이트. patch에 들어있는 키만 갱신.
+ * 허용 키: email, displayName. (username·birth_year는 불변)
+ * 빈 문자열·undefined는 NULL로 정규화.
+ * @returns {object|null} 갱신 후 user (없으면 null)
+ * @throws {Error} email UNIQUE 충돌 시
+ */
+function updateUser(id, patch, opts = {}) {
+    const db = opts.db || getDb();
+    const sets = [];
+    const params = {};
+    if ('email' in patch) {
+        sets.push('email = @email');
+        params.email = nullable(patch.email);
+    }
+    if ('displayName' in patch) {
+        sets.push('display_name = @display_name');
+        params.display_name = nullable(patch.displayName);
+    }
+    if (sets.length === 0) return findById(id, opts);
+    params.id = id;
+    db.prepare(`UPDATE users SET ${sets.join(', ')} WHERE id = @id`).run(params);
+    return findById(id, opts);
+}
+
+/**
+ * 비밀번호 해시만 교체.
+ */
+function updatePasswordHash(id, passwordHash, opts = {}) {
+    const db = opts.db || getDb();
+    const info = db.prepare('UPDATE users SET password_hash = ? WHERE id = ?').run(passwordHash, id);
+    return info.changes > 0;
+}
+
+/**
+ * 사용자 삭제. ON DELETE CASCADE로 solutions 자동 정리.
+ */
+function deleteUser(id, opts = {}) {
+    const db = opts.db || getDb();
+    const info = db.prepare('DELETE FROM users WHERE id = ?').run(id);
+    return info.changes > 0;
+}
+
+/**
  * 외부 응답에 보낼 때 비밀 필드 제거.
  */
 function stripSecret(user) {
@@ -100,5 +143,8 @@ module.exports = {
     findByUsername,
     findByEmail,
     updateLastLogin,
+    updateUser,
+    updatePasswordHash,
+    deleteUser,
     stripSecret,
 };

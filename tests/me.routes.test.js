@@ -183,3 +183,175 @@ describe('사용자 간 격리', () => {
         assert.deepEqual(bGet.body.problems, []);
     });
 });
+
+// ═══════════════════════════════════════════
+//   GET /api/me (alias of /api/auth/me)
+// ═══════════════════════════════════════════
+describe('GET /api/me', () => {
+    it('비로그인: 401', async () => {
+        const r = await call('GET', '/api/me');
+        assert.equal(r.status, 401);
+    });
+    it('로그인: user 반환 (password_hash 없음)', async () => {
+        const c = await signupAndGetCookie('meuser1');
+        const r = await call('GET', '/api/me', c);
+        assert.equal(r.status, 200);
+        assert.equal(r.body.user.username, 'meuser1');
+        assert.equal(r.body.user.password_hash, undefined);
+    });
+});
+
+// ═══════════════════════════════════════════
+//   PATCH /api/me — 부분 업데이트
+// ═══════════════════════════════════════════
+async function callJson(method, urlPath, body, cookieIn) {
+    const headers = { 'Content-Type': 'application/json' };
+    if (cookieIn) headers.Cookie = cookieIn;
+    const r = await fetch(baseUrl + urlPath, {
+        method,
+        headers,
+        body: body !== undefined ? JSON.stringify(body) : undefined,
+    });
+    let parsed;
+    const text = await r.text();
+    try { parsed = JSON.parse(text); } catch { parsed = text; }
+    return { status: r.status, body: parsed };
+}
+
+describe('PATCH /api/me', () => {
+    it('이메일·표시이름 갱신', async () => {
+        const c = await signupAndGetCookie('patchu1');
+        const r = await callJson('PATCH', '/api/me', { email: 'new@x.com', displayName: '새이름' }, c);
+        assert.equal(r.status, 200);
+        assert.equal(r.body.user.email, 'new@x.com');
+        assert.equal(r.body.user.display_name, '새이름');
+    });
+
+    it('이메일 빈 문자열 → NULL 회귀', async () => {
+        const c = await signupAndGetCookie('patchu2');
+        await callJson('PATCH', '/api/me', { email: 'tmp@x.com' }, c);
+        const r = await callJson('PATCH', '/api/me', { email: '' }, c);
+        assert.equal(r.body.user.email, null);
+    });
+
+    it('빈 patch: 400 VALIDATION', async () => {
+        const c = await signupAndGetCookie('patchu3');
+        const r = await callJson('PATCH', '/api/me', {}, c);
+        assert.equal(r.status, 400);
+    });
+
+    it('잘못된 이메일 형식: 400', async () => {
+        const c = await signupAndGetCookie('patchu4');
+        const r = await callJson('PATCH', '/api/me', { email: 'bad-no-at' }, c);
+        assert.equal(r.status, 400);
+        assert.match(r.body.message, /email/);
+    });
+
+    it('이미 사용 중인 이메일: 409 CONFLICT', async () => {
+        const a = await signupAndGetCookie('patchu5a');
+        const b = await signupAndGetCookie('patchu5b');
+        await callJson('PATCH', '/api/me', { email: 'shared@x.com' }, a);
+        const r = await callJson('PATCH', '/api/me', { email: 'shared@x.com' }, b);
+        assert.equal(r.status, 409);
+        assert.equal(r.body.error, 'CONFLICT');
+    });
+
+    it('비로그인: 401', async () => {
+        const r = await callJson('PATCH', '/api/me', { email: 'x@y.com' });
+        assert.equal(r.status, 401);
+    });
+});
+
+// ═══════════════════════════════════════════
+//   POST /api/me/password
+// ═══════════════════════════════════════════
+describe('POST /api/me/password', () => {
+    it('정상 변경: 200', async () => {
+        const c = await signupAndGetCookie('pwu1');
+        const r = await callJson('POST', '/api/me/password', {
+            currentPassword: 'abcd1234',
+            newPassword: 'xyz98765',
+        }, c);
+        assert.equal(r.status, 200);
+        assert.equal(r.body.ok, true);
+
+        // 새 비밀번호로 재로그인 가능
+        const login = await callJson('POST', '/api/auth/login', { username: 'pwu1', password: 'xyz98765' });
+        assert.equal(login.status, 200);
+    });
+
+    it('현재 비밀번호 틀림: 401 INVALID_CREDENTIALS', async () => {
+        const c = await signupAndGetCookie('pwu2');
+        const r = await callJson('POST', '/api/me/password', {
+            currentPassword: 'wrong',
+            newPassword: 'xyz98765',
+        }, c);
+        assert.equal(r.status, 401);
+    });
+
+    it('새 비밀번호 정책 위반: 400 VALIDATION', async () => {
+        const c = await signupAndGetCookie('pwu3');
+        const r = await callJson('POST', '/api/me/password', {
+            currentPassword: 'abcd1234',
+            newPassword: 'short',
+        }, c);
+        assert.equal(r.status, 400);
+        assert.equal(r.body.error, 'VALIDATION');
+    });
+
+    it('비로그인: 401', async () => {
+        const r = await callJson('POST', '/api/me/password', { currentPassword: 'a', newPassword: 'abcd1234' });
+        assert.equal(r.status, 401);
+    });
+});
+
+// ═══════════════════════════════════════════
+//   DELETE /api/me
+// ═══════════════════════════════════════════
+describe('DELETE /api/me', () => {
+    it('정상 삭제 + solutions 자동 정리 + 세션 종료', async () => {
+        const c = await signupAndGetCookie('delu1');
+        await callJson('POST', '/api/me/solved/001', undefined, c);
+
+        // 삭제 전 solved 확인
+        const before = await call('GET', '/api/me/solved', c);
+        assert.deepEqual(before.body.problems, ['001']);
+
+        // 삭제
+        const del = await callJson('DELETE', '/api/me', { password: 'abcd1234' }, c);
+        assert.equal(del.status, 200);
+        assert.equal(del.body.ok, true);
+
+        // 같은 쿠키로 me 호출 → 401 (세션 종료됨)
+        const after = await call('GET', '/api/me', c);
+        assert.equal(after.status, 401);
+
+        // 같은 username으로 재가입 가능 (DB에서 사라짐)
+        const re = await callJson('POST', '/api/auth/signup', {
+            username: 'delu1', password: 'newp1234', birthYear: 2000,
+        });
+        assert.equal(re.status, 201);
+    });
+
+    it('비밀번호 틀림: 401 INVALID_CREDENTIALS, 계정 유지', async () => {
+        const c = await signupAndGetCookie('delu2');
+        const r = await callJson('DELETE', '/api/me', { password: 'wrong' }, c);
+        assert.equal(r.status, 401);
+
+        // 계정 살아있는지 확인
+        const me = await call('GET', '/api/me', c);
+        assert.equal(me.status, 200);
+        assert.equal(me.body.user.username, 'delu2');
+    });
+
+    it('비밀번호 누락: 401', async () => {
+        const c = await signupAndGetCookie('delu3');
+        const r = await callJson('DELETE', '/api/me', {}, c);
+        assert.equal(r.status, 401);
+    });
+
+    it('비로그인: 401', async () => {
+        const r = await callJson('DELETE', '/api/me', { password: 'x' });
+        assert.equal(r.status, 401);
+    });
+});

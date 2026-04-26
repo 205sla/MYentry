@@ -158,6 +158,40 @@ async function login(input, opts = {}) {
     return userService.stripSecret(user);
 }
 
+// ─────── 비밀번호 변경 ───────
+/**
+ * @throws {AuthError} INVALID_CREDENTIALS (현재 비밀번호 틀림) | VALIDATION (새 비밀번호 정책)
+ */
+async function changePassword(userId, { currentPassword, newPassword }, opts = {}) {
+    const user = userService.findById(userId, opts);
+    if (!user) {
+        throw new AuthError('INVALID_CREDENTIALS', '사용자를 찾을 수 없습니다.');
+    }
+    if (typeof currentPassword !== 'string' || currentPassword.length === 0) {
+        throw new AuthError('INVALID_CREDENTIALS', '현재 비밀번호가 일치하지 않습니다.');
+    }
+    const ok = await bcrypt.compare(currentPassword, user.password_hash);
+    if (!ok) {
+        throw new AuthError('INVALID_CREDENTIALS', '현재 비밀번호가 일치하지 않습니다.');
+    }
+    const policyMsg = validatePassword(newPassword);
+    if (policyMsg) {
+        throw new AuthError('VALIDATION', 'newPassword: ' + policyMsg);
+    }
+    const newHash = await bcrypt.hash(newPassword, BCRYPT_COST);
+    userService.updatePasswordHash(userId, newHash, opts);
+}
+
+/**
+ * 비밀번호 검증만. 계정 삭제 등 추가 행동 직전 확인용.
+ */
+async function verifyPassword(userId, password, opts = {}) {
+    const user = userService.findById(userId, opts);
+    if (!user) return false;
+    if (typeof password !== 'string' || password.length === 0) return false;
+    return bcrypt.compare(password, user.password_hash);
+}
+
 module.exports = {
     AuthError,
     // 검증
@@ -170,6 +204,8 @@ module.exports = {
     // 액션
     signup,
     login,
+    changePassword,
+    verifyPassword,
     // 정책 상수 (테스트·UI에서 참조 가능)
     POLICY: {
         USERNAME_RE,
