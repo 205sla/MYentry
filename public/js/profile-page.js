@@ -111,16 +111,33 @@
         if (fill) fill.style.width = pct + '%';
     }
 
-    function loadStats() {
-        Promise.all([
-            fetch('/api/me/solved', { credentials: 'same-origin' }).then(function (r) { return r.ok ? r.json() : { problems: [] }; }),
-            fetch('/api/problems').then(function (r) { return r.ok ? r.json() : []; }),
-        ]).then(function (results) {
-            renderStats(results[1] || [], (results[0] && results[0].problems) || []);
-            // 통계 끝나면 같은 problems 데이터 재사용해 submissions 렌더
-            loadSubmissions(results[1] || []);
-        }).catch(function () {
-            $('statsBody').innerHTML = '<div class="stats-loading">통계를 불러올 수 없습니다.</div>';
+    // 통계 + 제출 목록을 독립적으로 호출 — 한쪽 fetch 실패해도 다른 쪽은 표시.
+    // problems 카탈로그는 한 번만 받아 두 쪽이 공유.
+    function loadStatsAndSubmissions() {
+        var problemsPromise = fetch('/api/problems')
+            .then(function (r) { return r.ok ? r.json() : []; })
+            .catch(function (err) {
+                console.warn('[profile] /api/problems failed', err);
+                return [];
+            });
+
+        var solvedPromise = fetch('/api/me/solved', { credentials: 'same-origin' })
+            .then(function (r) { return r.ok ? r.json() : { problems: [] }; })
+            .catch(function (err) {
+                console.warn('[profile] /api/me/solved failed', err);
+                return { problems: [] };
+            });
+
+        Promise.all([problemsPromise, solvedPromise]).then(function (results) {
+            var problems = results[0] || [];
+            var solved = (results[1] && results[1].problems) || [];
+            try { renderStats(problems, solved); }
+            catch (e) {
+                console.warn('[profile] renderStats failed', e);
+                $('statsBody').innerHTML = '<div class="stats-loading">통계를 불러올 수 없습니다.</div>';
+            }
+            // 제출 목록은 통계 결과와 무관하게 항상 시도
+            loadSubmissions(problems);
         });
     }
 
@@ -197,7 +214,7 @@
             .then(function (data) {
                 if (!data) return;
                 fillUserForm(data.user);
-                loadStats();
+                loadStatsAndSubmissions();
             })
             .catch(function () {
                 show($('infoError'), '프로필 정보를 불러올 수 없습니다.');

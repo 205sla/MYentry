@@ -16,33 +16,46 @@
 
     function saveSubmission(idNum) {
         var n = parseInt(idNum, 10);
-        if (!n) return Promise.resolve(false);
+        if (!n) {
+            console.warn('[SubmissionSync.saveSubmission] invalid idNum', idNum);
+            return Promise.resolve(false);
+        }
         if (typeof Entry === 'undefined' || typeof Entry.exportProject !== 'function') {
+            console.warn('[SubmissionSync.saveSubmission] Entry runtime not available');
             return Promise.resolve(false);
         }
 
         var project;
         try {
             project = Entry.exportProject({});
-        } catch (_) {
+        } catch (e) {
+            console.warn('[SubmissionSync.saveSubmission] Entry.exportProject threw', e);
             return Promise.resolve(false);
         }
-        if (!project) return Promise.resolve(false);
+        if (!project) {
+            console.warn('[SubmissionSync.saveSubmission] Entry.exportProject returned falsy');
+            return Promise.resolve(false);
+        }
 
         var code;
         try {
             code = JSON.stringify(project);
-        } catch (_) {
+        } catch (e) {
+            console.warn('[SubmissionSync.saveSubmission] JSON.stringify threw', e);
             return Promise.resolve(false);
         }
-        if (!code || code.length === 0) return Promise.resolve(false);
+        if (!code || code.length === 0) {
+            console.warn('[SubmissionSync.saveSubmission] empty code after stringify');
+            return Promise.resolve(false);
+        }
 
         // UTF-8 byte 기준 — 라우트가 같은 검사를 하므로 미리 차단.
+        var byteLen = code.length; // fallback
         if (typeof Blob !== 'undefined') {
-            try {
-                if (new Blob([code]).size > MAX_BYTES) return Promise.resolve(false);
-            } catch (_) { /* polyfill 안 되면 length 폴백 */ }
-        } else if (code.length > MAX_BYTES) {
+            try { byteLen = new Blob([code]).size; } catch (_) { /* polyfill 없을 때 length */ }
+        }
+        if (byteLen > MAX_BYTES) {
+            console.warn('[SubmissionSync.saveSubmission] code too large:', byteLen, 'bytes (max', MAX_BYTES + ')');
             return Promise.resolve(false);
         }
 
@@ -52,8 +65,14 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ code: code }),
         }).then(function (r) {
+            if (!r.ok && r.status !== 401) {
+                console.warn('[SubmissionSync.saveSubmission]', n, 'HTTP', r.status);
+            }
             return r.ok; // 401(비로그인), 413(초과), 404(없는 문제) 모두 false
-        }).catch(function () { return false; });
+        }).catch(function (err) {
+            console.warn('[SubmissionSync.saveSubmission]', n, 'fetch failed', err);
+            return false;
+        });
     }
 
     // ─────── 로드 (이전 정답 코드 복원용) ───────

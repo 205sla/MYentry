@@ -53,6 +53,7 @@
     }
 
     // 단일 문제를 서버에 등록. 로그인 안 됐거나 네트워크 실패 시 그냥 종료(낙관적 UI).
+    // 비-401 실패는 console.warn으로 노출 — silent skip이 디버깅을 가리지 않게.
     function markRemote(idNum) {
         var n = parseInt(idNum, 10);
         if (!n) return Promise.resolve(false);
@@ -60,9 +61,14 @@
             method: 'POST',
             credentials: 'same-origin',
         }).then(function (r) {
-            // 401 = 비로그인 (자연스러운 상태), 404 = 잘못된 id, 2xx = 성공
+            if (!r.ok && r.status !== 401) {
+                console.warn('[SolvedSync.markRemote]', n, 'HTTP', r.status);
+            }
             return r.ok;
-        }).catch(function () { return false; });
+        }).catch(function (err) {
+            console.warn('[SolvedSync.markRemote]', n, 'fetch failed', err);
+            return false;
+        });
     }
 
     // 페이지 로드 시 1회 호출. 비로그인이면 no-op.
