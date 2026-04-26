@@ -444,6 +444,90 @@ describe('DELETE /api/me/submissions/:problemId', () => {
     });
 });
 
+describe('DELETE /api/me/submissions (전체)', () => {
+    it('비로그인: 401', async () => {
+        const r = await call('DELETE', '/api/me/submissions');
+        assert.equal(r.status, 401);
+    });
+
+    it('여러 개 등록 후 전체 삭제 → ok + removed 개수', async () => {
+        const c = await signupAndGetCookie('subuClearAll');
+        await callJson('POST', '/api/me/submissions/001', { code: 'a' }, c);
+        await callJson('POST', '/api/me/submissions/3',   { code: 'b' }, c);
+
+        const r = await call('DELETE', '/api/me/submissions', c);
+        assert.equal(r.status, 200);
+        assert.equal(r.body.ok, true);
+        assert.equal(r.body.removed, 2);
+
+        const list = await call('GET', '/api/me/submissions', c);
+        assert.deepEqual(list.body.submissions, []);
+    });
+
+    it('빈 상태에서 호출: ok + removed:0 (멱등)', async () => {
+        const c = await signupAndGetCookie('subuClearEmpty');
+        const r = await call('DELETE', '/api/me/submissions', c);
+        assert.equal(r.status, 200);
+        assert.equal(r.body.removed, 0);
+    });
+
+    it('A의 전체 삭제는 B에게 영향 없음', async () => {
+        const a = await signupAndGetCookie('subuClearA');
+        const b = await signupAndGetCookie('subuClearB');
+        await callJson('POST', '/api/me/submissions/001', { code: 'a' }, a);
+        await callJson('POST', '/api/me/submissions/001', { code: 'b' }, b);
+
+        await call('DELETE', '/api/me/submissions', a);
+
+        const aList = await call('GET', '/api/me/submissions', a);
+        const bList = await call('GET', '/api/me/submissions', b);
+        assert.equal(aList.body.submissions.length, 0);
+        assert.equal(bList.body.submissions.length, 1);
+    });
+});
+
+describe('DELETE /api/me/solved (전체)', () => {
+    it('비로그인: 401', async () => {
+        const r = await call('DELETE', '/api/me/solved');
+        assert.equal(r.status, 401);
+    });
+
+    it('여러 개 등록 후 전체 삭제 → ok + removed 개수', async () => {
+        const c = await signupAndGetCookie('solvClearAll');
+        await call('POST', '/api/me/solved/001', c);
+        await call('POST', '/api/me/solved/003', c);
+        await call('POST', '/api/me/solved/006', c);
+
+        const r = await call('DELETE', '/api/me/solved', c);
+        assert.equal(r.status, 200);
+        assert.equal(r.body.ok, true);
+        assert.equal(r.body.removed, 3);
+
+        const list = await call('GET', '/api/me/solved', c);
+        assert.deepEqual(list.body.problems, []);
+    });
+
+    it('빈 상태에서 호출: ok + removed:0 (멱등)', async () => {
+        const c = await signupAndGetCookie('solvClearEmpty');
+        const r = await call('DELETE', '/api/me/solved', c);
+        assert.equal(r.status, 200);
+        assert.equal(r.body.removed, 0);
+    });
+
+    it('단건 DELETE /solved/:id가 여전히 작동 (라우트 우선순위)', async () => {
+        const c = await signupAndGetCookie('solvSingleStill');
+        await call('POST', '/api/me/solved/001', c);
+        await call('POST', '/api/me/solved/003', c);
+        // 단건 삭제
+        const r = await call('DELETE', '/api/me/solved/001', c);
+        assert.equal(r.status, 200);
+        assert.equal(r.body.removed, true);
+        // 003은 살아있어야 함
+        const list = await call('GET', '/api/me/solved', c);
+        assert.deepEqual(list.body.problems, ['003']);
+    });
+});
+
 describe('submissions 사용자 간 격리', () => {
     it('A의 제출은 B에게 안 보임', async () => {
         const a = await signupAndGetCookie('subuA');

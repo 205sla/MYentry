@@ -78,6 +78,15 @@ function countByUser(userId, opts = {}) {
     return db.prepare(`SELECT COUNT(*) AS n FROM submissions WHERE user_id = ?`).get(userId).n;
 }
 
+/**
+ * 한 사용자의 모든 제출 코드 일괄 삭제. 반환: 삭제된 행 수.
+ */
+function deleteAllByUser(userId, opts = {}) {
+    const db = opts.db || getDb();
+    const info = db.prepare('DELETE FROM submissions WHERE user_id = ?').run(userId);
+    return info.changes;
+}
+
 module.exports = {
     saveSubmission,
     getSubmission,
@@ -85,4 +94,5 @@ module.exports = {
     deleteSubmission,
     isSaved,
     countByUser,
+    deleteAllByUser,
 };

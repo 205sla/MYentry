@@ -157,6 +157,23 @@
     white-space: nowrap;
 }
 
+/* ─────── 풀이 데이터 초기화 버튼 ─────── */
+/* 위험 영역(계정 삭제)보다 한 단계 약한 강조 — 오렌지 보더만, 배경은 평범 */
+.reset-button {
+    background: #fff;
+    color: #c33020;
+    border: 1px solid #fa5536;
+}
+.reset-button:hover {
+    background: #fff8f7;
+}
+.reset-button:disabled {
+    background: #f3f3f3;
+    color: #b8c1cc;
+    border-color: #d0d3d6;
+    cursor: not-allowed;
+}
+
 /* ─────── 위험 영역 ─────── */
 .profile-danger {
     border-color: #fa5536;

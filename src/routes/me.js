@@ -115,6 +115,13 @@ router.get('/submissions/:problemId', (req, res) => {
     res.json(row);
 });
 
+// ─────── DELETE /api/me/submissions ───────
+// 본인의 모든 제출 코드 일괄 삭제 — "프로필 풀이 데이터 초기화" 액션.
+router.delete('/submissions', (req, res) => {
+    const removed = submissionService.deleteAllByUser(req.user.id);
+    res.json({ ok: true, removed });
+});
+
 // ─────── DELETE /api/me/submissions/:problemId ───────
 router.delete('/submissions/:problemId', (req, res) => {
     const id = problemService.padId(req.params.problemId);
@@ -160,6 +167,13 @@ router.post('/solved/:problemId', (req, res) => {
     }
     const created = solutionService.markSolved(req.user.id, id);
     res.status(created ? 201 : 200).json({ ok: true, created });
+});
+
+// ─────── DELETE /api/me/solved ───────
+// 본인의 모든 풀이 기록 일괄 삭제 — "프로필 풀이 데이터 초기화" 액션.
+router.delete('/solved', (req, res) => {
+    const removed = solutionService.deleteAllByUser(req.user.id);
+    res.json({ ok: true, removed });
 });
 
 // ─────── DELETE /api/me/solved/:problemId ───────

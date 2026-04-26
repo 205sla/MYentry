@@ -74,6 +74,16 @@ function isSolved(userId, problemId, opts = {}) {
     return !!row;
 }
 
+/**
+ * 한 사용자의 모든 풀이 기록 일괄 삭제. 반환: 삭제된 행 수.
+ * "프로필에서 풀이 데이터 초기화" 액션용.
+ */
+function deleteAllByUser(userId, opts = {}) {
+    const db = opts.db || getDb();
+    const info = db.prepare('DELETE FROM solutions WHERE user_id = ?').run(userId);
+    return info.changes;
+}
+
 module.exports = {
     markSolved,
     unmarkSolved,
@@ -81,4 +91,5 @@ module.exports = {
     listSolutions,
     countByUser,
     isSolved,
+    deleteAllByUser,
 };

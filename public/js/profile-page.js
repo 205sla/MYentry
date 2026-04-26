@@ -23,7 +23,7 @@
     }
 
     function clearMessages() {
-        ['infoError', 'infoSuccess', 'pwError', 'pwSuccess', 'delError'].forEach(function (id) {
+        ['infoError', 'infoSuccess', 'pwError', 'pwSuccess', 'delError', 'resetError', 'resetSuccess'].forEach(function (id) {
             hide($(id));
         });
     }
@@ -275,6 +275,34 @@
                 show($('pwError'), '네트워크 오류가 발생했습니다.');
             } finally {
                 setBusy(btn, false, '비밀번호 변경');
+            }
+        });
+
+        // ─── 풀이 데이터 초기화 ───
+        $('resetBtn').addEventListener('click', async function () {
+            clearMessages();
+            if (!window.confirm('정말 모든 풀이 기록과 저장된 코드를 삭제하시겠어요?\n계정과 프로필 정보는 유지됩니다.')) {
+                return;
+            }
+            var btn = $('resetBtn');
+            setBusy(btn, true, '모든 풀이 데이터 삭제');
+            try {
+                var solvedRes = await postJson('DELETE', '/api/me/solved');
+                var subsRes = await postJson('DELETE', '/api/me/submissions');
+                if (solvedRes.status === 200 && subsRes.status === 200) {
+                    // localStorage entry:solved도 같이 정리 — 안 그러면 다음 로드 시
+                    // syncWithServer가 다시 서버로 업로드.
+                    try { localStorage.removeItem('entry:solved'); } catch (_) {}
+                    var removedTotal = (solvedRes.data.removed || 0) + (subsRes.data.removed || 0);
+                    show($('resetSuccess'), '풀이 데이터를 모두 삭제했습니다 (총 ' + removedTotal + '건). 잠시 후 새로고침합니다.');
+                    setTimeout(function () { location.reload(); }, 1200);
+                } else {
+                    show($('resetError'), '삭제에 실패했습니다. 잠시 후 다시 시도해주세요.');
+                }
+            } catch (_) {
+                show($('resetError'), '네트워크 오류가 발생했습니다.');
+            } finally {
+                setBusy(btn, false, '모든 풀이 데이터 삭제');
             }
         });
 
