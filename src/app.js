@@ -49,11 +49,40 @@ function createApp(opts = {}) {
         app.set('disableRateLimit', true);
     }
 
-    // 보안 미들웨어 (CSP·COEP는 Entry 런타임 충돌 회피로 비활성)
-    app.use(helmet({
+    // ─────── 보안 미들웨어 (CSP path 분기) ───────
+    // - editor.html과 그 자원(/lib/*)은 CSP 비활성: Entry 런타임이 inline script/style·eval 사용
+    // - 나머지 페이지·API는 strict CSP: 외부 도메인 일절 미허용 (XSS 방어)
+    // - COEP는 Entry 임베드 자원 호환을 위해 전역 비활성 유지
+    const STRICT_CSP_DIRECTIVES = {
+        'default-src': ["'self'"],
+        'script-src':  ["'self'"],
+        'style-src':   ["'self'"],
+        'img-src':     ["'self'", 'data:'],
+        'font-src':    ["'self'"],
+        'connect-src': ["'self'"],
+        'frame-ancestors': ["'none'"],
+        'base-uri':    ["'self'"],
+        'form-action': ["'self'"],
+        'object-src':  ["'none'"],
+    };
+
+    const helmetStrict = helmet({
+        contentSecurityPolicy: { directives: STRICT_CSP_DIRECTIVES },
+        crossOriginEmbedderPolicy: false,
+    });
+    const helmetEditor = helmet({
         contentSecurityPolicy: false,
         crossOriginEmbedderPolicy: false,
-    }));
+    });
+
+    function isEditorScope(reqPath) {
+        return reqPath === '/editor.html' || reqPath.startsWith('/lib/');
+    }
+
+    app.use((req, res, next) => {
+        if (isEditorScope(req.path)) return helmetEditor(req, res, next);
+        helmetStrict(req, res, next);
+    });
 
     // 바디 파서 분기:
     //   - /api/export        : 별도 (라우트가 자체 처리, 25MB)
