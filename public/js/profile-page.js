@@ -102,8 +102,13 @@
             '<div class="stats-summary">' +
                 '<strong>' + totalSolved + '</strong> / ' + totalProblems + ' 문제 해결 (' + pct + '%)' +
             '</div>' +
-            '<div class="stats-bar"><div class="stats-bar-fill" style="width:' + pct + '%"></div></div>' +
+            '<div class="stats-bar"><div class="stats-bar-fill"></div></div>' +
             '<div class="stats-difficulty">' + diffItems + '</div>';
+
+        // CSP의 style-src 'self'가 inline style 속성을 차단하므로
+        // DOM 생성 후 .style 프로퍼티로 설정 (CSSOM 조작은 CSP에 영향 X).
+        var fill = body.querySelector('.stats-bar-fill');
+        if (fill) fill.style.width = pct + '%';
     }
 
     function loadStats() {
