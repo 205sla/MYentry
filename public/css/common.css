@@ -50,6 +50,96 @@ header {
     vertical-align: middle;
 }
 
+/* ---------- Header user-menu (common-header.js가 주입) ---------- */
+.header-spacer {
+    flex: 1;
+}
+.user-menu {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.user-menu .auth-link {
+    color: #8ba4b3;
+    text-decoration: none;
+    font-size: 13px;
+    padding: 4px 4px;
+    transition: color 0.15s;
+}
+.user-menu .auth-link:hover {
+    color: #fff;
+}
+.user-menu .auth-link.primary {
+    color: #fff;
+    background: #4f80ff;
+    padding: 4px 12px;
+    border-radius: 3px;
+    font-weight: bold;
+    transition: background 0.15s;
+}
+.user-menu .auth-link.primary:hover {
+    background: #3a6dec;
+    color: #fff;
+}
+
+.user-menu .username-button {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-family: inherit;
+    letter-spacing: -0.3px;
+    transition: background 0.15s;
+}
+.user-menu .username-button:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+.user-menu .caret {
+    font-size: 9px;
+    opacity: 0.7;
+}
+
+.user-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 6px;
+    background: #fff;
+    border: 1px solid #e6e7e8;
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    min-width: 140px;
+    padding: 4px 0;
+    z-index: 1000;
+}
+.user-dropdown a,
+.user-dropdown button {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 8px 14px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #2c313d;
+    font-size: 13px;
+    font-family: inherit;
+    text-decoration: none;
+    letter-spacing: -0.3px;
+}
+.user-dropdown a:hover,
+.user-dropdown button:hover {
+    background: #f3f6fa;
+}
+
 /* ---------- Beta notice bar (index 전용, 다른 페이지에선 마크업 없음) ---------- */
 .beta-notice {
     background: #ecf8ff;
