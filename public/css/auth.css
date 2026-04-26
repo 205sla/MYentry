@@ -89,6 +89,19 @@
     line-height: 1.4;
 }
 
+/* 강조 경고 — 비밀번호 재사용 금지 등 보안 안내 */
+.field-hint.field-warn {
+    color: #c33020;
+    font-weight: bold;
+    background: #fff8f7;
+    border-left: 3px solid #fa5536;
+    padding: 6px 8px;
+    border-radius: 0 3px 3px 0;
+}
+.field-hint.field-warn strong {
+    text-decoration: underline;
+}
+
 /* ─────── 제출 버튼 ─────── */
 .auth-button {
     margin-top: 4px;
