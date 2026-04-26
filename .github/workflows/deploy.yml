@@ -25,6 +25,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: 'npm'
+      - name: Install dependencies
+        # 테스트가 better-sqlite3 등 의존성을 require하므로 install 필수.
+        # ci는 package-lock과 정확히 일치할 때만 동작 (재현 가능한 빌드).
+        run: npm ci --no-audit --no-fund
       - name: Run tests
         run: npm test
 
