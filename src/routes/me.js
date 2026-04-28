@@ -16,7 +16,11 @@ const userService = require('../services/userService');
 const submissionService = require('../services/submissionService');
 const auth = require('../services/authService');
 
-const CODE_MAX_BYTES = 100 * 1024; // 100KB — body parser 분기와 일치
+const CODE_MAX_BYTES = 100 * 1024; // 100KB
+
+// /submissions 코드 본문 파싱용 — Entry.exportProject JSON이 30KB를 쉽게 넘기 때문.
+// 글로벌 30KB 안전선과 분리하기 위해 라우트 단위로 부착.
+const submissionBodyParser = express.json({ limit: '100kb' });
 
 const router = express.Router();
 
@@ -71,9 +75,9 @@ router.post('/password', async (req, res, next) => {
 });
 
 // ─────── POST /api/me/submissions/:problemId ───────
-// body: { code: string }, max 100KB (body parser가 한도 강제)
+// body: { code: string }, max 100KB (submissionBodyParser가 한도 강제)
 // 응답: 새로 추가됐으면 201, 덮어쓰기였으면 200
-router.post('/submissions/:problemId', (req, res) => {
+router.post('/submissions/:problemId', submissionBodyParser, (req, res) => {
     const id = problemService.padId(req.params.problemId);
     if (!problemService.isValidId(req.params.problemId) || !problemService.exists(id)) {
         return fail(res, 404, 'NOT_FOUND', '존재하지 않는 문제입니다.');

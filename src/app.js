@@ -85,15 +85,13 @@ function createApp(opts = {}) {
         helmetStrict(req, res, next);
     });
 
-    // 바디 파서 분기:
-    //   - /api/export        : 별도 (라우트가 자체 처리, 25MB)
-    //   - /api/me/submissions: 100KB (Entry.exportProject JSON 수용)
-    //   - 그 외              : 30KB (기본 안전선)
+    // 바디 파서 — 글로벌은 30KB 안전선만 적용.
+    //   - /api/export       : 라우트가 자체 25MB 처리 (이 미들웨어 통과 X)
+    //   - /api/me/submissions: 라우트가 자체 100KB express.json 사용 (me.js 참조)
+    //   - 그 외              : 30KB
     app.use((req, res, next) => {
         if (req.path === '/api/export') return next();
-        if (req.path.startsWith('/api/me/submissions')) {
-            return express.json({ limit: '100kb' })(req, res, next);
-        }
+        if (req.path.startsWith('/api/me/submissions')) return next();
         express.json({ limit: '30kb' })(req, res, next);
     });
 
