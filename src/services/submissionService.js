@@ -5,6 +5,7 @@
 'use strict';
 
 const { getDb } = require('../db/init');
+const userScoped = require('../db/userScoped');
 
 /**
  * 제출 저장 (덮어쓰기). 같은 문제는 항상 최신 1개만 유지.
@@ -74,17 +75,14 @@ function isSaved(userId, problemId, opts = {}) {
  * 한 사용자의 제출 개수.
  */
 function countByUser(userId, opts = {}) {
-    const db = opts.db || getDb();
-    return db.prepare(`SELECT COUNT(*) AS n FROM submissions WHERE user_id = ?`).get(userId).n;
+    return userScoped.countByUser('submissions', userId, opts);
 }
 
 /**
  * 한 사용자의 모든 제출 코드 일괄 삭제. 반환: 삭제된 행 수.
  */
 function deleteAllByUser(userId, opts = {}) {
-    const db = opts.db || getDb();
-    const info = db.prepare('DELETE FROM submissions WHERE user_id = ?').run(userId);
-    return info.changes;
+    return userScoped.deleteAllByUser('submissions', userId, opts);
 }
 
 module.exports = {
