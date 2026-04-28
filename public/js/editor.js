@@ -214,7 +214,8 @@ function checkAndOfferRestore(problemId, onAfterLoad) {
     });
 }
 
-// 복원 모달 표시·핸들러 1회 바인딩. ESC = 처음부터 시작.
+// 복원 모달 표시·핸들러 1회 바인딩. ESC / 배경 클릭 = 처음부터 시작.
+// initReset과 같은 dismiss UX (ESC + background click) 보장.
 function showRestoreOverlay(onChoice) {
     var overlay = document.getElementById('restore-overlay');
     var yesBtn = document.getElementById('restore-yes');
@@ -226,15 +227,18 @@ function showRestoreOverlay(onChoice) {
         yesBtn.removeEventListener('click', onYes);
         noBtn.removeEventListener('click', onNo);
         document.removeEventListener('keydown', onKey);
+        overlay.removeEventListener('click', onBg);
         if (typeof onChoice === 'function') onChoice(yes);
     }
     function onYes() { close(true); }
-    function onNo() { close(false); }
+    function onNo()  { close(false); }
     function onKey(e) { if (e.key === 'Escape') close(false); }
+    function onBg(e)  { if (e.target === overlay) close(false); }
 
     yesBtn.addEventListener('click', onYes);
     noBtn.addEventListener('click', onNo);
     document.addEventListener('keydown', onKey);
+    overlay.addEventListener('click', onBg);
     overlay.hidden = false;
 }
 
@@ -376,19 +380,22 @@ function initReset() {
     var yesBtn = document.getElementById('confirm-yes');
     var noBtn = document.getElementById('confirm-no');
 
+    function close() { overlay.classList.remove('active'); }
+
     document.getElementById('reset-btn').addEventListener('click', function () {
         // Don't allow reset during grading
         if (GradingState.isRunning) return;
         overlay.classList.add('active');
     });
 
-    noBtn.addEventListener('click', function () {
-        overlay.classList.remove('active');
-    });
+    noBtn.addEventListener('click', close);
 
-    // Close on overlay background click
+    // Dismiss: background click 또는 ESC (showRestoreOverlay와 같은 UX).
     overlay.addEventListener('click', function (e) {
-        if (e.target === overlay) overlay.classList.remove('active');
+        if (e.target === overlay) close();
+    });
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && overlay.classList.contains('active')) close();
     });
 
     yesBtn.addEventListener('click', function () {
