@@ -2,11 +2,8 @@
 // - POST signup/login/logout : 인증 액션
 // - GET  me                  : 현재 세션 사용자 (없으면 null)
 //
-// AuthError 코드 → HTTP 상태 매핑:
-//   VALIDATION         → 400
-//   CONFLICT           → 409
-//   INVALID_CREDENTIALS→ 401
-//   AGE_RESTRICTED     → 400 (현재는 VALIDATION으로 흡수, 미래 분리 가능)
+// 에러 처리는 _respond.js의 errorHandler로 위임 (AuthError → 상태 자동 매핑).
+// 라우트는 throw 또는 next(e)만 신경.
 
 'use strict';
 
@@ -17,20 +14,8 @@ const { loginLimiter, signupLimiter } = require('../middleware/rateLimit');
 
 const router = express.Router();
 
-const STATUS_BY_CODE = {
-    VALIDATION: 400,
-    CONFLICT: 409,
-    INVALID_CREDENTIALS: 401,
-    AGE_RESTRICTED: 400,
-};
-
-function sendAuthError(res, e) {
-    const status = STATUS_BY_CODE[e.code] || 500;
-    res.status(status).json({ error: e.code, message: e.message });
-}
-
 // ─────── 가입 ───────
-router.post('/signup', signupLimiter, async (req, res) => {
+router.post('/signup', signupLimiter, async (req, res, next) => {
     try {
         const user = await auth.signup({
             username: req.body?.username,
@@ -43,14 +28,12 @@ router.post('/signup', signupLimiter, async (req, res) => {
         req.session.userId = user.id;
         res.status(201).json({ user });
     } catch (e) {
-        if (e instanceof auth.AuthError) return sendAuthError(res, e);
-        console.error('[POST /api/auth/signup]', e);
-        res.status(500).json({ error: 'INTERNAL', message: '서버 오류' });
+        next(e);
     }
 });
 
 // ─────── 로그인 ───────
-router.post('/login', loginLimiter, async (req, res) => {
+router.post('/login', loginLimiter, async (req, res, next) => {
     try {
         const user = await auth.login({
             username: req.body?.username,
@@ -59,20 +42,15 @@ router.post('/login', loginLimiter, async (req, res) => {
         req.session.userId = user.id;
         res.json({ user });
     } catch (e) {
-        if (e instanceof auth.AuthError) return sendAuthError(res, e);
-        console.error('[POST /api/auth/login]', e);
-        res.status(500).json({ error: 'INTERNAL', message: '서버 오류' });
+        next(e);
     }
 });
 
 // ─────── 로그아웃 ───────
-router.post('/logout', (req, res) => {
+router.post('/logout', (req, res, next) => {
     if (!req.session) return res.json({ ok: true });
     req.session.destroy((err) => {
-        if (err) {
-            console.error('[POST /api/auth/logout]', err);
-            return res.status(500).json({ error: 'INTERNAL', message: '로그아웃 실패' });
-        }
+        if (err) return next(err);
         res.clearCookie('code205.sid');
         res.json({ ok: true });
     });

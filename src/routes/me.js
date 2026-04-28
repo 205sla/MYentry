@@ -2,11 +2,14 @@
 // (현재 사용자 정보 자체는 /api/auth/me에서 유지 — Phase 2 호환.)
 //
 // 모든 라우트가 requireAuth로 보호.
+// 에러 처리는 _respond.js의 errorHandler가 일괄 — 라우트는 throw / next(e) 또는
+// 명시적 fail() 호출만 사용.
 
 'use strict';
 
 const express = require('express');
 const { requireAuth } = require('../middleware/auth');
+const { fail } = require('./_respond');
 const problemService = require('../services/problemService');
 const solutionService = require('../services/solutionService');
 const userService = require('../services/userService');
@@ -29,36 +32,33 @@ router.get('/', (req, res) => {
 // ─────── PATCH /api/me ───────
 // body: { email?, displayName? } — 키가 있으면 갱신, 빈 문자열은 NULL.
 // username·birth_year는 불변.
-router.patch('/', (req, res) => {
+router.patch('/', (req, res, next) => {
     const patch = {};
     if ('email' in (req.body || {})) {
         const err = auth.validateEmail(req.body.email);
-        if (err) return res.status(400).json({ error: 'VALIDATION', message: 'email: ' + err });
+        if (err) return fail(res, 400, 'VALIDATION', 'email: ' + err);
         patch.email = req.body.email;
     }
     if ('displayName' in (req.body || {})) {
         const err = auth.validateDisplayName(req.body.displayName);
-        if (err) return res.status(400).json({ error: 'VALIDATION', message: 'displayName: ' + err });
+        if (err) return fail(res, 400, 'VALIDATION', 'displayName: ' + err);
         patch.displayName = req.body.displayName;
     }
     if (Object.keys(patch).length === 0) {
-        return res.status(400).json({ error: 'VALIDATION', message: '변경할 필드가 없습니다.' });
+        return fail(res, 400, 'VALIDATION', '변경할 필드가 없습니다.');
     }
     try {
         const updated = userService.updateUser(req.user.id, patch);
         res.json({ user: userService.stripSecret(updated) });
     } catch (e) {
-        if (/UNIQUE constraint failed/.test(e.message)) {
-            return res.status(409).json({ error: 'CONFLICT', message: '이미 사용 중인 이메일입니다.' });
-        }
-        console.error('[PATCH /api/me]', e);
-        res.status(500).json({ error: 'INTERNAL', message: '서버 오류' });
+        // UNIQUE 제약 위반은 errorHandler가 자동 409 처리.
+        next(e);
     }
 });
 
 // ─────── POST /api/me/password ───────
 // body: { currentPassword, newPassword }
-router.post('/password', async (req, res) => {
+router.post('/password', async (req, res, next) => {
     try {
         await auth.changePassword(req.user.id, {
             currentPassword: req.body?.currentPassword,
@@ -66,12 +66,7 @@ router.post('/password', async (req, res) => {
         });
         res.json({ ok: true });
     } catch (e) {
-        if (e instanceof auth.AuthError) {
-            const status = e.code === 'VALIDATION' ? 400 : 401;
-            return res.status(status).json({ error: e.code, message: e.message });
-        }
-        console.error('[POST /api/me/password]', e);
-        res.status(500).json({ error: 'INTERNAL', message: '서버 오류' });
+        next(e);
     }
 });
 
@@ -81,14 +76,14 @@ router.post('/password', async (req, res) => {
 router.post('/submissions/:problemId', (req, res) => {
     const id = problemService.padId(req.params.problemId);
     if (!problemService.isValidId(req.params.problemId) || !problemService.exists(id)) {
-        return res.status(404).json({ error: 'NOT_FOUND', message: '존재하지 않는 문제입니다.' });
+        return fail(res, 404, 'NOT_FOUND', '존재하지 않는 문제입니다.');
     }
     const code = req.body?.code;
     if (typeof code !== 'string' || code.length === 0) {
-        return res.status(400).json({ error: 'VALIDATION', message: 'code: 비어있을 수 없습니다.' });
+        return fail(res, 400, 'VALIDATION', 'code: 비어있을 수 없습니다.');
     }
     if (Buffer.byteLength(code, 'utf8') > CODE_MAX_BYTES) {
-        return res.status(413).json({ error: 'PAYLOAD_TOO_LARGE', message: '코드가 100KB를 초과합니다.' });
+        return fail(res, 413, 'PAYLOAD_TOO_LARGE', '코드가 100KB를 초과합니다.');
     }
     const created = submissionService.saveSubmission(req.user.id, id, code);
     res.status(created ? 201 : 200).json({ ok: true, created });
@@ -106,11 +101,11 @@ router.get('/submissions', (req, res) => {
 router.get('/submissions/:problemId', (req, res) => {
     const id = problemService.padId(req.params.problemId);
     if (!problemService.isValidId(req.params.problemId)) {
-        return res.status(404).json({ error: 'NOT_FOUND', message: '잘못된 문제 번호입니다.' });
+        return fail(res, 404, 'NOT_FOUND', '잘못된 문제 번호입니다.');
     }
     const row = submissionService.getSubmission(req.user.id, id);
     if (!row) {
-        return res.status(404).json({ error: 'NOT_FOUND', message: '저장된 코드가 없습니다.' });
+        return fail(res, 404, 'NOT_FOUND', '저장된 코드가 없습니다.');
     }
     res.json(row);
 });
@@ -132,21 +127,23 @@ router.delete('/submissions/:problemId', (req, res) => {
 // ─────── DELETE /api/me ───────
 // body: { password } — 비밀번호 재확인 후 삭제.
 // 성공 시 세션 destroy + 쿠키 정리.
-router.delete('/', async (req, res) => {
+router.delete('/', async (req, res, next) => {
     try {
         const ok = await auth.verifyPassword(req.user.id, req.body?.password || '');
         if (!ok) {
-            return res.status(401).json({ error: 'INVALID_CREDENTIALS', message: '비밀번호가 일치하지 않습니다.' });
+            return fail(res, 401, 'INVALID_CREDENTIALS', '비밀번호가 일치하지 않습니다.');
         }
         userService.deleteUser(req.user.id);
         req.session.destroy((err) => {
-            if (err) console.error('[DELETE /api/me] session destroy', err);
+            if (err) {
+                console.error('[DELETE /api/me] session destroy', err);
+                // 세션 삭제 실패해도 사용자는 삭제됨 — 200으로 응답하되 로그 남김.
+            }
             res.clearCookie('code205.sid');
             res.json({ ok: true });
         });
     } catch (e) {
-        console.error('[DELETE /api/me]', e);
-        res.status(500).json({ error: 'INTERNAL', message: '서버 오류' });
+        next(e);
     }
 });
 
@@ -163,7 +160,7 @@ router.get('/solved', (req, res) => {
 router.post('/solved/:problemId', (req, res) => {
     const id = problemService.padId(req.params.problemId);
     if (!problemService.isValidId(req.params.problemId) || !problemService.exists(id)) {
-        return res.status(404).json({ error: 'NOT_FOUND', message: '존재하지 않는 문제입니다.' });
+        return fail(res, 404, 'NOT_FOUND', '존재하지 않는 문제입니다.');
     }
     const created = solutionService.markSolved(req.user.id, id);
     res.status(created ? 201 : 200).json({ ok: true, created });

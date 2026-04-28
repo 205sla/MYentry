@@ -23,6 +23,7 @@ const spritesRouter = require('./routes/sprites');
 const exportRouter = require('./routes/export');
 const authRouter = require('./routes/auth');
 const meRouter = require('./routes/me');
+const { errorHandler } = require('./routes/_respond');
 
 function defaultSessionStore() {
     return new SQLiteStore({
@@ -121,6 +122,10 @@ function createApp(opts = {}) {
     app.use('/api/export', exportRouter);
     app.use('/api/auth', authRouter);
     app.use('/api/me', meRouter);
+
+    // 모든 라우터 뒤 — next(e) 또는 throw된 에러를 일괄 처리.
+    // AuthError는 status 매핑, UNIQUE 제약은 409, 그 외는 500.
+    app.use(errorHandler);
 
     return app;
 }
