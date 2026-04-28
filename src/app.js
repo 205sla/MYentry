@@ -15,6 +15,7 @@ const SQLiteStore = require('connect-sqlite3')(session);
 const {
     PUBLIC_DIR,
     DB_PATH, SESSION_SECRET, SESSION_COOKIE_SECURE,
+    isEditorScope,
 } = require('./config');
 
 const seoRouter = require('./routes/seo');
@@ -23,6 +24,7 @@ const spritesRouter = require('./routes/sprites');
 const exportRouter = require('./routes/export');
 const authRouter = require('./routes/auth');
 const meRouter = require('./routes/me');
+const { errorHandler } = require('./routes/_respond');
 
 function defaultSessionStore() {
     return new SQLiteStore({
@@ -75,24 +77,19 @@ function createApp(opts = {}) {
         crossOriginEmbedderPolicy: false,
     });
 
-    function isEditorScope(reqPath) {
-        return reqPath === '/editor.html' || reqPath.startsWith('/lib/');
-    }
-
+    // isEditorScope는 config.js가 단일 source of truth — 테스트도 같은 함수 참조.
     app.use((req, res, next) => {
         if (isEditorScope(req.path)) return helmetEditor(req, res, next);
         helmetStrict(req, res, next);
     });
 
-    // 바디 파서 분기:
-    //   - /api/export        : 별도 (라우트가 자체 처리, 25MB)
-    //   - /api/me/submissions: 100KB (Entry.exportProject JSON 수용)
-    //   - 그 외              : 30KB (기본 안전선)
+    // 바디 파서 — 글로벌은 30KB 안전선만 적용.
+    //   - /api/export       : 라우트가 자체 25MB 처리 (이 미들웨어 통과 X)
+    //   - /api/me/submissions: 라우트가 자체 100KB express.json 사용 (me.js 참조)
+    //   - 그 외              : 30KB
     app.use((req, res, next) => {
         if (req.path === '/api/export') return next();
-        if (req.path.startsWith('/api/me/submissions')) {
-            return express.json({ limit: '100kb' })(req, res, next);
-        }
+        if (req.path.startsWith('/api/me/submissions')) return next();
         express.json({ limit: '30kb' })(req, res, next);
     });
 
@@ -121,6 +118,10 @@ function createApp(opts = {}) {
     app.use('/api/export', exportRouter);
     app.use('/api/auth', authRouter);
     app.use('/api/me', meRouter);
+
+    // 모든 라우터 뒤 — next(e) 또는 throw된 에러를 일괄 처리.
+    // AuthError는 status 매핑, UNIQUE 제약은 409, 그 외는 500.
+    app.use(errorHandler);
 
     return app;
 }

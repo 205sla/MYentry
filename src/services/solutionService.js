@@ -5,6 +5,7 @@
 'use strict';
 
 const { getDb } = require('../db/init');
+const userScoped = require('../db/userScoped');
 
 /**
  * 해결 기록 추가 (멱등). 이미 있으면 IGNORE.
@@ -59,8 +60,7 @@ function listSolutions(userId, opts = {}) {
  * 한 사용자의 해결 개수.
  */
 function countByUser(userId, opts = {}) {
-    const db = opts.db || getDb();
-    return db.prepare(`SELECT COUNT(*) AS n FROM solutions WHERE user_id = ?`).get(userId).n;
+    return userScoped.countByUser('solutions', userId, opts);
 }
 
 /**
@@ -79,9 +79,7 @@ function isSolved(userId, problemId, opts = {}) {
  * "프로필에서 풀이 데이터 초기화" 액션용.
  */
 function deleteAllByUser(userId, opts = {}) {
-    const db = opts.db || getDb();
-    const info = db.prepare('DELETE FROM solutions WHERE user_id = ?').run(userId);
-    return info.changes;
+    return userScoped.deleteAllByUser('solutions', userId, opts);
 }
 
 module.exports = {

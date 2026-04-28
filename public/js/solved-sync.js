@@ -57,14 +57,14 @@
     function markRemote(idNum) {
         var n = parseInt(idNum, 10);
         if (!n) return Promise.resolve(false);
-        return fetch('/api/me/solved/' + padId(n), {
-            method: 'POST',
-            credentials: 'same-origin',
-        }).then(function (r) {
-            if (!r.ok && r.status !== 401) {
+        return window.Api.postJson(
+            window.Api.URL.ME_SOLVED_ID(padId(n))
+        ).then(function (r) {
+            var ok = r.status === 200 || r.status === 201;
+            if (!ok && r.status !== 401) {
                 console.warn('[SolvedSync.markRemote]', n, 'HTTP', r.status);
             }
-            return r.ok;
+            return ok;
         }).catch(function (err) {
             console.warn('[SolvedSync.markRemote]', n, 'fetch failed', err);
             return false;
@@ -76,11 +76,11 @@
     //   added: 서버에서 받아 localStorage에 추가된 개수
     //   uploaded: localStorage에서 서버로 업로드한 개수
     function syncWithServer() {
-        return fetch('/api/me/solved', { credentials: 'same-origin' })
+        return window.Api.getJson(window.Api.URL.ME_SOLVED)
             .then(function (r) {
                 if (r.status === 401) return { isLoggedIn: false };
-                if (!r.ok) throw new Error('me/solved ' + r.status);
-                return r.json().then(function (data) { return { isLoggedIn: true, server: data.problems || [] }; });
+                if (r.status !== 200) throw new Error('me/solved ' + r.status);
+                return { isLoggedIn: true, server: (r.data && r.data.problems) || [] };
             })
             .then(function (state) {
                 if (!state.isLoggedIn) {
@@ -107,10 +107,8 @@
                 // 2. 로컬 → 서버 (로컬에만 있는 것) — 비동기 fan-out
                 var toUpload = localPadded.filter(function (id) { return !serverSet[id]; });
                 var uploadPromises = toUpload.map(function (id) {
-                    return fetch('/api/me/solved/' + id, {
-                        method: 'POST',
-                        credentials: 'same-origin',
-                    }).catch(function () { /* 일부 실패해도 나머지는 진행 */ });
+                    return window.Api.postJson(window.Api.URL.ME_SOLVED_ID(id))
+                        .catch(function () { /* 일부 실패해도 나머지는 진행 */ });
                 });
 
                 return Promise.all(uploadPromises).then(function () {

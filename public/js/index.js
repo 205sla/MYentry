@@ -17,18 +17,15 @@ var state = {
 // ─────── 유틸 ───────
 
 function getSolvedSet() {
-    try {
-        var list = JSON.parse(localStorage.getItem('entry:solved') || '[]');
-        if (!Array.isArray(list)) return {};
-        var set = {};
-        list.forEach(function (id) { set[parseInt(id, 10)] = true; });
-        return set;
-    } catch (e) { return {}; }
+    // SolvedSync.loadLocal이 storage 키('entry:solved') + 정규화를 단독 책임.
+    // 여기는 set 형태(O(1) 조회)로만 변환.
+    var set = {};
+    window.SolvedSync.loadLocal().forEach(function (n) { set[n] = true; });
+    return set;
 }
 
-function escapeHtml(s) {
-    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-}
+// escapeHtml은 dom-escape.js가 window에 노출 — index.html에서 이 파일보다 먼저 로드.
+var escapeHtml = window.escapeHtml;
 
 function defaultFilter() {
     return { difficulty: { 0: true, 1: true, 2: true, 3: true, 4: true, 5: true }, solved: 'all' };
@@ -186,10 +183,12 @@ function renderGrid(problems, solved, filter) {
 
 // ─────── 부트스트랩 ───────
 
-fetch('/api/problems')
+window.Api.getJson(window.Api.URL.PROBLEMS)
     .then(function (r) {
-        if (!r.ok) throw new Error('HTTP ' + r.status);
-        return r.json();
+        if (r.status !== 200 || !Array.isArray(r.data)) {
+            throw new Error('HTTP ' + r.status);
+        }
+        return r.data;
     })
     .then(function (problems) {
         state.problems = problems;

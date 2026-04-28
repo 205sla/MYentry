@@ -7,11 +7,8 @@
 (function () {
     'use strict';
 
-    function escapeHtml(s) {
-        return String(s).replace(/[&<>"']/g, function (m) {
-            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m];
-        });
-    }
+    // escapeHtml은 dom-escape.js가 window에 노출 — HTML에서 이 파일보다 먼저 로드.
+    var escapeHtml = window.escapeHtml;
 
     // ?next=PATH 안전 인코딩 — path-only로만 보장 (location.pathname은 항상 path).
     function nextQuery(currentPath) {
@@ -69,10 +66,7 @@
 
         logoutBtn.addEventListener('click', async function () {
             try {
-                await fetch('/api/auth/logout', {
-                    method: 'POST',
-                    credentials: 'same-origin',
-                });
+                await window.Api.postJson(window.Api.URL.AUTH_LOGOUT);
             } catch (_) { /* 네트워크 오류는 무시 — 페이지 reload만 진행 */ }
             location.reload();
         });
@@ -104,9 +98,9 @@
         renderLoggedOut(menu, path);
 
         // 실제 로그인 상태 조회
-        fetch('/api/auth/me', { credentials: 'same-origin' })
-            .then(function (r) { return r.ok ? r.json() : { user: null }; })
-            .then(function (data) {
+        window.Api.getJson(window.Api.URL.AUTH_ME)
+            .then(function (r) {
+                var data = r.status === 200 ? r.data : { user: null };
                 if (data && data.user) {
                     renderLoggedIn(menu, data.user);
                 }

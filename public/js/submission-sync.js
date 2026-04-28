@@ -10,9 +10,8 @@
 
     var MAX_BYTES = 100 * 1024; // 서버 라우트 한도와 일치
 
-    function padId(n) {
-        return String(parseInt(n, 10)).padStart(3, '0');
-    }
+    // padId는 SolvedSync가 노출 — solved-sync.js를 먼저 로드해야 함 (HTML 순서 보장).
+    var padId = window.SolvedSync.padId;
 
     function saveSubmission(idNum) {
         var n = parseInt(idNum, 10);
@@ -59,16 +58,15 @@
             return Promise.resolve(false);
         }
 
-        return fetch('/api/me/submissions/' + padId(n), {
-            method: 'POST',
-            credentials: 'same-origin',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ code: code }),
-        }).then(function (r) {
-            if (!r.ok && r.status !== 401) {
+        return window.Api.postJson(
+            window.Api.URL.ME_SUBMISSIONS_ID(padId(n)),
+            { code: code }
+        ).then(function (r) {
+            var ok = r.status === 200 || r.status === 201;
+            if (!ok && r.status !== 401) {
                 console.warn('[SubmissionSync.saveSubmission]', n, 'HTTP', r.status);
             }
-            return r.ok; // 401(비로그인), 413(초과), 404(없는 문제) 모두 false
+            return ok; // 401(비로그인), 413(초과), 404(없는 문제) 모두 false
         }).catch(function (err) {
             console.warn('[SubmissionSync.saveSubmission]', n, 'fetch failed', err);
             return false;
@@ -83,23 +81,21 @@
         var n = parseInt(idNum, 10);
         if (!n) return Promise.resolve(null);
 
-        return fetch('/api/me/submissions/' + padId(n), {
-            credentials: 'same-origin',
-        }).then(function (r) {
+        return window.Api.getJson(
+            window.Api.URL.ME_SUBMISSIONS_ID(padId(n))
+        ).then(function (r) {
             if (r.status === 401 || r.status === 404) return null;
-            if (!r.ok) {
+            if (r.status !== 200) {
                 console.warn('[SubmissionSync.loadMySubmission] HTTP', r.status);
                 return null;
             }
-            return r.json().then(function (data) {
-                if (!data || typeof data.code !== 'string') return null;
-                try {
-                    return JSON.parse(data.code);
-                } catch (e) {
-                    console.warn('[SubmissionSync.loadMySubmission] JSON parse failed', e);
-                    return null;
-                }
-            });
+            if (!r.data || typeof r.data.code !== 'string') return null;
+            try {
+                return JSON.parse(r.data.code);
+            } catch (e) {
+                console.warn('[SubmissionSync.loadMySubmission] JSON parse failed', e);
+                return null;
+            }
         }).catch(function (err) {
             console.warn('[SubmissionSync.loadMySubmission] fetch failed', err);
             return null;

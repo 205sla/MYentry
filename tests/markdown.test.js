@@ -29,6 +29,15 @@ describe('escapeHtml', () => {
         assert.equal(escapeHtml(null), 'null');
         assert.equal(escapeHtml(undefined), 'undefined');
     });
+
+    it('따옴표(") 와 작은따옴표(\') 도 이스케이프 — attribute 컨텍스트 보호', () => {
+        assert.equal(escapeHtml('a"b\'c'), 'a&quot;b&#39;c');
+        // contributor 이름에 ' 들어가도 onerror=... 같은 attribute escape 차단
+        assert.equal(
+            escapeHtml("O'Brien"),
+            'O&#39;Brien'
+        );
+    });
 });
 
 describe('renderMarkdown', () => {

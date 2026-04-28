@@ -28,16 +28,12 @@
         });
     }
 
-    async function postJson(method, url, body) {
-        var res = await fetch(url, {
-            method: method,
-            credentials: 'same-origin',
-            headers: { 'Content-Type': 'application/json' },
-            body: body ? JSON.stringify(body) : undefined,
-        });
-        var data = {};
-        try { data = await res.json(); } catch (_) { /* */ }
-        return { status: res.status, data: data };
+    // method 별 위임 — Api.postJson/patchJson/deleteJson 사용.
+    function postJson(method, url, body) {
+        var fn = method === 'PATCH' ? window.Api.patchJson
+               : method === 'DELETE' ? window.Api.deleteJson
+               : window.Api.postJson;
+        return fn(url, body);
     }
 
     function setBusy(btn, busy, originalLabel) {
@@ -62,7 +58,7 @@
         solvedIds.forEach(function (id) { solvedSet[id] = true; });
 
         // padId 정규화 (서버는 "001" 형식, 카탈로그는 정수일 수도)
-        function pad(n) { return String(parseInt(n, 10)).padStart(3, '0'); }
+        var pad = window.SolvedSync.padId;
 
         var byDiff = [0, 0, 0, 0, 0, 0]; // 0~5
         var solvedByDiff = [0, 0, 0, 0, 0, 0];
@@ -114,15 +110,15 @@
     // 통계 + 제출 목록을 독립적으로 호출 — 한쪽 fetch 실패해도 다른 쪽은 표시.
     // problems 카탈로그는 한 번만 받아 두 쪽이 공유.
     function loadStatsAndSubmissions() {
-        var problemsPromise = fetch('/api/problems')
-            .then(function (r) { return r.ok ? r.json() : []; })
+        var problemsPromise = window.Api.getJson(window.Api.URL.PROBLEMS)
+            .then(function (r) { return r.status === 200 && Array.isArray(r.data) ? r.data : []; })
             .catch(function (err) {
                 console.warn('[profile] /api/problems failed', err);
                 return [];
             });
 
-        var solvedPromise = fetch('/api/me/solved', { credentials: 'same-origin' })
-            .then(function (r) { return r.ok ? r.json() : { problems: [] }; })
+        var solvedPromise = window.Api.getJson(window.Api.URL.ME_SOLVED)
+            .then(function (r) { return r.status === 200 ? r.data : { problems: [] }; })
             .catch(function (err) {
                 console.warn('[profile] /api/me/solved failed', err);
                 return { problems: [] };
@@ -142,11 +138,8 @@
     }
 
     // ─────── 내가 푼 코드 목록 ───────
-    function escapeHtml(s) {
-        return String(s).replace(/[&<>"']/g, function (m) {
-            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m];
-        });
-    }
+    // escapeHtml은 dom-escape.js가 window에 노출 — profile.html에서 먼저 로드.
+    var escapeHtml = window.escapeHtml;
 
     function fmtDate(epochSec) {
         var d = new Date(epochSec * 1000);
@@ -163,13 +156,12 @@
         // problems: 통계 단계에서 받은 [{id, title, difficulty, ...}, ...]
         var titleByPad = {};
         problems.forEach(function (p) {
-            var pad = String(parseInt(p.id, 10)).padStart(3, '0');
-            titleByPad[pad] = p.title || '';
+            titleByPad[window.SolvedSync.padId(p.id)] = p.title || '';
         });
 
-        fetch('/api/me/submissions', { credentials: 'same-origin' })
-            .then(function (r) { return r.ok ? r.json() : { submissions: [] }; })
-            .then(function (data) {
+        window.Api.getJson(window.Api.URL.ME_SUBMISSIONS)
+            .then(function (r) {
+                var data = r.status === 200 ? r.data : { submissions: [] };
                 renderSubmissions(data.submissions || [], titleByPad);
             })
             .catch(function () {
@@ -201,19 +193,12 @@
 
     // ─────── 부트 ───────
     document.addEventListener('DOMContentLoaded', function () {
-        // me 호출 → 비로그인이면 redirect
-        fetch('/api/me', { credentials: 'same-origin' })
+        // me 호출 → 비로그인이면 Api가 자동 redirect.
+        window.Api.getJson(window.Api.URL.ME, { on401: 'redirect-login' })
             .then(function (r) {
-                if (r.status === 401) {
-                    location.href = '/login.html?next=' + encodeURIComponent('/profile.html');
-                    return null;
-                }
-                if (!r.ok) throw new Error('me ' + r.status);
-                return r.json();
-            })
-            .then(function (data) {
-                if (!data) return;
-                fillUserForm(data.user);
+                if (r.redirected) return;
+                if (r.status !== 200) throw new Error('me ' + r.status);
+                fillUserForm(r.data.user);
                 loadStatsAndSubmissions();
             })
             .catch(function () {
@@ -232,7 +217,7 @@
             };
             setBusy(btn, true, '정보 저장');
             try {
-                var r = await postJson('PATCH', '/api/me', payload);
+                var r = await postJson('PATCH', window.Api.URL.ME, payload);
                 if (r.status === 200) {
                     fillUserForm(r.data.user);
                     show($('infoSuccess'), '정보가 저장되었습니다.');
@@ -261,7 +246,7 @@
             }
             setBusy(btn, true, '비밀번호 변경');
             try {
-                var r = await postJson('POST', '/api/me/password', {
+                var r = await postJson('POST', window.Api.URL.ME_PASSWORD, {
                     currentPassword: current,
                     newPassword: nw,
                 });
@@ -287,8 +272,8 @@
             var btn = $('resetBtn');
             setBusy(btn, true, '모든 풀이 데이터 삭제');
             try {
-                var solvedRes = await postJson('DELETE', '/api/me/solved');
-                var subsRes = await postJson('DELETE', '/api/me/submissions');
+                var solvedRes = await postJson('DELETE', window.Api.URL.ME_SOLVED);
+                var subsRes = await postJson('DELETE', window.Api.URL.ME_SUBMISSIONS);
                 if (solvedRes.status === 200 && subsRes.status === 200) {
                     // localStorage entry:solved도 같이 정리 — 안 그러면 다음 로드 시
                     // syncWithServer가 다시 서버로 업로드.
@@ -323,7 +308,7 @@
             }
             setBusy(btn, true, '계정 영구 삭제');
             try {
-                var r = await postJson('DELETE', '/api/me', { password: pw });
+                var r = await postJson('DELETE', window.Api.URL.ME, { password: pw });
                 if (r.status === 200) {
                     // 로컬 entry:solved도 정리 (다른 사용자 데이터 누설 방지)
                     try { localStorage.removeItem('entry:solved'); } catch (_) {}
