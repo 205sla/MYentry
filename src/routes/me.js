@@ -55,7 +55,10 @@ router.patch('/', (req, res, next) => {
         const updated = userService.updateUser(req.user.id, patch);
         res.json({ user: userService.stripSecret(updated) });
     } catch (e) {
-        // UNIQUE 제약 위반은 errorHandler가 자동 409 처리.
+        // 이메일 컨텍스트 메시지를 명시적으로 — errorHandler의 generic CONFLICT보다 친절.
+        if (/UNIQUE constraint failed/.test(e.message)) {
+            return fail(res, 409, 'CONFLICT', '이미 사용 중인 이메일입니다.');
+        }
         next(e);
     }
 });
