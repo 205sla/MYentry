@@ -609,24 +609,14 @@ function showGradeModal() {
 // Persist a solved problem id locally + sync to server (if logged in).
 // SolvedSync 모듈이 두 저장소(localStorage·서버)를 동시에 처리.
 // 비로그인이거나 네트워크 실패면 markRemote는 silent fail — 다음 페이지 로드 시 동기화.
+//
+// editor.html에서 solved-sync.js를 editor.js보다 먼저 동기 <script>로 로드하므로
+// window.SolvedSync는 항상 존재. (확신 못할 때만 가드 추가.)
 function markProblemSolved(id) {
     var idNum = parseInt(id, 10);
     if (!idNum) return;
-    if (window.SolvedSync) {
-        window.SolvedSync.markLocal(idNum);
-        window.SolvedSync.markRemote(idNum);
-    } else {
-        // SolvedSync 로딩 실패 fallback (구버전 동작)
-        try {
-            var raw = localStorage.getItem('entry:solved') || '[]';
-            var list = JSON.parse(raw);
-            if (!Array.isArray(list)) list = [];
-            if (list.indexOf(idNum) === -1) {
-                list.push(idNum);
-                localStorage.setItem('entry:solved', JSON.stringify(list));
-            }
-        } catch (e) { /* quota or privacy mode — silent fail */ }
-    }
+    window.SolvedSync.markLocal(idNum);
+    window.SolvedSync.markRemote(idNum);
 }
 
 function renderGradeResults(results, running, mode) {
