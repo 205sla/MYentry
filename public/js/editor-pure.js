@@ -6,8 +6,12 @@
 
 // HTML 특수문자 이스케이프. XSS 방지 핵심 — 사용자 입력이나 문제 이름이
 // innerHTML로 주입되기 전에 반드시 거쳐야 함.
+// 5문자 표준 (& < > " ') 모두 처리 — attribute 컨텍스트까지 안전하게 커버.
+// dom-escape.js의 window.escapeHtml과 동일 동작. 이 파일은 Node 테스트 호환을
+// 위해 자체 정의를 유지.
 function escapeHtml(s) {
-    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    var map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+    return String(s).replace(/[&<>"']/g, function (m) { return map[m]; });
 }
 
 // Minimal Markdown renderer (headings, bold, italic, inline code, code block, lists).
@@ -19,9 +23,7 @@ function escapeHtml(s) {
 //    · 반드시 한 줄 전체가 해당 태그여야 허용 — 인라인 혼용은 이스케이프됨
 function renderMarkdown(md) {
     if (!md) return '';
-    var escape = function (s) {
-        return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    };
+    var escape = escapeHtml;
     var lines = md.split('\n');
     var html = '', inCode = false, inList = false, listType = '';
     for (var i = 0; i < lines.length; i++) {

@@ -142,11 +142,8 @@
     }
 
     // ─────── 내가 푼 코드 목록 ───────
-    function escapeHtml(s) {
-        return String(s).replace(/[&<>"']/g, function (m) {
-            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m];
-        });
-    }
+    // escapeHtml은 dom-escape.js가 window에 노출 — profile.html에서 먼저 로드.
+    var escapeHtml = window.escapeHtml;
 
     function fmtDate(epochSec) {
         var d = new Date(epochSec * 1000);

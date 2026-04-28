@@ -26,9 +26,8 @@ function getSolvedSet() {
     } catch (e) { return {}; }
 }
 
-function escapeHtml(s) {
-    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-}
+// escapeHtml은 dom-escape.js가 window에 노출 — index.html에서 이 파일보다 먼저 로드.
+var escapeHtml = window.escapeHtml;
 
 function defaultFilter() {
     return { difficulty: { 0: true, 1: true, 2: true, 3: true, 4: true, 5: true }, solved: 'all' };

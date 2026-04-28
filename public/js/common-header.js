@@ -7,11 +7,8 @@
 (function () {
     'use strict';
 
-    function escapeHtml(s) {
-        return String(s).replace(/[&<>"']/g, function (m) {
-            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m];
-        });
-    }
+    // escapeHtml은 dom-escape.js가 window에 노출 — HTML에서 이 파일보다 먼저 로드.
+    var escapeHtml = window.escapeHtml;
 
     // ?next=PATH 안전 인코딩 — path-only로만 보장 (location.pathname은 항상 path).
     function nextQuery(currentPath) {
