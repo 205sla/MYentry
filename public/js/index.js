@@ -17,13 +17,11 @@ var state = {
 // ─────── 유틸 ───────
 
 function getSolvedSet() {
-    try {
-        var list = JSON.parse(localStorage.getItem('entry:solved') || '[]');
-        if (!Array.isArray(list)) return {};
-        var set = {};
-        list.forEach(function (id) { set[parseInt(id, 10)] = true; });
-        return set;
-    } catch (e) { return {}; }
+    // SolvedSync.loadLocal이 storage 키('entry:solved') + 정규화를 단독 책임.
+    // 여기는 set 형태(O(1) 조회)로만 변환.
+    var set = {};
+    window.SolvedSync.loadLocal().forEach(function (n) { set[n] = true; });
+    return set;
 }
 
 // escapeHtml은 dom-escape.js가 window에 노출 — index.html에서 이 파일보다 먼저 로드.
