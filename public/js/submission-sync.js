@@ -10,9 +10,8 @@
 
     var MAX_BYTES = 100 * 1024; // 서버 라우트 한도와 일치
 
-    function padId(n) {
-        return String(parseInt(n, 10)).padStart(3, '0');
-    }
+    // padId는 SolvedSync가 노출 — solved-sync.js를 먼저 로드해야 함 (HTML 순서 보장).
+    var padId = window.SolvedSync.padId;
 
     function saveSubmission(idNum) {
         var n = parseInt(idNum, 10);

@@ -58,7 +58,7 @@
         solvedIds.forEach(function (id) { solvedSet[id] = true; });
 
         // padId 정규화 (서버는 "001" 형식, 카탈로그는 정수일 수도)
-        function pad(n) { return String(parseInt(n, 10)).padStart(3, '0'); }
+        var pad = window.SolvedSync.padId;
 
         var byDiff = [0, 0, 0, 0, 0, 0]; // 0~5
         var solvedByDiff = [0, 0, 0, 0, 0, 0];
@@ -156,8 +156,7 @@
         // problems: 통계 단계에서 받은 [{id, title, difficulty, ...}, ...]
         var titleByPad = {};
         problems.forEach(function (p) {
-            var pad = String(parseInt(p.id, 10)).padStart(3, '0');
-            titleByPad[pad] = p.title || '';
+            titleByPad[window.SolvedSync.padId(p.id)] = p.title || '';
         });
 
         window.Api.getJson(window.Api.URL.ME_SUBMISSIONS)
