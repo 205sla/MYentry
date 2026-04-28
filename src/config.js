@@ -26,6 +26,19 @@ const DB_PATH = path.isAbsolute(DB_PATH_RAW)
 const SESSION_SECRET = process.env.SESSION_SECRET || 'dev-only-insecure-secret-change-me';
 const SESSION_COOKIE_SECURE = process.env.SESSION_COOKIE_SECURE === 'true';
 
+// ─────── CSP scope (Phase 4 정리) ───────
+// Editor 자원은 CSP 비활성, 정적 페이지·API는 strict CSP — 분기를 한 곳에서.
+// app.js와 csp.test.js가 같은 정의 참조해 회귀 위험 차단.
+const EDITOR_SCOPE_PATHS = ['/editor.html'];
+const EDITOR_SCOPE_PREFIXES = ['/lib/'];
+function isEditorScope(reqPath) {
+    if (EDITOR_SCOPE_PATHS.indexOf(reqPath) !== -1) return true;
+    for (let i = 0; i < EDITOR_SCOPE_PREFIXES.length; i++) {
+        if (reqPath.startsWith(EDITOR_SCOPE_PREFIXES[i])) return true;
+    }
+    return false;
+}
+
 module.exports = {
     ROOT_DIR,
     PUBLIC_DIR,
@@ -37,4 +50,7 @@ module.exports = {
     DB_PATH,
     SESSION_SECRET,
     SESSION_COOKIE_SECURE,
+    EDITOR_SCOPE_PATHS,
+    EDITOR_SCOPE_PREFIXES,
+    isEditorScope,
 };

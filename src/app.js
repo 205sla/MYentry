@@ -15,6 +15,7 @@ const SQLiteStore = require('connect-sqlite3')(session);
 const {
     PUBLIC_DIR,
     DB_PATH, SESSION_SECRET, SESSION_COOKIE_SECURE,
+    isEditorScope,
 } = require('./config');
 
 const seoRouter = require('./routes/seo');
@@ -76,10 +77,7 @@ function createApp(opts = {}) {
         crossOriginEmbedderPolicy: false,
     });
 
-    function isEditorScope(reqPath) {
-        return reqPath === '/editor.html' || reqPath.startsWith('/lib/');
-    }
-
+    // isEditorScope는 config.js가 단일 source of truth — 테스트도 같은 함수 참조.
     app.use((req, res, next) => {
         if (isEditorScope(req.path)) return helmetEditor(req, res, next);
         helmetStrict(req, res, next);
