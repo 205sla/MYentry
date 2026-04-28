@@ -185,10 +185,12 @@ function renderGrid(problems, solved, filter) {
 
 // ─────── 부트스트랩 ───────
 
-fetch('/api/problems')
+window.Api.getJson(window.Api.URL.PROBLEMS)
     .then(function (r) {
-        if (!r.ok) throw new Error('HTTP ' + r.status);
-        return r.json();
+        if (r.status !== 200 || !Array.isArray(r.data)) {
+            throw new Error('HTTP ' + r.status);
+        }
+        return r.data;
     })
     .then(function (problems) {
         state.problems = problems;

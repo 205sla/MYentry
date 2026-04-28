@@ -66,10 +66,7 @@
 
         logoutBtn.addEventListener('click', async function () {
             try {
-                await fetch('/api/auth/logout', {
-                    method: 'POST',
-                    credentials: 'same-origin',
-                });
+                await window.Api.postJson(window.Api.URL.AUTH_LOGOUT);
             } catch (_) { /* 네트워크 오류는 무시 — 페이지 reload만 진행 */ }
             location.reload();
         });
@@ -101,9 +98,9 @@
         renderLoggedOut(menu, path);
 
         // 실제 로그인 상태 조회
-        fetch('/api/auth/me', { credentials: 'same-origin' })
-            .then(function (r) { return r.ok ? r.json() : { user: null }; })
-            .then(function (data) {
+        window.Api.getJson(window.Api.URL.AUTH_ME)
+            .then(function (r) {
+                var data = r.status === 200 ? r.data : { user: null };
                 if (data && data.user) {
                     renderLoggedIn(menu, data.user);
                 }

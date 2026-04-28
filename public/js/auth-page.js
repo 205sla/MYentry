@@ -45,17 +45,8 @@
         submitBtn.textContent = busy ? '처리 중…' : originalLabel;
     }
 
-    async function postJson(url, body) {
-        var res = await fetch(url, {
-            method: 'POST',
-            credentials: 'same-origin',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body),
-        });
-        var data = {};
-        try { data = await res.json(); } catch (_) { /* 본문 비-JSON 허용 */ }
-        return { status: res.status, data: data };
-    }
+    // postJson은 api.js의 Api.postJson에 위임 — 정책 일원화.
+    var postJson = function (url, body) { return window.Api.postJson(url, body); };
 
     function val(form, name) {
         var v = form.elements[name];
@@ -97,7 +88,7 @@
 
             setBusy(true, '가입하기');
             try {
-                var r = await postJson('/api/auth/signup', payload);
+                var r = await postJson(window.Api.URL.AUTH_SIGNUP, payload);
                 if (r.status === 201) {
                     location.href = nextUrl();
                     return;
@@ -124,7 +115,7 @@
 
             setBusy(true, '로그인');
             try {
-                var r = await postJson('/api/auth/login', payload);
+                var r = await postJson(window.Api.URL.AUTH_LOGIN, payload);
                 if (r.status === 200) {
                     location.href = nextUrl();
                     return;
