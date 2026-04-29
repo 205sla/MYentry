@@ -14,6 +14,49 @@ const SCHEMA_SQL = fs.readFileSync(
     'utf8'
 );
 
+// schema.sql이 표현하는 baseline 버전 — 새 DB 부트 시 schema_version에 1행만 INSERT.
+// schema.sql 변경 시 함께 올리고, 그 변경에 대응하는 ALTER는 MIGRATIONS에도 추가.
+const BASELINE_VERSION = 3;
+
+// 점진적 스키마 변경 정의. 신규 DB는 schema.sql이 baseline까지 처리하므로
+// version > BASELINE_VERSION인 항목만 의미가 있다.
+// 예: { version: 4, sql: 'ALTER TABLE users ADD COLUMN avatar_url TEXT;' }
+const MIGRATIONS = [];
+
+function nowSec() {
+    return Math.floor(Date.now() / 1000);
+}
+
+function getCurrentVersion(db) {
+    const row = db.prepare('SELECT MAX(version) AS v FROM schema_version').get();
+    return row && typeof row.v === 'number' ? row.v : 0;
+}
+
+function applyMigrations(db) {
+    let current = getCurrentVersion(db);
+
+    // 새 DB: schema.sql이 baseline 테이블을 만들었지만 schema_version 행은 비어있다.
+    if (current === 0) {
+        db.prepare('INSERT INTO schema_version (version, applied_at) VALUES (?, ?)')
+            .run(BASELINE_VERSION, nowSec());
+        current = BASELINE_VERSION;
+    }
+
+    // baseline 이후의 마이그레이션을 순서대로 적용.
+    const pending = MIGRATIONS
+        .filter((m) => m.version > current)
+        .sort((a, b) => a.version - b.version);
+
+    for (const m of pending) {
+        const tx = db.transaction(() => {
+            db.exec(m.sql);
+            db.prepare('INSERT INTO schema_version (version, applied_at) VALUES (?, ?)')
+                .run(m.version, nowSec());
+        });
+        tx();
+    }
+}
+
 // 파일 경로별로 인스턴스 캐시 (같은 경로면 같은 핸들 반환).
 // :memory:는 호출마다 새로 만들어야 격리되므로 캐시 안 함.
 const cache = new Map();
@@ -47,8 +90,9 @@ function getDb(opts = {}) {
     db.pragma('journal_mode = WAL');
     db.pragma('foreign_keys = ON');
 
-    // 스키마 멱등 적용
+    // baseline 스키마 멱등 적용 + 점진적 마이그레이션
     db.exec(SCHEMA_SQL);
+    applyMigrations(db);
 
     if (target !== ':memory:') {
         cache.set(target, db);
@@ -66,4 +110,4 @@ function closeDb(target) {
     }
 }
 
-module.exports = { getDb, closeDb };
+module.exports = { getDb, closeDb, BASELINE_VERSION, MIGRATIONS };

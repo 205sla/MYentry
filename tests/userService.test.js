@@ -132,9 +132,3 @@ describe('userService.stripSecret', () => {
     });
 });
 
-describe('schema_version', () => {
-    it('v1이 적용됨', () => {
-        const row = db.prepare('SELECT version FROM schema_version').get();
-        assert.equal(row.version, 1);
-    });
-});

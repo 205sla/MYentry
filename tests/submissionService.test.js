@@ -128,9 +128,3 @@ describe('FOREIGN KEY CASCADE', () => {
     });
 });
 
-describe('schema_version v3', () => {
-    it('v1·v2·v3 모두 적용됨', () => {
-        const versions = db.prepare('SELECT version FROM schema_version ORDER BY version').all().map(function (r) { return r.version; });
-        assert.deepEqual(versions, [1, 2, 3]);
-    });
-});

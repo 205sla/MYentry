@@ -380,12 +380,12 @@ function initReset() {
     var yesBtn = document.getElementById('confirm-yes');
     var noBtn = document.getElementById('confirm-no');
 
-    function close() { overlay.classList.remove('active'); }
+    function close() { overlay.hidden = true; }
 
     document.getElementById('reset-btn').addEventListener('click', function () {
         // Don't allow reset during grading
         if (GradingState.isRunning) return;
-        overlay.classList.add('active');
+        overlay.hidden = false;
     });
 
     noBtn.addEventListener('click', close);
@@ -395,11 +395,11 @@ function initReset() {
         if (e.target === overlay) close();
     });
     document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape' && overlay.classList.contains('active')) close();
+        if (e.key === 'Escape' && !overlay.hidden) close();
     });
 
     yesBtn.addEventListener('click', function () {
-        overlay.classList.remove('active');
+        overlay.hidden = true;
         // Clear all existing state first, then reload
         Entry.clearProject();
         var problemId = new URLSearchParams(location.search).get('problem');
@@ -552,7 +552,12 @@ function applyTestSetup(setup) {
 // 10. Grading — button wiring, modal, localStorage persistence
 // ============================================================
 
+var gradingInitialized = false;
 function initGrading() {
+    // 재진입(hot reload·DOM 재초기화) 시 핸들러가 N배로 등록되는 사고 방지.
+    if (gradingInitialized) return;
+    gradingInitialized = true;
+
     // Block all keyboard input during grading so user keystrokes
     // don't interfere with ask_and_wait auto-fill or engine state.
     document.addEventListener('keydown', function (e) {
@@ -589,12 +594,12 @@ function initGrading() {
         }
         GradingState.isRunning = false; // release user control over start/stop
         restoreTurboState();            // restore user's Entry.isTurbo setting
-        document.getElementById('grade-overlay').classList.remove('active');
+        document.getElementById('grade-overlay').hidden = true;
     });
 
     // Close (after grading done): just hide modal, stay in editor
     document.getElementById('grade-close-btn').addEventListener('click', function () {
-        document.getElementById('grade-overlay').classList.remove('active');
+        document.getElementById('grade-overlay').hidden = true;
     });
 
     // Home: navigate back to problem selection page
@@ -610,7 +615,7 @@ function showGradeModal() {
     var footer = document.getElementById('grade-footer');
     footer.classList.add('running');
     footer.classList.remove('show-home');
-    document.getElementById('grade-overlay').classList.add('active');
+    document.getElementById('grade-overlay').hidden = false;
 }
 
 // Persist a solved problem id locally + sync to server (if logged in).
@@ -939,27 +944,50 @@ function initEntryPopup() {
     // Catalog items carry both `id` (our canonical key) and `_id` (same value,
     // required by EntryTool.Popup for selection tracking). The server filters
     // by `id` via meta.json; the popup reads `_id` from the data as-is.
+    //
+    // 카탈로그 항목 두 가지를 지원:
+    //   1) 단일 picture: { id, fileurl, dimension, ... }   — 모양 1개짜리 sprite
+    //   2) 다중 모양 sprite: { id, pictures:[...], sounds, category }  — 예: 205봇 4개 모양
     function showPopup(type) {
         currentType = type;
         container.style.display = 'block';
         var data;
         if (type === 'sprite') {
-            // Sprite mode: wrap each catalog item as {_id, name, pictures[], sounds[], category}.
+            // Sprite mode: 다중 모양 sprite는 그대로, 단일 picture는 {pictures:[img]}로 wrap.
             // `category` is required because Entry.EntryObject.initEntity() reads
             // `model.sprite.category.main` unconditionally (src/class/object.js L152).
             // Missing it triggers TypeError and the object silently fails to spawn.
-            data = __spriteCatalog.map(function (img) {
+            data = __spriteCatalog.map(function (item) {
+                if (Array.isArray(item.pictures)) {
+                    return {
+                        _id:      item._id || item.id,
+                        name:     item.name,
+                        pictures: item.pictures,
+                        sounds:   item.sounds   || [],
+                        category: item.category || {},
+                    };
+                }
                 return {
-                    _id: img.id,
-                    name: img.name,
-                    pictures: [img],
+                    _id: item.id,
+                    name: item.name,
+                    pictures: [item],
                     sounds: [],
                     category: {},
                 };
             });
         } else if (type === 'picture') {
-            // Picture mode: catalog items used directly (already have _id & id)
-            data = __spriteCatalog;
+            // Picture mode: 다중 모양 sprite는 picture 단위로 펼쳐서 노출.
+            // 각 picture는 카탈로그의 picture id를 _id로 사용해 popup selection 호환.
+            data = [];
+            __spriteCatalog.forEach(function (item) {
+                if (Array.isArray(item.pictures)) {
+                    item.pictures.forEach(function (p) {
+                        data.push(Object.assign({ _id: p._id || p.id }, p));
+                    });
+                } else {
+                    data.push(item);
+                }
+            });
         } else {
             data = []; // sound: no bundled sounds yet
         }

@@ -3,7 +3,8 @@
 -- 컬럼 추가/제약 변경은 새 마이그레이션 단계로 분리 (단순 테이블 추가는 여기에).
 
 -- ─────── users ───────
--- username: 로그인 ID (영숫자+_, 3-20자, 대소문자 구분 안 함은 service 레벨에서 lower-case 정규화)
+-- username: 로그인 ID (영숫자+_, 3-20자). 항상 lowercase로 저장된다 — authService.normalizeUsername
+--           User123/USER123이 별개 계정으로 가입되는 사칭·혼동을 막기 위해.
 -- email:    선택. NULL이면 비밀번호 분실 복구 불가 (학교 발급 계정 등 이메일 없는 학생 배려).
 --           SQLite는 UNIQUE 컬럼에서 NULL 다중 허용 → 이메일 미입력 사용자 여러 명 OK.
 -- birth_year: 14세 이상 가입 정책 검증용. 가입 시점에만 검증, DB는 단순 저장.
@@ -50,15 +51,10 @@ CREATE TABLE IF NOT EXISTS submissions (
 );
 
 -- ─────── schema_version ───────
--- 마이그레이션 추적용. 스키마 변경 시 새 버전을 INSERT하고 애플리케이션이 대응.
+-- 마이그레이션 추적용. baseline 버전(이 schema.sql이 표현하는 상태)은 init.js의
+-- BASELINE_VERSION 상수가 결정하고, 새 DB 부트 시 한 번만 INSERT한다.
+-- 이후 schema 변경은 init.js의 MIGRATIONS 배열에 ALTER 단계로 추가.
 CREATE TABLE IF NOT EXISTS schema_version (
     version    INTEGER PRIMARY KEY,
     applied_at INTEGER NOT NULL
 );
-
-INSERT OR IGNORE INTO schema_version (version, applied_at)
-VALUES (1, strftime('%s', 'now'));
-INSERT OR IGNORE INTO schema_version (version, applied_at)
-VALUES (2, strftime('%s', 'now'));
-INSERT OR IGNORE INTO schema_version (version, applied_at)
-VALUES (3, strftime('%s', 'now'));

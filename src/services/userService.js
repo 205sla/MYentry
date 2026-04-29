@@ -59,11 +59,13 @@ function findById(id, opts = {}) {
 }
 
 /**
- * username 단일 조회. case-sensitive (가입 시 lowercase 정규화 권장).
+ * username 단일 조회. 입력을 lowercase로 정규화 — 저장도 lowercase라는 전제
+ * (authService.signup에서 정규화 후 createUser 호출).
  */
 function findByUsername(username, opts = {}) {
+    if (typeof username !== 'string') return null;
     const db = opts.db || getDb();
-    return db.prepare('SELECT * FROM users WHERE username = ?').get(username) || null;
+    return db.prepare('SELECT * FROM users WHERE username = ?').get(username.toLowerCase()) || null;
 }
 
 /**
