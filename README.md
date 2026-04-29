@@ -51,7 +51,7 @@ npm start
 ### 회원 페이지
 - `/signup.html` — 가입 폼 (아이디·비밀번호·출생연도 필수, 이메일·표시이름 선택). 14세 이상만 가입 가능
 - `/login.html` — 로그인 폼
-- `/profile.html` — 4개 섹션:
+- `/profile.html` — 6개 섹션:
   1. 기본 정보 (이메일·표시이름 변경)
   2. 풀이 통계 (총 N/M + 난이도별 그리드)
   3. 내가 푼 코드 (자동 저장된 정답 목록, 클릭 = 에디터 진입)
@@ -68,7 +68,7 @@ npm start
 
 ### 회원 시스템 (선택)
 - **비회원으로도 핵심 기능 그대로 이용 가능**. 회원 가입은 추가 가치(서버 동기화·코드 보관·통계)를 위한 선택
-- 가입 정책: username 영문·숫자·_ 3~20자, 비밀번호 8자 이상 + 영문 + 숫자, 14세 이상
+- 가입 정책: username 영문·숫자·_ 3~20자 (대소문자 구분 없이 lowercase로 정규화 — `User123`/`USER123`이 별개 계정으로 가입되는 사칭 차단), 비밀번호 8자 이상 + 영문 + 숫자, 14세 이상
 - **비밀번호는 bcrypt(cost 10) 해시로만 저장**. 평문 미보관, 운영자도 조회 불가. 분실 시 복구 미제공 — 안전한 곳에 보관 필수
 - 세션 쿠키 `code205.sid` — `httpOnly` + `sameSite=lax` + `secure`(HTTPS) + 7일
 - Rate-limit (IP 기준): login 10회/15분, signup 5회/1시간
@@ -116,7 +116,7 @@ npm start
 - **실행취소/다시실행**: 헤더 버튼 + Ctrl+Z / Ctrl+Shift+Z
 - **초기화**: 프로젝트를 원래 상태로 복원 (확인 다이얼로그 포함)
 - **블록/파이썬 모드 전환**: 헤더 버튼
-- **스프라이트 카탈로그**: 로컬 번들 SVG/PNG 스프라이트, 문제별 필터링
+- **스프라이트 카탈로그**: 로컬 번들 SVG/PNG 스프라이트, 문제별 필터링. "오브젝트 추가하기" 팝업에 마스코트 **205봇**(idle/walk-1/walk-2/hello 4개 모양 묶음)이 포함됨
 - **내 컴퓨터에 저장하기**: 현재 작품을 `.ent` 파일로 다운로드
   - 서버가 자산(이미지·소리)을 엔트리 공식 포맷(`temp/<aa>/<bb>/(image|thumb|sound)/<hash>.<ext>`)으로 재번들
   - SVG는 `sharp`로 PNG 래스터 + 96px 썸네일도 함께 번들 (엔트리 업로드 파이프라인 호환)
@@ -195,11 +195,13 @@ CODE-205/
 │   ├── sprites/                  # 로컬 스프라이트 카탈로그
 │   └── lib/                      # Entry 라이브러리 (로컬 번들, ~64MB)
 ├── db/                           # 런타임 SQLite 파일 (gitignored)
-└── tests/                        # node:test 단위·통합 테스트 (206개)
+├── logs/                         # PM2 출력 로그 (gitignored, pm2-logrotate로 회전)
+└── tests/                        # node:test 단위·통합 테스트 (210개)
     ├── format.test.js / lists.test.js / markdown.test.js / evaluate.test.js
     ├── userService.test.js / authService.test.js / auth.routes.test.js
     ├── solutionService.test.js / submissionService.test.js
     ├── me.routes.test.js
+    ├── db.init.test.js          # 스키마 마이그레이션 baseline 검증
     └── csp.test.js
 ```
 
@@ -268,7 +270,7 @@ CODE-205/
 npm test
 ```
 
-**206개 테스트** (이전 단위 57 + 회원·CSP·풀이·코드 신규 149)가 통과해야 배포 가능.
+**210개 테스트** (이전 단위 57 + 회원·CSP·풀이·코드 신규 153)가 통과해야 배포 가능.
 
 ### CI/CD 파이프라인
 
@@ -277,7 +279,7 @@ npm test
 ```
 push → [ test ] ──(needs: test)──▶ [ deploy ] ──▶ [ health check ] → live
        npm ci                       git pull                HTTP 200 확인
-       206 tests                    npm install --omit=dev
+       210 tests                    npm install --omit=dev
        ~15초                        pm2 startOrReload ecosystem.config.js
                                     pm2 save
                                     ~10초
@@ -300,7 +302,8 @@ push → [ test ] ──(needs: test)──▶ [ deploy ] ──▶ [ health che
 | 세션 store | connect-sqlite3 | 같은 DB 파일 안 sessions 테이블 |
 | 리버스 프록시 | Nginx 1.18 (gzip, rate limit) | TLS 종료 |
 | SSL | Let's Encrypt + certbot | 60일 자동 갱신 |
-| 프로세스 관리 | PM2 6 + `ecosystem.config.js` | 재부팅 자동 시작 |
+| 프로세스 관리 | PM2 6 + `ecosystem.config.js` | `min_uptime`/`max_restarts`/`restart_delay`로 시작 실패 무한 루프 방어 |
+| 로그 회전 | `pm2-logrotate` 모듈 | `logs/entry-*.log` 10MB 단위 + 7개 retain + 매일 자정 |
 | 모니터링 | PM2 logs, Nginx access/error logs | — |
 | 예산 | OCI Budget $1, alert at 1% | 1원 과금 즉시 이메일 |
 
