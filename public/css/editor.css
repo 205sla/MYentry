@@ -162,8 +162,9 @@ body {
 #workspace { height: 100%; }
 
 /* ---------- Grading result modal — Entry design language ---------- */
+/* 모든 overlay 모달은 hidden 속성으로 토글 (HTML5 표준) — confirm/restore와 일관. */
 #grade-overlay {
-    display: none;
+    display: flex;
     position: fixed; top: 0; left: 0;
     width: 100%; height: 100%;
     background: rgba(0,0,0,0.6);
@@ -171,7 +172,7 @@ body {
     justify-content: center;
     align-items: center;
 }
-#grade-overlay.active { display: flex; }
+#grade-overlay[hidden] { display: none; }
 #grade-modal {
     background: #fff;
     border: 1px solid #d6e9f4;
@@ -297,7 +298,7 @@ body {
 
 /* ---------- Confirm dialog (reset 등) — Entry design language ---------- */
 #confirm-overlay {
-    display: none;
+    display: flex;
     position: fixed; top: 0; left: 0;
     width: 100%; height: 100%;
     background: rgba(0,0,0,0.6);
@@ -305,7 +306,7 @@ body {
     justify-content: center;
     align-items: center;
 }
-#confirm-overlay.active { display: flex; }
+#confirm-overlay[hidden] { display: none; }
 #confirm-dialog {
     background: #fff;
     border: 1px solid #d6e9f4;
@@ -348,7 +349,7 @@ body {
 #confirm-no:hover { background: #f1f1f1; border-color: #d6e9f4; }
 
 /* ---------- Restore dialog (이전 풀이 복원 확인) ---------- */
-/* #confirm-overlay와 동일 패턴이지만 [hidden] 속성으로 토글 + primary 버튼은 파란색 */
+/* #confirm-overlay와 동일 패턴 (hidden 속성 토글) + primary 버튼은 파란색 */
 #restore-overlay {
     display: flex;
     position: fixed; top: 0; left: 0;

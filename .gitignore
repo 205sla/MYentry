@@ -23,3 +23,7 @@ temp/
 # Runtime data: SQLite DB, user uploads 등 (db/ 구조는 .gitkeep로 유지)
 db/*
 !db/.gitkeep
+
+# PM2 log files — ecosystem.config.js가 logs/entry-*.log로 출력
+logs/*
+!logs/.gitkeep

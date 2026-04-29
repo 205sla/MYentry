@@ -1,4 +1,7 @@
 // 문제 관련 API: 목록·메타·테스트·프로젝트·자산.
+// 에러 응답 포맷은 _respond.fail로 통일 — { error: CODE, message: 한국어 }.
+// 예외: /:id/has-tests는 항상 200 + {hasTests:bool} (클라이언트 단순 분기 호환),
+//       /:id/asset/* 는 binary endpoint라 본문 없는 .end() 유지.
 
 const fs = require('fs');
 const express = require('express');
@@ -9,11 +12,20 @@ const {
 const {
     loadProblemTar, extractTarFile, rewriteAssetUrl, mimeByExt
 } = require('../services/assetService');
+const { fail } = require('./_respond');
 
 const router = express.Router();
 
 // GET /api/problems — 모든 문제 목록 (meta.json이 있는 폴더)
-router.get('/', (req, res) => {
+//
+// 캐싱: 100문제 × meta.json 파싱은 매 요청 부담이라 메모리 캐시(60초 TTL).
+// - TTL이 지나면 다음 요청 1건이 다시 디스크 스캔
+// - 새 문제 추가는 60초 안에 반영 (또는 프로세스 재시작)
+const LIST_CACHE_TTL_MS = 60 * 1000;
+let listCache = null;
+let listCacheAt = 0;
+
+function buildProblemList() {
     const results = [];
     try {
         const entries = fs.readdirSync(PROBLEMS_DIR, { withFileTypes: true });
@@ -34,14 +46,23 @@ router.get('/', (req, res) => {
         });
     } catch (e) {}
     results.sort((a, b) => a.id - b.id);
-    res.json(results);
+    return results;
+}
+
+router.get('/', (req, res) => {
+    const now = Date.now();
+    if (!listCache || now - listCacheAt >= LIST_CACHE_TTL_MS) {
+        listCache = buildProblemList();
+        listCacheAt = now;
+    }
+    res.json(listCache);
 });
 
 // GET /api/problems/:id/meta — title + description
 router.get('/:id/meta', (req, res) => {
-    if (!isValidId(req.params.id)) return res.status(400).json({ error: 'invalid id' });
+    if (!isValidId(req.params.id)) return fail(res, 400, 'VALIDATION', '잘못된 문제 번호입니다.');
     const meta = readMeta(req.params.id);
-    if (!meta) return res.status(404).json({ error: 'not found' });
+    if (!meta) return fail(res, 404, 'NOT_FOUND', '존재하지 않는 문제입니다.');
     res.json({
         id: parseInt(req.params.id, 10),
         title: meta.title,
@@ -51,9 +72,9 @@ router.get('/:id/meta', (req, res) => {
 
 // GET /api/problems/:id/tests?mode=test|submit
 router.get('/:id/tests', (req, res) => {
-    if (!isValidId(req.params.id)) return res.status(400).json({ error: 'invalid id' });
+    if (!isValidId(req.params.id)) return fail(res, 400, 'VALIDATION', '잘못된 문제 번호입니다.');
     const tests = readTests(req.params.id);
-    if (!tests) return res.status(404).json({ error: 'no tests' });
+    if (!tests) return fail(res, 404, 'NOT_FOUND', '테스트 케이스가 없습니다.');
 
     const mode = req.query.mode || 'test';
     const cases = Array.isArray(tests[mode]) ? tests[mode] : [];
@@ -71,13 +92,13 @@ router.get('/:id/has-tests', (req, res) => {
 // GET /api/problems/:id — .ent 파일의 project data
 // picture/sound fileurl을 브라우저가 접근 가능한 경로로 재작성한 뒤 반환.
 router.get('/:id', (req, res) => {
-    if (!isValidId(req.params.id)) return res.status(400).json({ error: 'invalid id' });
+    if (!isValidId(req.params.id)) return fail(res, 400, 'VALIDATION', '잘못된 문제 번호입니다.');
     const id = req.params.id;
     const tarBuf = loadProblemTar(id);
-    if (!tarBuf) return res.status(404).json({ error: 'not found' });
+    if (!tarBuf) return fail(res, 404, 'NOT_FOUND', '존재하지 않는 문제입니다.');
     try {
         const jsonBuf = extractTarFile(tarBuf, 'temp/project.json');
-        if (!jsonBuf) return res.status(500).json({ error: 'project.json not found in .ent' });
+        if (!jsonBuf) return fail(res, 500, 'INTERNAL', '.ent에서 project.json을 찾을 수 없습니다.');
         const jsonStr = jsonBuf.toString('utf8')
             .replace(/\.\/bower_components\/entry-js\//g, 'lib/entry-js/')
             .replace(/\.\/node_modules\/@entrylabs\/entry\//g, 'lib/entry-js/');
@@ -96,7 +117,7 @@ router.get('/:id', (req, res) => {
 
         res.json(project);
     } catch (e) {
-        res.status(500).json({ error: e.message });
+        return fail(res, 500, 'INTERNAL', e.message);
     }
 });
 

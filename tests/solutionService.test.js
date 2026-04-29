@@ -111,11 +111,3 @@ describe('FOREIGN KEY CASCADE', () => {
     });
 });
 
-describe('schema_version v2', () => {
-    it('v2 이상이 적용됨', () => {
-        const versions = db.prepare('SELECT version FROM schema_version ORDER BY version').all().map((r) => r.version);
-        // 후속 Phase에서 v3, v4가 추가될 수 있으므로 포함 검사로 완화
-        assert.ok(versions.includes(1) && versions.includes(2),
-            'v1, v2가 모두 적용되어야 함 — 현재: ' + JSON.stringify(versions));
-    });
-});

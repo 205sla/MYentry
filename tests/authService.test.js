@@ -52,7 +52,13 @@ describe('validateEmail', () => {
         }
     });
     it('형식 불량 거부', () => {
-        for (const bad of ['no-at', 'no@dot', '@start.com', 'space here@x.com']) {
+        for (const bad of [
+            'no-at', 'no@dot', '@start.com', 'space here@x.com',
+            'a@b.c',          // TLD 1자
+            'x@y',            // 점 자체 없음
+            'a@b..com',       // 도메인 연속 점
+            'a@.com',         // 도메인 점 시작
+        ]) {
             assert.ok(auth.validateEmail(bad), `reject ${bad}`);
         }
     });
@@ -165,6 +171,37 @@ describe('signup (실패)', () => {
             auth.signup({ username: 'userb', email: 'x@y.com', password: 'abcd1234', birthYear: 2000 }, { db }),
             (e) => e.code === 'CONFLICT'
         );
+    });
+});
+
+describe('username case-insensitive', () => {
+    it('signup이 username을 lowercase로 저장', async () => {
+        const u = await auth.signup({
+            username: 'MixedCase',
+            password: 'abcd1234',
+            birthYear: 2000,
+        }, { db });
+        assert.equal(u.username, 'mixedcase');
+    });
+
+    it('대소문자만 다른 username으로 재가입 시 CONFLICT', async () => {
+        await auth.signup({ username: 'caseDup', password: 'abcd1234', birthYear: 2000 }, { db });
+        await assert.rejects(
+            auth.signup({ username: 'CASEDUP', password: 'xyzw5678', birthYear: 2000 }, { db }),
+            (e) => e.code === 'CONFLICT'
+        );
+    });
+
+    it('다른 대소문자로도 로그인 성공', async () => {
+        await auth.signup({ username: 'caseLogin', password: 'abcd1234', birthYear: 2000 }, { db });
+        const u = await auth.login({ username: 'CASELOGIN', password: 'abcd1234' }, { db });
+        assert.equal(u.username, 'caselogin');
+    });
+
+    it('findByUsername도 case-insensitive', async () => {
+        await auth.signup({ username: 'finder', password: 'abcd1234', birthYear: 2000 }, { db });
+        assert.ok(userService.findByUsername('FINDER', { db }));
+        assert.ok(userService.findByUsername('Finder', { db }));
     });
 });
 

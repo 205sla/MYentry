@@ -1,5 +1,54 @@
 [
   {
+    "id": "obj_bot205",
+    "_id": "obj_bot205",
+    "name": "205봇",
+    "category": { "main": "etc" },
+    "sounds": [],
+    "pictures": [
+      {
+        "id": "bot205-idle",
+        "_id": "bot205-idle",
+        "name": "205봇_서기",
+        "fileurl": "/images/mascot/bot205-idle.svg",
+        "thumbUrl": "/images/mascot/bot205-idle.svg",
+        "filename": "bot205-idle",
+        "imageType": "svg",
+        "dimension": { "width": 200, "height": 240 }
+      },
+      {
+        "id": "bot205-walk-1",
+        "_id": "bot205-walk-1",
+        "name": "205봇_걷기1",
+        "fileurl": "/images/mascot/bot205-walk-1.svg",
+        "thumbUrl": "/images/mascot/bot205-walk-1.svg",
+        "filename": "bot205-walk-1",
+        "imageType": "svg",
+        "dimension": { "width": 200, "height": 240 }
+      },
+      {
+        "id": "bot205-walk-2",
+        "_id": "bot205-walk-2",
+        "name": "205봇_걷기2",
+        "fileurl": "/images/mascot/bot205-walk-2.svg",
+        "thumbUrl": "/images/mascot/bot205-walk-2.svg",
+        "filename": "bot205-walk-2",
+        "imageType": "svg",
+        "dimension": { "width": 200, "height": 240 }
+      },
+      {
+        "id": "bot205-hello",
+        "_id": "bot205-hello",
+        "name": "205봇_인사",
+        "fileurl": "/images/mascot/bot205-hello.svg",
+        "thumbUrl": "/images/mascot/bot205-hello.svg",
+        "filename": "bot205-hello",
+        "imageType": "svg",
+        "dimension": { "width": 200, "height": 240 }
+      }
+    ]
+  },
+  {
     "id": "sp01",
     "name": "빨간 원",
     "fileurl": "/sprites/01.svg",

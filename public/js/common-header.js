@@ -41,27 +41,45 @@
         var dropdown = menu.querySelector('.user-dropdown');
         var logoutBtn = menu.querySelector('[data-action="logout"]');
 
+        // document 레벨 핸들러는 dropdown이 열려있는 동안에만 살아있게 한다 —
+        // 닫힐 때 명시적으로 removeEventListener해서 누수 방지.
+        var docClickHandler = null;
+        var docKeyHandler = null;
+
         function close() {
+            if (dropdown.hidden) return;
             dropdown.hidden = true;
             btn.setAttribute('aria-expanded', 'false');
+            if (docClickHandler) {
+                document.removeEventListener('click', docClickHandler);
+                docClickHandler = null;
+            }
+            if (docKeyHandler) {
+                document.removeEventListener('keydown', docKeyHandler);
+                docKeyHandler = null;
+            }
+        }
+        function open() {
+            if (!dropdown.hidden) return;
+            dropdown.hidden = false;
+            btn.setAttribute('aria-expanded', 'true');
+            docClickHandler = function (e) {
+                if (!menu.contains(e.target)) close();
+            };
+            docKeyHandler = function (e) {
+                if (e.key === 'Escape') close();
+            };
+            document.addEventListener('click', docClickHandler);
+            document.addEventListener('keydown', docKeyHandler);
         }
         function toggle() {
-            var willOpen = dropdown.hidden;
-            dropdown.hidden = !willOpen;
-            btn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+            if (dropdown.hidden) open();
+            else close();
         }
 
         btn.addEventListener('click', function (e) {
             e.stopPropagation();
             toggle();
-        });
-        // 바깥 클릭으로 닫기
-        document.addEventListener('click', function (e) {
-            if (!menu.contains(e.target)) close();
-        });
-        // ESC로 닫기
-        document.addEventListener('keydown', function (e) {
-            if (e.key === 'Escape') close();
         });
 
         logoutBtn.addEventListener('click', async function () {

@@ -12,7 +12,11 @@ const userService = require('./userService');
 
 // ─────── 정책 상수 ───────
 const USERNAME_RE = /^[a-zA-Z0-9_]{3,20}$/;
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+// 학생 대상 — RFC 완전 준수보다 흔한 오타 차단 우선.
+//   - 로컬부: 공백·@ 없는 1자+
+//   - 도메인부: 라벨(공백·@·점 없는 1자+) 사이 점, TLD는 ASCII 2자+
+//   - "a@b.c", "x@y" 같은 미완성 거부
+const EMAIL_RE = /^[^\s@]+@[^\s@.]+(\.[^\s@.]+)*\.[a-zA-Z]{2,}$/;
 const PASSWORD_MIN = 8;
 const PASSWORD_LETTER_RE = /[a-zA-Z]/;
 const PASSWORD_DIGIT_RE = /[0-9]/;
@@ -90,6 +94,12 @@ function assertValidSignup(input) {
     }
 }
 
+// username은 case-insensitive — 저장·조회 모두 lowercase로 정규화한다.
+// (User123/USER123이 별개 계정으로 가입되는 사칭·혼동 방지)
+function normalizeUsername(s) {
+    return typeof s === 'string' ? s.toLowerCase() : s;
+}
+
 // ─────── 가입 ───────
 /**
  * @param {object} input { username, email?, password, birthYear, displayName? }
@@ -98,28 +108,29 @@ function assertValidSignup(input) {
  * @throws {AuthError}
  */
 async function signup(input, opts = {}) {
-    assertValidSignup(input);
+    const normalized = { ...input, username: normalizeUsername(input.username) };
+    assertValidSignup(normalized);
 
     // 친절한 중복 메시지를 위한 사전 체크 (race condition은 DB UNIQUE가 보강).
-    if (userService.findByUsername(input.username, opts)) {
+    if (userService.findByUsername(normalized.username, opts)) {
         throw new AuthError('CONFLICT', '이미 사용 중인 아이디입니다.');
     }
-    if (input.email && input.email.trim() !== '') {
-        if (userService.findByEmail(input.email, opts)) {
+    if (normalized.email && normalized.email.trim() !== '') {
+        if (userService.findByEmail(normalized.email, opts)) {
             throw new AuthError('CONFLICT', '이미 사용 중인 이메일입니다.');
         }
     }
 
-    const passwordHash = await bcrypt.hash(input.password, BCRYPT_COST);
+    const passwordHash = await bcrypt.hash(normalized.password, BCRYPT_COST);
 
     let created;
     try {
         created = userService.createUser({
-            username: input.username,
-            email: input.email,
+            username: normalized.username,
+            email: normalized.email,
             passwordHash,
-            birthYear: input.birthYear,
-            displayName: input.displayName,
+            birthYear: normalized.birthYear,
+            displayName: normalized.displayName,
         }, opts);
     } catch (e) {
         // 사전 체크와 createUser 사이의 race로 UNIQUE 위반 시
@@ -143,7 +154,7 @@ async function login(input, opts = {}) {
         throw new AuthError('INVALID_CREDENTIALS', '아이디 또는 비밀번호가 올바르지 않습니다.');
     }
 
-    const user = userService.findByUsername(input.username, opts);
+    const user = userService.findByUsername(normalizeUsername(input.username), opts);
     if (!user) {
         // 같은 메시지로 응답 — username 존재 여부 누설 방지
         throw new AuthError('INVALID_CREDENTIALS', '아이디 또는 비밀번호가 올바르지 않습니다.');
@@ -194,6 +205,8 @@ async function verifyPassword(userId, password, opts = {}) {
 
 module.exports = {
     AuthError,
+    // 정규화
+    normalizeUsername,
     // 검증
     validateUsername,
     validateEmail,
